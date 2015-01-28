@@ -1,0 +1,188 @@
+{# src/Arii/JIDBundle/Resources/views/orders.html.twig #}
+
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Orders" | trans }}</h2>
+		
+		<!--[if !IE]>start section menu<![endif]-->
+                {{ render(controller("AriiJIDBundle:Default:submenu")) }}
+		<!--[if !IE]>end section menu<![endif]-->
+		
+		
+		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+                                                <div class="sct_right">
+<table border="0" width="100%" height="715">
+<tr height="28"><td>
+    <div id="toolbarObj"></div>
+</td></tr>
+<tr height="659"><td>
+    <div id="mygrid" style="height:659px;background-color:white;overflow:hidden"></div>
+</td></tr>
+<tr height="28"><td>
+    <div id="recinfoArea"></div>
+</td></tr>
+</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+<script language="javascript">
+var autorefresh = setInterval( "GridRefresh()",30000);
+
+function onButtonClick(menuitemId) {
+    var data = mygrid.contextID.split("_");
+    //rowInd_colInd;
+    var rId = data[0];
+    var cInd = data[1];
+    // alert("rId "+rId+" cInd "+cInd);
+    switch (menuitemId) {
+        case "show_log":
+            JobLog( rId );
+        break;
+        case "start_task":
+            StartJob( rId );
+        break;
+        default:
+            alert(menuitemId);    
+    }
+    return true;
+}
+menu = new dhtmlXMenuObject();
+menu.setIconsPath( "{{ asset('arii/dhtmlx/dhtmlxMenu/codebase/imgs/dhxmenu_dhx_skyblue/') }}" );
+menu.renderAsContextMenu();
+menu.attachEvent("onClick", onButtonClick);
+menu.loadXML("{{ url('arii_JID_menu_history') }}");
+
+var toolbar;
+toolbar = new dhtmlXToolbarObject("toolbarObj");
+toolbar.setIconsPath("{{ asset('arii/images/') }}");
+toolbar.loadXML("{{ url('arii_JID_toolbar_history') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+        case "refresh":
+            GridRefresh();
+        break;
+        default:
+            alert(id);
+    }
+});
+toolbar.attachEvent( "onValueChange", function(id, value) {
+   switch (id) {
+        case "slider":
+            clearInterval( autorefresh );
+            GridRefresh();
+            autorefresh = setInterval( "GridRefresh()",value*1000);
+        break;
+        default:
+            alert(id);
+    }
+});
+
+var mygrid;
+var barChart;
+var myForm, formData;
+
+mygrid = new dhtmlXGridObject( "mygrid" );
+mygrid.selMultiRows = true;
+//mygrid.setImagePath( "dhtmlx/dhtmlxGrid/codebase/imgs/" );
+//mygrid.setImagePath( "{{ asset('arii/dhtmlx/dhtmlxTree/codebase/imgs/csh_dhx_skyblue/') }}");
+mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.enableTreeCellEdit(false);
+//mygrid.setHeader("Location,StaState,Title,Information,Next run time");
+mygrid.setHeader("{{ "Location" | trans }},{{ "State" | trans }},{{ "Status" | trans }},#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }}");
+mygrid.attachHeader("#text_filter,#select_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter");
+mygrid.setInitWidths("*,100,80,30,120,120,110");
+mygrid.setColAlign("left,left,right,right,right,right,right");
+mygrid.setColTypes("tree,ro,ro,ro,ro,ro,ro");
+mygrid.enableTreeGridLines(true);
+mygrid.setColSorting("str,str,str,date,date,str,str");
+mygrid.enableContextMenu(menu);
+mygrid.enablePaging(true, 30, 10, "recinfoArea");
+mygrid.setPagingSkin("bricks");
+mygrid.init();
+mygrid.saveOpenStates();
+//mygrid.splitAt(2);
+//mygrid.setFilrationLevel(-2);
+mygrid.setSkin('dhx_skyblue');
+//mygrid.kidsXmlFile = "database/state_job_chains.php";
+mygrid.loadXML( "{{ url('arii_JID_db_orders') }}" );
+mygrid.enableLightMouseNavigation( true );
+mygrid.attachEvent("onXLE",function(){
+    //will be called after each xml loading
+    mygrid.refreshFilters();
+    mygrid.filterByAll();
+});
+mygrid.attachEvent("onRowDblClicked",function(id, value){
+    myForm.load(  "{{ url('arii_JID_ajax_job_info' ) }}?id="+id );
+});
+// Autorefresh
+function GridRefresh() {
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+    if (minutes < 10){
+    minutes = "0" + minutes
+    }
+    if (seconds < 10){
+    seconds = "0" + seconds
+    }
+    toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+    //mygrid.clearAll();
+    mygrid.loadXML( "{{ url('arii_JID_db_orders') }}"+'?time='+seconds );
+    barChart.load( "{{ url('arii_JID_pie_orders') }}" );
+    myForm.load(  "{{ url('arii_JID_ajax_job_info') }}" );
+}
+
+var dhxWins = new dhtmlXWindows();
+dhxWins.enableAutoViewport(false);
+dhxWins.attachViewportTo("wrapper");
+dhxWins.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+
+var nbwin=1;
+function JobLog( id ) { 
+    var p = 0;
+    dhxWins.forEachWindow(function() {
+        p++;
+    });
+    if (p > 3) {
+        alert("Too many windows");
+        return;
+    }
+    var idwin = 'win'+(nbwin++);
+    var win = dhxWins.createWindow( idwin, 5*nbwin, 20*nbwin, document.getElementById("wrapper").offsetWidth-20-( 5*nbwin), 220-( 20*nbwin));
+    win.setText("Job log "+id);
+    win.attachURL( "{{ url('arii_JID_detail_job', {"id": 0 } )  }}"+id , true);
+}
+
+function StartJob( id ) { 
+    var msg = dhxWins.createWindow( "msgwin" , (document.getElementById("wrapper").offsetWidth-200)/2, 200,500,200 );
+    msg.setText("Start job "+id);
+    msg.attachURL( "{{ url('arii_JID_start_job', {"id": 0 } )  }}"+id , true);
+}
+</script>
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+{% endblock %}

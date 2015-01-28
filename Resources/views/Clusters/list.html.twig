@@ -1,0 +1,255 @@
+{# src/Arii/JIDBundle/Resources/views/index.html.twig #}
+
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "High availability" | trans }}</h2>
+<ul  class="section_menu">
+      <li><a href="{{ url('arii_JID_clusters') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
+</ul>		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+                                                <div class="sct_right">
+    <div id="mygrid" style="height:590px;background-color:white;overflow:hidden;position: relative;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+<script language="javascript">
+var menu = new dhtmlXMenuObject();
+menu.setIconsPath( "{{ asset('arii/images/menu/') }}" );
+/*menu.setImagePath( "{{ asset('arii/images/menu') }}" );*/
+menu.renderAsContextMenu();
+menu.attachEvent("onClick", onButtonClick);
+menu.loadXML("{{ url('xml_JID_spoolers_menu') }}");
+
+var dhxLayout = new dhtmlXLayoutObject("mygrid","1C");
+
+var toolbar;
+toolbar = dhxLayout.attachToolbar();
+toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+toolbar.loadXML("{{ url('xml_JID_clusters_toolbar') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+        case "refresh":
+            GridRefresh();
+        break;
+        default:
+            alert(id);
+    }
+});
+
+dhxLayout.cells("a").hideHeader();
+dhxLayout.cells("a").setHeight(300);
+var mygrid = dhxLayout.cells("a").attachGrid();
+var sb = dhxLayout.cells("a").attachStatusBar();
+dhxLayout.cells("a").vs[dhxLayout.cells("a").av].sbHeight = 40;
+sb.setText('<div id="recinfoArea"></div>');
+mygrid.selMultiRows = true;
+mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.enableTreeCellEdit(false);
+//mygrid.setHeader("Location,StaState,Title,Information,Next run time");
+mygrid.setHeader( "{{ "Spooler" | trans }},{{ "Status" | trans }},#cspan,{{ "Running since" | trans }},{{ "Last heartbeat" | trans }},#cspan,{{ "PID" | trans }},{{ "Version" | trans }}" );
+mygrid.attachHeader("#text_filter,#select_filter,#cspan,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter");
+mygrid.setColumnIds(  "SCHEDULER,STATUS,ICON,RUNNING_SINCE,LAST_HEART_BEAT,DURATION,PID,VERSION" );
+mygrid.setInitWidths( "*,100,50,140,140,60,80,80,80" );
+mygrid.setColTypes(   "tree,ro,ro,ro,ro,ro,ro,ro,ro" );
+mygrid.setColAlign(   "left,center,center,right,right,right,right,right,right" );
+mygrid.setColSorting( "str,str,str,date,date,int,int,str" );
+mygrid.enableContextMenu(menu);
+mygrid.attachEvent("onBeforeContextMenu", onShowMenu );
+mygrid.enablePaging(true, 10, 3, "recinfoArea");
+mygrid.setPagingSkin("toolbar","dhx_skyblue");
+mygrid.setPagingWTMode(true,true,true,[5,10,20,50,100,200,500,1000]);
+mygrid.init();
+mygrid.loadOpenStates();
+mygrid.setSkin('dhx_skyblue');
+mygrid.i18n.paging={
+      results: "{{ "Results" | trans }}",
+      records: "{{ "From" | trans }} ",
+      to: " {{ "to" | trans }} ",
+      page:"{{ "Page" | trans }} ",
+      perpage: "{{ "rows per page" | trans }}",
+      first: "{{ "To first Page" | trans }}",
+      previous:"{{ "Previous Page" | trans }}",
+      found:"{{ "Found records" | trans }}",
+      next:"{{ "Next Page" | trans }}",
+      last:"{{ "To last Page" | trans }}",
+      of:" {{ "of" | trans }} ",
+      notfound:"{{ "No Records Found" | trans }}" };
+
+mygrid.loadXML( "{{ url('xml_JID_clusters_list') }}" );
+mygrid.enableLightMouseNavigation( true );
+mygrid.attachEvent("onXLE",function(){
+    mygrid.refreshFilters();
+    mygrid.filterByAll();
+});
+mygrid.attachEvent("onOpenEnd",function(){
+    mygrid.saveOpenStates();
+});
+function onShowMenu(rowId,cleInd,grid) {
+    var status = grid.cells(rowId,1).getValue();
+    if (status == 'PAUSED') {
+        menu.hideItem('pause_spooler');
+        menu.showItem('continue_spooler');
+    }
+    else {
+        menu.showItem('pause_spooler');
+        menu.hideItem('continue_spooler');
+    }
+return true;
+}
+
+function onButtonClick(menuitemId) {
+    var data = mygrid.contextID.split("_");
+    var rId = data[0];
+    var cInd = data[1];
+    var command;
+    switch (menuitemId) {
+        case "pause_spooler":
+            PauseSpooler(rId);
+            break;
+        case "continue_spooler":
+            ContinueSpooler(rId);
+            break;
+        case "check_spooler":
+            CheckSpooler(rId);
+            break;
+        case "terminate_spooler":
+            TerminateSpooler(rId);
+            break;
+        case "abort_spooler":
+            AbortSpooler(rId);
+            break;
+        default:
+            alert("test"+menuitemId);    
+    }
+    return true;
+}
+
+function PauseSpooler(rid)
+{
+    dhxLayout.cells("a").progressOn();
+    dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command=pause_spooler&spooler_id="+rid,function(loader,response){
+        dhxLayout.cells("a").progressOff();
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        CheckSpooler(rid);
+    });
+    return true;
+}
+
+function ContinueSpooler(rid)
+{
+    dhxLayout.cells("a").progressOn();
+    dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command=continue_spooler&spooler_id="+rid,function(loader){
+        dhxLayout.cells("a").progressOff();
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        CheckSpooler(rid);
+    });
+    return true;
+}
+
+function TerminateSpooler(rid)
+{
+    dhxLayout.cells("a").progressOn();
+    dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command=restart_spooler&spooler_id="+rid,function(loader){
+        dhxLayout.cells("a").progressOff();
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        CheckSpooler(rid);
+    });
+    return true;
+}
+
+function CheckSpooler(rid)
+{
+    dhxLayout.cells("a").progressOn();
+    dhtmlxAjax.get("{{ url('arii_JID_spooler_update') }}?id="+rid,function(loader){
+        dhxLayout.cells("a").progressOff();
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        GridRefresh();
+    });
+    return true;
+}
+
+function AbortSpooler(rid)
+{
+    dhxLayout.cells("a").progressOn();
+    dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command=abort_spooler&spooler_id="+rid,function(loader){
+        dhxLayout.cells("a").progressOff();
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        GridRefresh();
+    });
+    return true;
+}
+
+// Autorefresh
+function GlobalRefresh() {
+    GridRefresh();
+}
+
+function GridRefresh() {
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+    if (minutes < 10){
+    minutes = "0" + minutes;
+    }
+    if (seconds < 10){
+    seconds = "0" + seconds;
+    }
+    toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+    //mygrid.clearAll();
+    mygrid.loadXML( "{{ url('xml_JID_clusters_list') }}"+'?time='+seconds , function(){
+            mygrid.loadOpenStates();
+        });
+}
+
+</script>
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+{% endblock %}

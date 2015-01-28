@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<menu>
+    <item id="config" text="{{ "Settings" | trans }}" img="settings.png" >
+        <item id="db_select" text="Database" img="database.png">
+            {% for db in database %}
+            <item id="{{ db.id }}" text="{{ db.text }}" type="radio" group="db"{% if db.checked == 1 %} checked="true"{% endif %}/>
+            {% endfor %}
+        </item>
+        <item id="update" text="{{ "Update" | trans }}" img="refresh.png">
+            {% for refresh in update %}
+            <item id="{{ refresh.id }}" text="{{ refresh.text | trans }}" type="radio" group="refresh"{% if refresh.checked == 1 %} checked="true"{% endif %}/>            
+            {% endfor %}
+        </item>
+    </item>
+    <item id="help" text="Help" img="help.png" > 
+        <item id="about" text="About..." img="about.gif" imgdis="about_dis.gif"/> 
+        <item id="needhelp" text="Help" img="help.gif" imgdis="help_dis.gif"/> 
+        <item id="bugReporting" text="Bug Reporting" img="bug_reporting.gif" imgdis="bug_reporting_dis.gif"/> 
+    </item> 
+</menu>

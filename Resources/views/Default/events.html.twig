@@ -1,0 +1,102 @@
+{# src/Arii/AriiJIDBundle/Resources/views/Default/index.html.twig #}
+
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Events" | trans }}</h2>		
+		<!--[if !IE]>start section menu<![endif]-->
+                {{ render(controller("AriiJIDBundle:Default:submenu")) }}
+		<!--[if !IE]>end section menu<![endif]-->
+		
+		
+		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+						<div class="sct_right">
+<div id="toolbarObj"></div>
+<table border="0" width="100%" height="715">
+<tr height="665"><td>
+    <div id="mygrid" style="height:665px;background-color:white;overflow:hidden"></div>
+</td></tr>
+<tr height="28"><td>
+    <div id="recinfoArea"></div>
+</td></tr>
+</table>				
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+<script language="javascript">
+dhtmlx.skin = "dhx_skyblue";
+
+var menu = new dhtmlXMenuObject();
+menu.setIconsPath( "{{ asset('arii/images/menu/') }}" );
+/*menu.setImagePath( "{{ asset('arii/images/menu') }}" );*/
+menu.renderAsContextMenu();
+menu.loadXML("{{ url('arii_JID_menu_history') }}");
+
+var toolbar;
+toolbar = new dhtmlXToolbarObject("toolbarObj");
+toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+toolbar.loadXML("{{ url('arii_JID_toolbar_history') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+        case "refresh":
+            GlobalRefresh();
+        break;
+        default:
+            alert(id);
+    }
+});
+
+var mygrid;
+
+var mygrid = new dhtmlXGridObject( "mygrid" );
+mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.setHeader( "{{ "Spooler" | trans }},{{ "Event" | trans }},{{ "Host" | trans }},{{ "Context" | trans }},{{ "Exit" | trans }},{{ "Creation" | trans }},{{ "Expires" | trans }}" );
+mygrid.attachHeader("#select_filter,#text_filter,#select_filter,#select_filter,#text_filter,#numeric_filter,#text_filter,#text_filter");
+mygrid.setColumnIds(  "SPOOLER_ID,EVENT,REMOTE_SCHEDULER,CONTEXT,EXIT_CODE,CREATED, EXPIRES" );
+mygrid.setInitWidths( "120,*,200,300,100,130,130" );
+mygrid.setColTypes(   "ro,ro,ro,ro,ro,ro,ro" );
+mygrid.setColAlign(   "left,left,left,left,right,left,left" );
+mygrid.setColSorting( "str,str,str,str,int,date,date" );
+mygrid.setPagingTemplates( "[prevpages:&lt;&lt;:] [currentpages:,] [nextpages:&gt;&gt;:]" , "<b>[from]-[to]</b> / <b>[total]</b>" );
+mygrid.enablePaging(true, 30, 15, "recinfoArea");
+mygrid.setPagingSkin("bricks");
+mygrid.init();
+mygrid.setSkin('dhx_skyblue');
+mygrid.loadXML( "{{ url('arii_JID_db_events') }}" );
+mygrid.enableLightMouseNavigation( true );
+
+function GlobalRefresh() {
+    toolbar.setItemText( "refresh", "{{ 'Refreshing...' | trans}}" );
+    //mygrid.clearAll();
+    mygrid.loadXML( "{{ url('arii_JID_db_events') }}" );
+    var currentTime = new Date()
+    var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
+    toolbar.setItemText( "refresh", FormatTime(nextTime));
+}
+
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<job_chain  orders_recoverable="yes" visible="yes" title="Nettoyage de la base des historiques">
+    <job_chain_node  state="HISTORY" job="getUrl" next_state="STEPS" error_state="!HISTORY"/>
+
+    <job_chain_node  state="STEPS" job="getUrl" next_state="ORDERS" error_state="!STEPS"/>
+
+    <job_chain_node  state="ORDERS" job="getUrl" next_state="SUCCESS" error_state="!ORDERS"/>
+
+    <job_chain_node  state="SUCCESS"/>
+
+    <job_chain_node  state="!ORDERS"/>
+
+    <job_chain_node  state="!STEPS"/>
+
+    <job_chain_node  state="!HISTORY"/>
+</job_chain>

@@ -1,0 +1,48 @@
+[
+    { type: "settings", position: "label-left", labelWidth: 100, inputWidth: 420, labelAlign: "left", position: "label-left" },
+    {   type: "hidden", 
+        name: "command",     
+        value: "stop_job"
+    },
+    {   type: "hidden", 
+        name: "job",     
+        value: "{{ JOB_NAME }}"
+    },
+    {   type: "hidden", 
+        name: "spooler",     
+        value: "{{ SPOOLER_ID }}"
+    },
+    {   type: "hidden", 
+        name: "scheduler",     
+        value: "{{ HOSTNAME }}"
+    },
+    {   type: "hidden", 
+        name: "port",     
+        value: "{{ TCP_PORT }}"
+    },                
+    {   type: "fieldset",
+        label: "[{{ SPOOLER_ID }}] {{ JOB_NAME }}",
+        width: 580,
+        list: [ {   type: "input", 
+                    name: "last_error",
+                    label: "{{ "Last error" | trans }}",
+                    value: "{{ ERROR_TEXT }}",
+                    readonly: true
+                }
+        ]
+    },
+    {   type: "block", 
+        width: 580, 
+        list: [ {   type: "button",
+                    name: "submit",
+                    value: "{{ "Stop job " | trans }} {{ HOSTNAME}}#{{TCP_PORT}}"
+                },
+                {   type: "newcolumn" 
+                },
+                {   type: "button",
+                    name: "cancel",
+                    value: "{{ "Cancel" | trans }}"
+                }
+        ]
+    }
+]

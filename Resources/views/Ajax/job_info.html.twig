@@ -1,0 +1,74 @@
+{# src/Arii/JIDBundle/Resources/views/Ajax/job.html.twig #}
+{% extends "AriiJIDBundle:Ajax:layout.html.twig" %}
+{% block content %}
+<div id="dhx_win" style="width:100%; height:100%;overflow:auto">
+<style>
+tr.log {
+    border: 0;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+}
+td.log {
+    font-family: courier;
+    background-image: none;   
+    padding-left: 3px;
+    margin: 0;
+    line-height: 14px;
+}
+td.info {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: blue;
+    line-height: 14px;
+}
+td.ERROR {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: red;
+    line-height: 14px;
+}
+td.WARN {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: orange;
+    line-height: 14px;
+}
+th.SUCCESS {
+    background-color: green;
+    color: white;
+}
+th.FAILURE {
+    background-color: red;
+    color: white;
+}
+th.RUNNING {
+    background-color: orange;
+    color: white;
+}
+th.droite {
+    text-align: right;
+}
+</style>
+<div class="table_wrapper">
+        <div class="table_wrapper_inner">
+<table>
+<tr class="first">
+    <td>{{ "Job name" | trans }}</td>
+    <th colspan=3>{{ JOB_NAME }}</th>
+</tr>
+<tr class="first">
+    <td>{{ "State" | trans }}</td>
+    <th colspan=3>{{ spooler.answer.job_attr.state }}</th>
+</tr>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

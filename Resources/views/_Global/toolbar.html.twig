@@ -1,0 +1,205 @@
+<div id="GlobalBarObj"></div>
+<script>
+{% set site = app.session.get('site') %}
+// var timezone = "{ { site.timezone }}";
+var timezone = "Europe/Paris";
+var autorefresh,
+refreshing = 30;
+{% if (app.session.get('refresh')|length) >0 %}
+    refreshing = {{ app.session.get('refresh') }};
+{% endif %}
+autorefresh = setInterval( "GlobalRefresh()", refreshing*1000 );
+
+var GlobalBar,
+    GBCalendar;
+GlobalBar = new dhtmlXToolbarObject("GlobalBarObj", "dhx_skyblue");
+GlobalBar.setIconsPath( "{{ asset('arii/images/toolbar/') }}" );
+GlobalBar.loadXML( "{{ url('xml_toolbar') }}", function(){
+    GBCalendar = new dhtmlXCalendarObject(GlobalBar.getInput('ref_date'));
+//    GBCalendar.enableTime (true);
+    GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
+    GBCalendar.setWeekStartDay(1);
+});
+
+// init calendar;
+GlobalBar.attachEvent("onClick", function(id) { 
+    switch (id) {
+        case 'never':
+            clearInterval( autorefresh );
+            break;
+        case '5':
+        case '30':
+        case '60':
+        case '300':
+        case '900':
+        case '1800':
+        case '3600':
+            clearInterval( autorefresh );
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?refresh="+id, GlobalRefresh() );
+            autorefresh = setInterval( "GlobalRefresh()", id*1000 );
+            GlobalBar.setItemText('refresh',id);
+            break;
+        case 'date_select':
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?ref_date=now()", function (loader) {
+                if ( loader.xmlDoc.responseXML !== null ) {
+                    right_now = loader.doXPath("//ref_date")[0].firstChild.data;
+                    GlobalBar.setValue('ref_date', right_now ); 
+                }
+                GlobalRefresh(); 
+            });
+            break;
+        case 'refresh':
+                GlobalRefresh();
+                break;
+        case 'database':
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?database=recalc", listSpoolers );
+            /* GlobalBar.clearAll();
+               GlobalBar.loadXML( "{{ url('xml_toolbar') }}" );
+            */
+            break;
+        case 'filter':
+            GlobalBar.setItemText( 'filter', "{{ "All" | trans }}" );
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?filter=-1", GlobalRefresh() );
+            break;
+        case 'spooler':
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?spooler=recalc", listSpoolers );
+            break;
+        case 'default':
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?spooler=-1", GlobalRefresh );
+            GlobalBar.setItemText( 'spooler', '{{ "spooler.all" | trans }}'  );
+            break;
+        case 'site':
+            // refresh sites dans la session
+            break;
+        case 'help':
+            break;
+        case 'about':
+            About();
+            break;
+        case 'guide':
+            window.open('{{ asset("doc/fr/Arii.pdf") }}','arii_doc');
+            break;
+        default:
+            if (id.substr(0,8)=='database') {
+                GlobalBar.setItemText('database',GlobalBar.getListOptionText('database',id));
+                alert("{{ url('arii_session_update') }}?database="+id.substr(9));
+                dhtmlxAjax.get( "{{ url('arii_session_update') }}?database="+id.substr(9), listSpoolers );
+            }
+            else if (id.substr(0,6)=='filter') {
+                GlobalBar.setItemText( 'filter', GlobalBar.getListOptionText('filter',id));
+                dhtmlxAjax.get( "{{ url('arii_session_update') }}?filter="+id.substr(7), GlobalRefresh() );
+            }
+            else if (id.substr(0,7)=='spooler') {
+                dhtmlxAjax.get( "{{ url('arii_session_update') }}?spooler="+id.substr(8), GlobalRefresh );
+                GlobalBar.setItemText( 'spooler', GlobalBar.getListOptionText('spooler',id)  );
+            }
+            else if (id.substr(0,4)=='site') {
+                dhtmlxAjax.get( "{{ url('arii_session_update') }}?site="+id.substr(5), SiteResponse );
+                GlobalBar.setItemText( 'site',GlobalBar.getListOptionText('site',id) );
+                // GlobalBar.setItemImage( 'site',GlobalBar.getListOptionImage('site',id) );
+                // GlobalBar.setItemImage( 'site', "../flags/FR.png"  );
+            }
+            else {
+                alert(id);
+            }
+            break;
+    }
+});
+
+function listSpoolers(loader) {
+    if ( loader.xmlDoc.responseXML != null ) {
+         // loader.doXPath("//spooler")[0].firstChild.data
+         GlobalBar.setItemText( 'spooler', '{{ "spooler.all" | trans }}');
+         GlobalRefresh();
+         var result = loader.doXPath("//spoolers/spooler");
+         GlobalBar.forEachListOption('spooler', function(optionId){
+            GlobalBar.removeListOption('spooler', optionId);
+         });
+         GlobalBar.addListOption('spooler', 'default', 1, "button", "{{ "spooler.all" | trans  }}");
+         if (result.length>0) {
+            GlobalBar.addListOption('spooler', 'sep', 2, "separator"  );
+            for(var i=0;i<result.length;i++){ 
+               GlobalBar.addListOption('spooler', "spooler_"+result[i].id,3+i,"button", result[i].firstChild.data  );
+            }
+         }
+    }
+}
+
+function SiteResponse(loader) {
+    if ( loader.xmlDoc.responseXML != null ) {
+        timezone = loader.doXPath("//timezone")[0].firstChild.data;
+        GlobalRefresh();
+    }
+}
+
+GlobalBar.attachEvent("onEnter", function(id) {
+    switch (id) {
+        case 'filter_str':
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?filter_str="+GlobalBar.getValue(id), GlobalRefresh() );
+            break;
+        case 'ref_date':
+            dhtmlxAjax.get( "{{ url('arii_session_update') }}?ref_date="+GlobalBar.getValue(id), GlobalRefresh() );
+            break;
+        default:
+            alert(id);
+            break;              
+    }
+});
+
+GlobalBar.attachEvent("onStateChange", function(id) {
+    switch (id) {
+        case 'layout_sidebar':
+            if (GlobalBar.getItemState(id)) {
+                 document.getElementById(  "sidebar" ).style.display = 'block';                 
+                 document.getElementById(  "main_content" ).style.marginLeft = '263px';              
+                 dhtmlxAjax.get( "{{ url('arii_session_update') }}?layout_sidebar=true" );
+            }
+            else {
+                 document.getElementById(  "sidebar" ).style.display = 'none'; 
+                 document.getElementById(  "main_content" ).style.marginLeft = '10px';               
+                 dhtmlxAjax.get( "{{ url('arii_session_update') }}?layout_sidebar=false" );
+            }
+            resizeLayout();
+            break;
+        case 'layout_header':
+            if (GlobalBar.getItemState(id)) {
+                 document.getElementById(  "logo_user_details" ).style.display = 'block';                
+                 dhtmlxAjax.get( "{{ url('arii_session_update') }}?layout_header=true" );
+            }
+            else {
+                 document.getElementById(  "logo_user_details" ).style.display = 'none'; 
+                 dhtmlxAjax.get( "{{ url('arii_session_update') }}?layout_header=false" );
+            }
+            break;
+        case 'status_error':
+            dhtmlxAjax.get("{{ url('arii_global_toolbar_update') }}?"+id+"="+state,function(loader){
+                GlobalRefresh();
+            });
+        break;
+        case 'status_stopped':
+            dhtmlxAjax.get("{{ url('arii_global_toolbar_update') }}?"+id+"="+state,function(loader){
+                GlobalRefresh();
+            });
+        break;
+        case 'status_running':
+            dhtmlxAjax.get("{{ url('arii_global_toolbar_update') }}?"+id+"="+state,function(loader){
+                GlobalRefresh();
+            });
+        break;
+        default:
+            alert('state '+id);
+    }
+});
+
+function About() {
+    var largeur = 500;
+    var WAbout = new dhtmlXWindows();
+    WAbout.enableAutoViewport(false);
+    WAbout.attachViewportTo("wrapper");
+    WAbout.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+
+    msg = WAbout.createWindow( "about" , (document.getElementById("wrapper").offsetWidth-largeur)/2, 100, largeur, 300 ); 
+    msg.setText("{{ "About Ari'i" | trans }}");
+    msg.attachURL("{{ url('arii_About') }}"); 
+}
+</script>

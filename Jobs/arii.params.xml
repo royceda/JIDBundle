@@ -1,0 +1,7 @@
+<params>
+<param name="ARII" value="/home/arii/Symfony"/>
+<param name="ARII_WEB" value="http://localhost/app_dev.php"/>
+<param name="ARII_JS" value="http://localhost:44444"/>
+<param name="user" value="jobscheduler"/>
+<param name="password" value="jobscheduler"/>
+</params>

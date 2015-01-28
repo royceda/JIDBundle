@@ -1,0 +1,101 @@
+{# src/Arii/JIDBundle/Resources/views/Ajax/job.html.twig #}
+{% extends "AriiJIDBundle:Ajax:layout.html.twig" %}
+{% block content %}
+<div id="dhx_win" style="width:100%; height:100%;overflow:auto">
+<style>
+tr.log {
+    border: 0;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+}
+td.log {
+    font-family: courier;
+    background-image: none;   
+    padding-left: 3px;
+    margin: 0;
+    line-height: 14px;
+}
+td.info {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: blue;
+    line-height: 14px;
+}
+td.ERROR {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: red;
+    line-height: 14px;
+}
+td.WARN {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: orange;
+    line-height: 14px;
+}
+th.SUCCESS {
+    background-color: green;
+    color: white;
+}
+th.FAILURE {
+    background-color: red;
+    color: white;
+}
+th.RUNNING {
+    background-color: orange;
+    color: white;
+}
+th.droite {
+    text-align: right;
+}
+</style>
+<div class="table_wrapper">
+        <div class="table_wrapper_inner">
+<table width="100%">
+<tr>
+    <td>{{ "Class" | trans }}</td>
+    <th>{{ EVENT_CLASS }}</th>
+    <td>{{ "Creation" | trans }}</td>
+    <th>{{ CREATED }}</th>   
+</tr>
+<tr>
+    <td>{{ "Id" | trans }}</td>
+    <th>{{ EVENT_ID }}</th>
+    <td>{{ "Expires" | trans }}</td>
+    <th>{{ EXPIRES }}</th>
+</tr>
+<tr>
+    <td>{{ "Order" | trans }}</td>
+    <th>{{ ORDER_ID }}</th>
+    <td>{{ "Spooler" | trans }}</td>
+    <th>{{ SPOOLER_ID }}</th>
+</tr>
+<tr>
+    <td>{{ "Job chain" | trans }}</td>
+    <th>{{ JOB_CHAIN }}</th>
+    <td>{{ "Host" | trans }}</td>
+    <th>{{REMOTE_SCHEDULER_HOST }}</th>
+</tr>
+<tr>
+    <td>{{ "Job" | trans }}</td>
+    <th>{{ JOB_NAME }}</th>
+    <td>{{ "Port" | trans }}</td>
+    <th>{{REMOTE_SCHEDULER_PORT }}</th>
+</tr>
+<tr>
+    <td>{{ "Exit code" | trans }}</td>
+    <th>{{ EXIT_CODE }}</th>
+</tr>
+
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

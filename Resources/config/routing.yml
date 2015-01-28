@@ -1,0 +1,786 @@
+# --------------------------------------------------------------------------
+# PAGES PRINCIPALES
+# --------------------------------------------------------------------------
+arii_JID_index:
+    pattern:  /
+    defaults: { _controller: AriiJIDBundle:Default:index }
+
+# --------------------------------------------------------------------------
+# Jobs
+# --------------------------------------------------------------------------
+arii_JID_jobs:
+    pattern:  /jobs
+    defaults: { _controller: AriiJIDBundle:Jobs:index }
+
+xml_JID_jobs_grid:
+    pattern:  /jobs/grid.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:grid }
+
+xml_JID_jobs_toolbar:
+    pattern:  /jobs/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:toolbar }
+
+xml_JID_jobs_menu:
+    pattern:  /jobs/menu.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:menu }
+
+# --------------------------------------------------------------------------
+# Job
+# --------------------------------------------------------------------------
+xml_JID_job_toolbar_start:
+    pattern:  /job/toolbar_start.xml
+    defaults: { _controller: AriiJIDBundle:Job:toolbar_start }
+
+xml_JID_job_toolbar_stop:
+    pattern:  /job/toolbar_stop.xml
+    defaults: { _controller: AriiJIDBundle:Job:toolbar_stop }
+
+xml_JID_job_toolbar_unstop:
+    pattern:  /job/toolbar_unstop.xml
+    defaults: { _controller: AriiJIDBundle:Job:toolbar_unstop }
+
+xml_JID_job_toolbar_kill_task:
+    pattern:  /job/toolbar_kill.xml
+    defaults: { _controller: AriiJIDBundle:Job:toolbar_kill }
+
+xml_JID_job_toolbar_delete_task:
+    pattern:  /job/toolbar_delete.xml
+    defaults: { _controller: AriiJIDBundle:Job:toolbar_delete }
+
+xml_JID_job_toolbar_params:
+    pattern:  /job/toolbar_params.xml
+    defaults: { _controller: AriiJIDBundle:Job:toolbar_params }
+
+arii_JID_toolbar_purge_job:
+    pattern:  /toolbar/purge_job
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_purge_job }
+
+arii_JID_toolbar_job_why:
+    pattern:  /toolbar/job_why
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_job_why }
+
+# --------------------------------------------------------------------------
+# _Job (Fenetre JOB)
+# --------------------------------------------------------------------------
+xml_JID_job_toolbar_execute:
+    pattern:  /job/toolbar_execute.xml
+    defaults: { _controller: AriiJIDBundle:Job:toolbar_start }
+
+    
+    
+    
+
+arii_JID_timeline:
+    pattern:  /timeline
+    defaults: { _controller: AriiJIDBundle:Timeline:index }
+
+arii_JID_last:
+    pattern:  /activities
+    defaults: { _controller: AriiJIDBundle:Default:last }
+
+xml_JID_last:
+    pattern:  /activities/list.xml
+    defaults: { _controller: AriiJIDBundle:Default:last_xml }
+
+arii_JID_toolbar:
+    pattern:  /toolbar
+    defaults: { _controller: AriiJIDBundle:Toolbar:default }
+
+arii_JID_toolbar_footer:
+    pattern:  /toolbar/footer
+    defaults: { _controller: AriiJIDBundle:Toolbar:footer }
+
+arii_JID_toolbar_add_order:
+    pattern:  /toolbar/add_order
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_add_order }
+
+arii_JID_toolbar_start_orders:
+    pattern:  /toolbar/start_orders
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_start_orders}
+
+arii_JID_orders_selected_orders:
+    pattern:  /orders/selected_orders
+    defaults: { _controller: AriiJIDBundle:Orders:selected_orders }
+
+xml_JID_toolbar_global:
+    pattern:  /toolbar/global
+    defaults: { _controller: AriiJIDBundle:Toolbar:global }
+
+arii_JID_timeline_toolbar:
+    pattern:  /timeline/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:toolbar }
+
+arii_JID_history_timeline_toolbar:
+    pattern:  /history/timeline/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:History:toolbar_timeline }
+
+# --------------------------------------------------------------------------
+# Orders
+# --------------------------------------------------------------------------
+arii_JID_orders:
+    pattern:  /orders
+    defaults: { _controller: AriiJIDBundle:Orders:index }
+
+xml_JID_orders_menu:
+    pattern:  /orders/menu.xml
+    defaults: { _controller: AriiJIDBundle:Orders:menu }
+    
+xml_JID_orders_toolbar:
+    pattern:  /orders/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:toolbar }
+
+xml_JID_orders_grid:
+    pattern:  /orders/grid.xml
+    defaults: { _controller: AriiJIDBundle:Orders:grid }
+
+
+
+
+
+arii_JID_orders_list:
+    pattern:  /orders/list
+    defaults: { _controller: AriiJIDBundle:Orders:list }
+
+arii_JID_orders_timeline:
+    pattern:  /orders/timeline
+    defaults: { _controller: AriiJIDBundle:Orders:timeline }
+
+arii_JID_orders_last:
+    pattern:  /orders/activities
+    defaults: { _controller: AriiJIDBundle:Orders:activities }
+
+arii_JID_order_history:
+    pattern:  /order/history
+    defaults: { _controller: AriiJIDBundle:Orders:history }
+    
+arii_JID_orders_charts:
+    pattern:  /orders/charts
+    defaults: { _controller: AriiJIDBundle:Orders:charts }
+    
+xml_JID_orders_list:
+    pattern:  /orders/list.xml
+    defaults: { _controller: AriiJIDBundle:Orders:list_xml }
+
+xml_JID_add_order_parameters:
+    pattern:  /add_order/parameters
+    defaults: { _controller: AriiJIDBundle:Toolbar:add_order_parameters}
+    
+xml_JID_orders_pie:
+    pattern:  /orders/pie.xml
+    defaults: { _controller: AriiJIDBundle:Orders:pie }
+
+xml_JID_orders_bar:
+    pattern:  /orders/bar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:bar }
+
+xml_JID_orders_last:
+    pattern:  /orders/activities.xml
+    defaults: { _controller: AriiJIDBundle:Orders:last }
+    
+arii_JID_order_log:
+    pattern:  /order/log
+    defaults: { _controller: AriiJIDBundle:Detail:order_log}
+
+arii_JID_order_log_upload:
+    pattern:  /order/log/upload
+    defaults: { _controller: AriiJIDBundle:Detail:order_log_upload }
+
+arii_JID_toolbar_start_order:
+    pattern:  /toolbar/start_order
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_start_order}
+    
+xml_JID_start_order_parameters:
+    pattern:  /start_order/parameters
+    defaults: { _controller: AriiJIDBundle:Orders:start_order_parameters}
+
+xml_JID_toolbar_order_param:
+    pattern:  /orders/param.xml
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_order_param }
+    
+xml_JID_toolbar_orders:
+    pattern:  /orders/toolbar
+    defaults: { _controller: AriiJIDBundle:Orders:toolbar }
+
+arii_JID_order_doc:
+    pattern:  /orders/doc
+    defaults: { _controller: AriiJIDBundle:Orders:doc }
+
+arii_JID_order_purge:
+    pattern:  /order/purge
+    defaults: { _controller: AriiJIDBundle:Orders:purge }
+
+arii_JID_toolbar_purge_order:
+    pattern:  /order/purge/toolbar
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_purge_order }
+
+arii_JID_orders_toolbar_timeline:
+    pattern:  /orders/timeline/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:toolbar_timeline }
+    
+xml_JID_orders_toolbar_activities:
+    pattern:  /orders/activities/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:toolbar_activities }
+
+
+# --------------------------------------------------------------------------
+# Activities
+# --------------------------------------------------------------------------
+arii_JID_history_last:
+    pattern:  /activities
+    defaults: { _controller: AriiJIDBundle:History:activities }
+
+xml_JID_toolbar_activities:
+    pattern:  /activities/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Activities:toolbar }
+
+xml_JID_menu_activities:
+    pattern:  /activities/menu.xml
+    defaults: { _controller: AriiJIDBundle:Activities:menu }
+
+# --------------------------------------------------------------------------
+# Chains
+# --------------------------------------------------------------------------
+arii_JID_chains:
+    pattern:  /chains
+    defaults: { _controller: AriiJIDBundle:Chains:list }
+
+arii_JID_chains_list:
+    pattern:  /chains/list
+    defaults: { _controller: AriiJIDBundle:Chains:list }
+
+arii_JID_chains_timeline:
+    pattern:  /chains/timeline
+    defaults: { _controller: AriiJIDBundle:Chains:timeline }
+
+arii_JID_chains_last:
+    pattern:  /chains/activities
+    defaults: { _controller: AriiJIDBundle:Chains:activities }
+
+arii_JID_menu_chains:
+    pattern:  /menu/chains
+    defaults: { _controller: AriiJIDBundle:Chains:menu }
+    
+xml_JID_toolbar_chains:
+    pattern:  /chains/toolbar
+    defaults: { _controller: AriiJIDBundle:Chains:toolbar }
+
+xml_JID_chains_list:
+    pattern:  /chains/list.xml
+    defaults: { _controller: AriiJIDBundle:Chains:list_xml }
+
+arii_JID_toolbar_start_chains:
+    pattern:  /toolbar/start_chains
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_start_chains}
+
+# --------------------------------------------------------------------------
+# Internes
+# --------------------------------------------------------------------------
+
+arii_JID_process:
+    pattern:  /process
+    defaults: { _controller: AriiJIDBundle:Process:index }
+
+arii_JID_process_graphviz:
+    pattern:  /process/graphviz
+    defaults: { _controller: AriiJIDBundle:Process:graphviz }
+
+xml_JID_toolbar_process:
+    pattern:  /process/toolbar
+    defaults: { _controller: AriiJIDBundle:Process:toolbar }
+
+arii_JID_detail_future_job:
+    pattern:  /job/next
+    defaults: { _controller: AriiJIDBundle:Detail:next_job }
+
+arii_JID_detail_future_order:
+    pattern:  /order/next
+    defaults: { _controller: AriiJIDBundle:Detail:next_order }
+
+# --------------------------------------------------------------------------
+# History
+# --------------------------------------------------------------------------
+arii_JID_history:
+    pattern:  /history
+    defaults: { _controller: AriiJIDBundle:History:index }
+
+arii_JID_history_list:
+    pattern:  /history/list
+    defaults: { _controller: AriiJIDBundle:History:list }
+
+arii_JID_history_charts:
+    pattern:  /history/charts
+    defaults: { _controller: AriiJIDBundle:History:charts }
+
+xml_JID_history_list:
+    pattern:  /history/list.xml
+    defaults: { _controller: AriiJIDBundle:History:list_xml }
+
+xml_JID_history_history:
+    pattern:  /history/history.xml
+    defaults: { _controller: AriiJIDBundle:History:list_xml, history: 100 }
+
+xml_JID_start_job_parameters:
+    pattern:  /start_job/parameters
+    defaults: { _controller: AriiJIDBundle:Toolbar:start_job_parameters}
+
+xml_JID_job_list:
+    pattern:  /job_list
+    defaults: { _controller: AriiJIDBundle:Toolbar:job_list}
+
+arii_JID_history_timeline:
+    pattern:  /history/timeline
+    defaults: { _controller: AriiJIDBundle:History:timeline }
+
+xml_JID_history_pie:
+    pattern:  /history/pie.xml
+    defaults: { _controller: AriiJIDBundle:History:pie }
+
+xml_JID_history_pie_ordered:
+    pattern:  /history/pie_ordered.xml
+    defaults: { _controller: AriiJIDBundle:History:pie, ordered: 1 }
+
+xml_JID_history_pie_states:
+    pattern:  /history/states.xml
+    defaults: { _controller: AriiJIDBundle:History:states }
+
+xml_JID_history_bar:
+    pattern:  /history/bar.xml
+    defaults: { _controller: AriiJIDBundle:History:bar }
+
+xml_JID_timeline_history:
+    pattern:  /timeline/history.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:history }
+
+xml_JID_timeline_jobs:
+    pattern:  /timeline/jobs.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:jobs }
+
+xml_JID_timeline_orders:
+    pattern:  /timeline/orders.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:orders }
+
+xml_JID_timeline_events:
+    pattern:  /timeline/events.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:events }
+    
+xml_JID_timeline_history_orders:
+    pattern:  /timeline/orders.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:history_orders }
+    
+xml_JID_timeline_ordered_jobs:
+    pattern:  /timeline/ordered_jobs.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:ordered_jobs }
+    
+
+arii_JID_history_job:
+    pattern:  /history/job
+    defaults: { _controller: AriiJIDBundle:History:job }
+    
+xml_JID_toolbar_history:
+    pattern:  /history/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:History:toolbar }
+
+arii_JID_history_purge:
+    pattern:  /history/purge
+    defaults: { _controller: AriiJIDBundle:History:purge }
+
+arii_JID_job_doc:
+    pattern:  /history/doc
+    defaults: { _controller: AriiJIDBundle:History:doc }
+    
+# --------------------------------------------------------------------------
+# Planned
+# --------------------------------------------------------------------------
+arii_JID_planned:
+    pattern:  /planned
+    defaults: { _controller: AriiJIDBundle:Planned:list }
+
+arii_JID_planned_list:
+    pattern:  /planned/list
+    defaults: { _controller: AriiJIDBundle:Planned:list }
+
+arii_JID_planned_charts:
+    pattern:  /planned/charts
+    defaults: { _controller: AriiJIDBundle:Planned:charts }
+
+xml_JID_planned_list:
+    pattern:  /planned/list.xml
+    defaults: { _controller: AriiJIDBundle:Planned:list_xml }
+
+arii_JID_planned_timeline:
+    pattern:  /planned/timeline
+    defaults: { _controller: AriiJIDBundle:Planned:timeline }
+
+arii_JID_planned_activities:
+    pattern:  /planned/activities
+    defaults: { _controller: AriiJIDBundle:Planned:activities }
+    
+arii_JID_planned_last:
+    pattern:  /planned/activities
+    defaults: { _controller: AriiJIDBundle:Planned:activities }
+
+xml_JID_planned_pie:
+    pattern:  /planned/pie.xml
+    defaults: { _controller: AriiJIDBundle:Planned:pie }
+
+xml_JID_planned_bar:
+    pattern:  /planned/bar.xml
+    defaults: { _controller: AriiJIDBundle:Planned:bar }
+
+xml_JID_planned_timeline:
+    pattern:  /planned/timeline.xml
+    defaults: { _controller: AriiJIDBundle:Planned:timeline_xml }
+
+xml_JID_planned_toolbar:
+    pattern:  /planned/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Planned:toolbar }
+
+xml_JID_planned_toolbar_timeline:
+    pattern:  /planned/timeline/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Planned:toolbar_timeline }
+
+xml_JID_planned_toolbar_activities:
+    pattern:  /planned/activities/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Planned:toolbar_activities }
+
+xml_JID_planned_menu:
+    pattern:  /planned/menu.xml
+    defaults: { _controller: AriiJIDBundle:Planned:menu }
+
+xml_JID_timeline_planned:
+    pattern:  /timeline/planned.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:planned}
+    
+ical_JID_planned:
+    pattern:  /planned/arii.ical
+    defaults: { _controller: AriiJIDBundle:Planned:ical }
+# --------------------------------------------------------------------------
+# Spoolers
+# --------------------------------------------------------------------------
+arii_JID_spoolers:
+    pattern:  /spoolers
+    defaults: { _controller: AriiJIDBundle:Spoolers:list }
+
+arii_JID_spoolers_list:
+    pattern:  /spoolers/list
+    defaults: { _controller: AriiJIDBundle:Spoolers:list }
+
+arii_JID_spoolers_charts:
+    pattern:  /spoolers/charts
+    defaults: { _controller: AriiJIDBundle:Spoolers:charts }
+
+arii_JID_spooler_update:
+    pattern:  /spooler/update
+    defaults: { _controller: AriiJIDBundle:Spooler:Update }
+    
+xml_JID_spoolers_list:
+    pattern:  /spoolers/list.xml
+    defaults: { _controller: AriiJIDBundle:Spoolers:list_xml }
+
+xml_JID_spoolers_pie:
+    pattern:  /spoolers/pie.xml
+    defaults: { _controller: AriiJIDBundle:Spoolers:pie }
+
+xml_JID_spoolers_bar:
+    pattern:  /spoolers/bar.xml
+    defaults: { _controller: AriiJIDBundle:Spoolers:bar }
+
+xml_JID_spoolers_timeline:
+    pattern:  /spoolers/timeline.xml
+    defaults: { _controller: AriiJIDBundle:Spoolers:timeline_xml }
+
+xml_JID_spooler_log:
+    pattern:  /spooler/log.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:log }
+
+xml_JID_spoolers_toolbar:
+    pattern:  /spoolers/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Spoolers:toolbar }
+    
+xml_JID_spoolers_menu:
+    pattern:  /spoolers/menu.xml
+    defaults: { _controller: AriiJIDBundle:Spoolers:menu }
+
+# --------------------------------------------------------------------------
+# Clusters
+# --------------------------------------------------------------------------
+arii_JID_clusters:
+    pattern:  /clusters
+    defaults: { _controller: AriiJIDBundle:Clusters:list }
+
+xml_JID_clusters_list:
+    pattern:  /clusters/list.xml
+    defaults: { _controller: AriiJIDBundle:Clusters:list_xml }
+
+xml_JID_clusters_toolbar:
+    pattern:  /clusters/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Clusters:toolbar }
+    
+
+# --------------------------------------------------------------------------
+# Events
+# --------------------------------------------------------------------------
+arii_JID_events:
+    pattern:  /events
+    defaults: { _controller: AriiJIDBundle:Events:index }
+
+arii_JID_events_timeline:
+    pattern:  /events/timeline
+    defaults: { _controller: AriiJIDBundle:Events:timeline }
+
+arii_JID_events_last:
+    pattern:  /events/activities
+    defaults: { _controller: AriiJIDBundle:Events:activities }
+
+xml_JID_events_pie:
+    pattern:  /events/pie.xml
+    defaults: { _controller: AriiJIDBundle:Events:pie }
+
+xml_JID_events:
+    pattern:  /events/events.xml
+    defaults: { _controller: AriiJIDBundle:Events:events }
+
+html_JID_event_detail:
+    pattern:  /event/detail.html
+    defaults: { _controller: AriiJIDBundle:Events:detail }
+
+xml_JID_events_toolbar_activities:
+    pattern:  /events/activities/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Events:toolbar_activities }
+
+xml_JID_events_toolbar_timeline:
+    pattern:  /events/timeline/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Events:toolbar_timeline }
+
+xml_JID_events_last:
+    pattern:  /events/activities.xml
+    defaults: { _controller: AriiJIDBundle:Events:last }
+# --------------------------------------------------------------------------
+# Messages
+# --------------------------------------------------------------------------
+arii_JID_messages:
+    pattern:  /messages
+    defaults: { _controller: AriiJIDBundle:Messages:index }
+
+arii_JID_messages_index:
+    pattern:  /messages
+    defaults: { _controller: AriiJIDBundle:Messages:index }
+
+xml_JID_messages_pie:
+    pattern:  /messages/pie.xml
+    defaults: { _controller: AriiJIDBundle:Messages:pie }
+
+xml_JID_messages:
+    pattern:  /messages/messages.xml
+    defaults: { _controller: AriiJIDBundle:Messages:messages }
+    
+xml_JID_message:
+    pattern:  /message
+    defaults: { _controller: AriiJIDBundle:Messages:message }
+
+# --------------------------------------------------------------------------
+# PAGES PRINCIPALES
+# --------------------------------------------------------------------------
+
+arii_JID_detail_order:
+    pattern:  /order/detail
+    defaults: { _controller: AriiJIDBundle:Detail:order}
+
+# planifie mais sans historique
+arii_JID_detail_order_plan:
+    pattern:  /order/plan
+    defaults: { _controller: AriiJIDBundle:Detail:plan}
+
+arii_JID_detail_planned:
+    pattern:  /planned/detail
+    defaults: { _controller: AriiJIDBundle:Detail:planned}
+
+arii_JID_planned_log:
+    pattern:  /planned/log
+    defaults: { _controller: AriiJIDBundle:Detail:planned_log}
+
+arii_JID_detail_job:
+    pattern:  /job/detail
+    defaults: { _controller: AriiJIDBundle:Detail:job }
+    
+arii_JID_job_log:
+    pattern:  /job/log
+    defaults: { _controller: AriiJIDBundle:Detail:job_log }
+
+arii_JID_job_log_upload:
+    pattern:  /job/log/upload
+    defaults: { _controller: AriiJIDBundle:Detail:job_log_upload }
+    
+arii_JID_start_job:
+    pattern:  /job/start
+    defaults: { _controller: AriiJIDBundle:Cmd:startjob }
+
+xml_JID_job_log:
+    pattern:  /job/log.xml
+    defaults: { _controller: AriiJIDBundle:Detail:job_log_xml }
+
+# --------------------------------------------------------------------------
+# Internes
+# --------------------------------------------------------------------------
+
+arii_JID_db_daysschedule:
+    pattern:  /db/daysschedule
+    defaults: { _controller: AriiJIDBundle:DB:days_schedule }
+
+arii_JID_db_reorg:
+    pattern:  /db/reorg
+    defaults: { _controller: AriiJIDBundle:DB:reorg }
+
+arii_JID_ajax_job_info:
+    pattern:  /ajax/job_info
+    defaults: { _controller: AriiJIDBundle:Ajax:job_info }
+
+# --------------------------------------------------------------------------
+# DHTMLX
+# --------------------------------------------------------------------------
+arii_JID_form_start_job:
+    pattern:  /dhtmlx/start_job
+    defaults: { _controller: AriiJIDBundle:Form:start_job }
+
+arii_JID_form_start_order:
+    pattern:  /dhtmlx/start_order
+    defaults: { _controller: AriiJIDBundle:Form:start_order }
+
+arii_JID_form_add_order:
+    pattern:  /dhtmlx/add_order
+    defaults: { _controller: AriiJIDBundle:Form:add_order }
+
+arii_JID_select_start_state:
+    pattern:  /dhtmlx/select_start_state
+    defaults: { _controller: AriiJIDBundle:Form:select_start_state }
+
+arii_JID_select_end_state:
+    pattern:  /dhtmlx/select_end_state
+    defaults: { _controller: AriiJIDBundle:Form:select_end_state }
+
+
+arii_JID_form_kill_job:
+    pattern:  /dhtmlx/kill_job
+    defaults: { _controller: AriiJIDBundle:Form:kill_job }
+
+arii_JID_form_stop_job:
+    pattern:  /dhtmlx/stop_job
+    defaults: { _controller: AriiJIDBundle:Form:stop_job }
+
+arii_JID_form_unstop_job:
+    pattern:  /dhtmlx/unstop_job
+    defaults: { _controller: AriiJIDBundle:Form:unstop_job }
+
+arii_JID_grid_history_job:
+    pattern:  /dhtmlx/grid_history
+    defaults: { _controller: AriiJIDBundle:Detail:grid_history }
+
+arii_JID_grid_history_order:
+    pattern:  /dhtmlx/grid_order_history
+    defaults: { _controller: AriiJIDBundle:Detail:grid_order_history }
+
+arii_JID_chart_history_job:
+    pattern:  /dhtmlx/chart_history
+    defaults: { _controller: AriiJIDBundle:Detail:chart_history }
+
+arii_JID_chart_history_order:
+    pattern:  /dhtmlx/chart_order_history
+    defaults: { _controller: AriiJIDBundle:Detail:chart_order_history }
+
+arii_JID_timeline_history:
+    pattern:  /timeline/history
+    defaults: { _controller: AriiJIDBundle:DBGraph:timeline_history }
+
+arii_JID_radar_history:
+    pattern:  /radar_chart/history
+    defaults: { _controller: AriiJIDBundle:DBGraph:radar_history }
+
+arii_JID_bar3_history:
+    pattern:  /bar3_chart/history
+    defaults: { _controller: AriiJIDBundle:DBGraph:bar3_history }
+
+arii_JID_last_history:
+    pattern:  /last_chart/history
+    defaults: { _controller: AriiJIDBundle:DBGraph:last_history }
+
+arii_JID_bar_history:
+    pattern:  /bar_chart/history
+    defaults: { _controller: AriiJIDBundle:DBGraph:bar_history }
+
+arii_JID_pie_orders:
+    pattern:  /pie_chart/orders
+    defaults: { _controller: AriiJIDBundle:DBGraph:pie_orders }
+
+arii_JID_radar_orders:
+    pattern:  /radar_chart/orders
+    defaults: { _controller: AriiJIDBundle:DBGraph:radar_orders }
+
+arii_JID_pie_planned:
+    pattern:  /pie_chart/planned
+    defaults: { _controller: AriiJIDBundle:DBGraph:pie_planned }
+
+arii_JID_radar_planned:
+    pattern:  /radar_chart/planned
+    defaults: { _controller: AriiJIDBundle:DBGraph:radar_planned }
+
+arii_JID_pie_messages:
+    pattern:  /pie_chart/messages
+    defaults: { _controller: AriiJIDBundle:DBGraph:pie_messages }
+
+arii_JID_menu_history:
+    pattern:  /menu/history
+    defaults: { _controller: AriiJIDBundle:History:menu }
+
+arii_JID_menu_planned:
+    pattern:  /menu/planned
+    defaults: { _controller: AriiJIDBundle:Menu:planned }
+    
+arii_JID_menu_messages:
+    pattern:  /menu/orders
+    defaults: { _controller: AriiJIDBundle:Menu:messages }
+    
+arii_JID_toolbar_job_list:
+    pattern:  /toolbar/job_list
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_job_list }
+
+arii_JID_toolbar_refresh:
+    pattern:  /toolbar/refresh
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_refresh }
+    
+arii_JID_toolbar_schedule_list:
+    pattern:  /toolbar/schedule_list
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_schedule_list }
+
+arii_JID_select_state:
+    pattern:  /dhtmlx/select_state
+    defaults: { _controller: AriiJIDBundle:Form:select_state }
+
+# --------------------------------------------------------------------------
+# SIMILE
+# --------------------------------------------------------------------------
+arii_JID_simile_xml_all:
+    pattern:  /timeline/xml/all
+    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: '' }
+
+arii_JID_simile_xml_history:
+    pattern:  /timeline/xml/history
+    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: history }
+
+arii_JID_simile_xml_orders:
+    pattern:  /timeline/xml/orders
+    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: orders }
+
+arii_JID_simile_xml_planned:
+    pattern:  /timeline/xml/planned
+    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: planned }
+
+arii_JID_simile_xml_events:
+    pattern:  /timeline/xml/events
+    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: events }
+
+# --------------------------------------------------------------------------
+# DOC
+# --------------------------------------------------------------------------
+arii_JID_doc:
+    pattern:  /doc
+    defaults: { _controller: AriiJIDBundle:Doc:default }

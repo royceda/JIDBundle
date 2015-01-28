@@ -1,0 +1,8 @@
+<toolbar>
+    {% for k,v in status %}
+        <item type="buttonTwoState" id="{{ k }}" text="{{ k }}" title="{{ k }}" img="{{ k | lower }}.png" {{ v | raw }}  />
+    {% endfor %}
+    <item id="sep" type="separator"/>
+    <item type="button" id="refresh" text="{{ "Refresh" | trans }}" img="refresh.png" action="doOnNewDocument"/>
+   
+</toolbar>    

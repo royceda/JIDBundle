@@ -1,0 +1,434 @@
+{# src/Arii/JIDBundle/Resources/views/index.html.twig #}
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Overview" | trans }}</h2>
+<ul  class="section_menu">
+      <li><a href="{{ url('arii_JID_index') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/chart_pie.png') }}"/>&nbsp;{{ "Chart" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_timeline') }}" class=""><span><span><img src="{{ asset('arii/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_last') }}" class=""><span><span><img src="{{ asset('arii/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+</ul>      
+                <span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+						<div class="sct_right">
+<div id="mygrid" style="height:550px;background-color:white;position:relative;overflow:hidden;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+<script>
+dhtmlx.skin = "dhx_skyblue";
+var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
+var dhxLayoutA =  dhxLayout.cells("b").attachLayout("3W");
+// dhxLayout.cells("b").setText("{{ 'Schedule' | trans }}");
+
+var toolbar = dhxLayout.attachToolbar();
+toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+    case "menu":
+        document.location.href = "{{ url('arii_JID_index') }}";
+        break;
+    case "menu_history":
+        document.location.href = "{{ url('arii_JID_history') }}";
+        break;
+    case "menu_orders":
+        document.location.href = "{{ url('arii_JID_orders') }}";
+        break;
+    case "menu_chains":
+        document.location.href = "{{ url('arii_JID_chains') }}";
+        break;
+    case "menu_planned":
+        document.location.href = "{{ url('arii_JID_planned') }}";
+        break;
+    case "menu_spoolers":
+        document.location.href = "{{ url('arii_JID_spoolers') }}";
+        break;
+    case "menu_ha":
+        document.location.href = "{{ url('arii_JID_spoolers') }}";
+        break;
+    case "menu_msg":
+        document.location.href = "{{ url('arii_JID_messages') }}";
+        break;
+        case "refresh":
+            GlobalRefresh();
+        break;
+        default:
+            alert(id);
+    }
+});
+
+dhxLayout.cells("a").setText("{{ 'Executions per hour' | trans }}");
+dhxLayout.cells("b").setText("{{ 'Detail' | trans }}");
+bar =  dhxLayout.cells("a").attachChart ({
+        view:"stackedBar",
+        container:"bar_container",
+        value:"#SUCCESS_ORDER#",
+        label:"<span style='background-color: #749400;color: yellow;'>#SUCCESS_ORDER#</span>",
+        tooltip: "#SUCCESS_ORDER#",
+        fill:true,
+        gradient:true,
+        color:"#749400",
+        yAxis:{
+                title:"{{ "Jobs" | trans }}",
+                lines: true
+        },
+        xAxis:{
+                title:"{{ "Hour" | trans }}",
+                template:"#HOUR#",
+                lines: false                
+        }
+//        disableItems:true
+});
+bar.addSeries({
+	        value:"#SUCCESS#",
+	        label:"<span style='background-color: #749400;color: black;'>#SUCCESS#</span>",
+                tooltip: "#SUCCESS#",
+                gradient:false,
+                color:"#749400",
+	        line:{
+		    color:"lightgreen",
+		    width:1
+	        }
+});
+bar.addSeries({
+	        value:"#FAILURE_ORDER#",
+	        label:"<span style='background-color: red;color: yellow;'>#FAILURE_ORDER#</span>",
+                tooltip: "#FAILURE_ORDER#",
+                gradient:true,
+                color:"red",
+	        line:{
+		    color:"red",
+		    width:1
+	        }
+});
+bar.addSeries({
+	        value:"#FAILURE#",
+	        label:"<span style='background-color: red;color: black;'>#FAILURE#</span>",
+                tooltip: "#FAILURE#",
+                gradient:false,
+                color:"red",
+	        line:{
+		    color:"red",
+		    width:1
+	        }
+});
+bar.addSeries({
+	        value:"#RUNNING_ORDER#",
+	        label:"<span style='background-color: orange;color: yellow;'>#RUNNING_ORDER#</span>",
+                tooltip: "#RUNNING_ORDER#",
+                gradient:true,
+                color:"black",
+	        line:{
+		    color:"orange",
+		    width:1
+	        }
+});
+bar.addSeries({
+	        value:"#RUNNING#",
+	        label:"<span style='background-color: orange;color: black;'>#RUNNING#</span>",
+                tooltip: "#RUNNING#",
+                gradient:false,
+                color:"black",
+	        line:{
+		    color:"orange",
+		    width:1
+	        }
+});
+bar.load( "{{ url('xml_JID_history_bar') }}" );
+bar.attachEvent("onItemClick",function(id, event){
+var status;
+    var target = event.target||event.srcElement;
+//    alert(target.getAttribute("userdata"));
+    switch (target.getAttribute("userdata")) {
+        case '0':
+            status='SUCCESS';
+            window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+            break;
+        case '1':
+            window.location = "{{ url("arii_JID_history_list") }}?ordered=0&status="+status; 
+            status='SUCCESS';
+            break;
+        case '2':
+            status='FAILURE';
+            window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+            break;
+        case '3':
+            status='FAILURE';
+            window.location = "{{ url("arii_JID_history_list") }}?ordered=0&status="+status; 
+            break;
+        case '4':
+            status='RUNNING';
+            window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+            break;
+        case '5':
+            status='RUNNING';
+            window.location = "{{ url("arii_JID_history_list") }}?ordered=0&status="+status; 
+            break;
+    }
+});
+bar.attachEvent("onMouseMoving",function(e){
+   var target = (e.target||e.srcElement);
+      document.body.style.cursor = (target.tagName == "AREA"?"pointer":"default");
+})
+
+dhxTabbar = dhxLayoutA.cells("a").attachTabbar();
+// dhxTabbar.setImagePath("{{ asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/") }}");
+dhxTabbar.setSkin("dhx_skyblue");
+dhxTabbar.addTab("a1", "{{ "Standalone jobs" | trans }}",170,null,true);
+dhxTabbar.addTab("a2", "{{ "Ordered jobs" | trans }}",170);
+
+var barChart = dhxTabbar.cells("a1").attachChart({
+        view:"donut",
+        container:"jobstatus",
+        value:"#JOBS#",
+        label:"",
+        tooltip: "#JOBS# {{ "Jobs" | trans }} #STATUS#",
+        color: "#COLOR#",
+        gradient:true,
+        border:false,
+        pieInnerText: "#JOBS#",
+        shadow: 0,
+        legend:{
+	             width: 0,
+                     template: "#STATUS#"
+        }
+});
+
+barChart.attachEvent("onItemClick",function(id, value){
+var status;
+    if (id == 1)
+        status='SUCCESS';
+    else if (id == 2)
+        status='FAILURE';
+    else if (id == 3)
+        status='RUNNING';
+    window.location = "{{ url("arii_JID_history_list") }}?status="+status; 
+});
+barChart.attachEvent("onMouseMoving",function(e){
+   var target = (e.target||e.srcElement);
+      document.body.style.cursor = (target.tagName == "AREA"?"pointer":"default");
+})
+  
+var barChartb = dhxTabbar.cells("a2").attachChart({
+        view:"donut",
+        container:"jobstatus",
+        value:"#JOBS#",
+        label:"",
+        tooltip: "#JOBS# {{ "Jobs" | trans }} #STATUS#",
+        color: "#COLOR#",
+        gradient:true,
+        border:false,
+        pieInnerText: "#JOBS#",
+        shadow: 0,
+        legend:{
+	             width: 0,
+                     template: "#STATUS#"
+        }
+});
+barChartb.attachEvent("onItemClick",function(id, value){
+var status;
+    if (id == 1)
+        status='SUCCESS';
+    else if (id == 2)
+        status='FAILURE';
+    else if (id == 3)
+        status='RUNNING';
+    window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+});
+barChartb.attachEvent("onMouseMoving",function(e){
+   var target = (e.target||e.srcElement);
+      document.body.style.cursor = (target.tagName == "AREA"?"pointer":"default");
+})
+
+dhxTabbar2 = dhxLayoutA.cells("b").attachTabbar();
+// dhxTabbar2.setImagePath("{{ asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/") }}");
+dhxTabbar2.setSkin("dhx_skyblue");
+dhxTabbar2.addTab("b1", "{{ "Orders" | trans }}",null,true);
+dhxTabbar2.addTab("b2", "{{ "States" | trans }}");
+
+var barChart2 =  dhxTabbar2.cells("b1").attachChart({
+        view:"donut",
+        container:"orderstatus",
+        value:"#JOBS#",
+        label:"",
+        tooltip: "#STATUS#",
+        color: "#COLOR#",
+        gradient:true,
+        border:false,
+        pieInnerText: "#JOBS#",
+        shadow: 0,
+        legend:{
+            width: 0,
+            template: "#STATUS#"
+        }
+});
+barChart2.attachEvent("onItemClick",function(id, value){
+var status;
+    if (id == 1)
+        status='SUCCESS';
+    else if (id == 2)
+        status='FAILURE';
+    else if (id == 3)
+        status='RUNNING';
+    window.location = "{{ url("arii_JID_orders_list") }}?status="+status; 
+});
+barChart2.attachEvent("onMouseMoving",function(e){
+   var target = (e.target||e.srcElement);
+      document.body.style.cursor = (target.tagName == "AREA"?"pointer":"default");
+})
+
+var barChartb2 =  dhxTabbar2.cells("b2").attachChart({
+        view:"donut",
+        container:"statesstatus",
+        value:"#JOBS#",
+        label:"",
+        tooltip: "#STATUS#",
+        color: "#COLOR#",
+        gradient:true,
+        border:false,
+        pieInnerText: "#JOBS#",
+        shadow: 0,
+        legend:{
+            width: 0,
+            template: "#STATUS#"
+        }
+});
+barChartb2.attachEvent("onMouseMoving",function(e){
+   var target = (e.target||e.srcElement);
+      document.body.style.cursor = (target.tagName == "AREA"?"pointer":"default");
+})
+
+dhxTabbar3 = dhxLayoutA.cells("c").attachTabbar();
+// dhxTabbar3.setImagePath("{{ asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/") }}");
+dhxTabbar3.setSkin("dhx_skyblue");
+dhxTabbar3.addTab("c1", "{{ "Planning" | trans }}", null, true);
+dhxTabbar3.addTab("c2", "{{ "Spoolers" | trans }}");
+
+var barChart3 = dhxTabbar3.cells("c1").attachChart({
+        view:"donut",
+        container:"jobstatus",
+        value:"#JOBS#",
+        label:"",
+        tooltip: "#JOBS# {{ "Jobs" | trans }} #STATUS#",
+        color: "#COLOR#",
+        gradient:true,
+        border:false,
+        pieInnerText: "#JOBS#",
+        shadow: 0,
+        legend:{
+	             width: 0,
+                     template: "#STATUS#"
+        }
+});
+barChart3.attachEvent("onItemClick",function(id, value){
+var status;
+    if (id == 1)
+        status='EXECUTED';
+    else if (id == 2)
+        status='LATE';
+    else if (id == 3)
+        status='WAITING';
+    window.location = "{{ url("arii_JID_planned_list") }}?status="+status; 
+});
+barChart3.attachEvent("onMouseMoving",function(e){
+   var target = (e.target||e.srcElement);
+      document.body.style.cursor = (target.tagName == "AREA"?"pointer":"default");
+})
+
+var barChartb3 = dhxTabbar3.cells("c2").attachChart({
+        view:"barH",
+        container:"spoolersstatus",
+        value: "#NB#",
+        label: "#SPOOLER# (#NB#)",
+        tooltip: "#SPOOLER# #NB#",
+        gradient:true,
+	color:function(obj){
+             if (obj.NB > 1000) return "red";
+             if (obj.NB > 500) return "orange";
+                return "#749400";
+        },
+        border:false,
+        shadow: 0
+});
+barChartb3.attachEvent("onMouseMoving",function(e){
+   var target = (e.target||e.srcElement);
+      document.body.style.cursor = (target.tagName == "AREA"?"pointer":"default");
+})
+dhxLayout.cells("b").collapse();
+toolbar.attachEvent("onStateChange", function(id,state) {
+    switch (id) {
+        case 'contract':
+            if (state) {
+                dhxLayout.cells("b").expand();
+            }
+            else {
+                dhxLayout.cells("b").collapse();
+             }
+             GlobalRefresh();
+            break;
+        default:
+            break;
+    }
+ });
+
+GlobalRefresh();
+function GlobalRefresh() {
+    if (toolbar.getItemState("contract")) {
+        barChart.load( "{{ url('xml_JID_history_pie') }}", function() {
+    //        toolbar.setItemText( "refresh", "{{ "Standalone jobs" | trans }}..." );
+            barChart2.load( "{{ url('xml_JID_orders_pie') }}", function() {
+    //            toolbar.setItemText( "refresh", "{{ "Orders" | trans }}..." );
+                barChart3.load( "{{ url('xml_JID_planned_pie') }}", function() {
+    //                toolbar.setItemText( "refresh", "{{ "Planning" | trans }}..." );
+    //                    toolbar.setItemText( "refresh", "{{ "Ordered jobs" | trans }}..." );
+                        barChartb.load( "{{ url('xml_JID_history_pie_ordered') }}", function() {
+    //                        toolbar.setItemText( "refresh", "{{ "States" | trans }}..." );
+                            barChartb2.load( "{{ url('xml_JID_history_pie_states') }}", function() {
+    //                            toolbar.setItemText( "refresh", "{{ "Spoolers" | trans }}..." );
+                                barChartb3.load( "{{ url('xml_JID_spoolers_pie') }}", function() {
+                                    bar.load( "{{ url('xml_JID_history_bar') }}", function() {
+                                        var currentTime = new Date();
+                                        var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
+                                        toolbar.setItemText( "refresh", FormatTime(nextTime));
+                                    });
+                                });
+                            });
+                    } );
+                } );
+            });
+        });
+    }
+    else {
+        bar.load( "{{ url('xml_JID_history_bar') }}", function() {
+            var currentTime = new Date();
+            var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
+            toolbar.setItemText( "refresh", FormatTime(nextTime));
+        });
+    }
+}
+</script>
+{% endblock %}

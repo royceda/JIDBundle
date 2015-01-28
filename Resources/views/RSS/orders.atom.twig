@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+        <title>{{ "Job failures" | trans }}</title>
+        <subtitle>{{ "Last jobs failed" | trans }}</subtitle>
+        <link href="{{ url( 'arii_JID_history' ) }}"/>
+        <updated>{{ "now" |date('Y-m-d H:i:s') }}</updated>
+        {% for info in Infos %}
+        <entry>
+            <title>{{ info.END_TIME}} [{{ info.SPOOLER_ID }}]/{{ info.JOB_CHAIN }}/{{ info.ORDER_ID }}</title>
+            <id>{{ info.ID }}</id>
+            <summary>{{ info.STATE }} {{ info.STATE_TEXT }}</summary>
+            <updated>{{ info.END_TIME}}</updated>
+            <category>{{ info.SPOOLER_ID }}</category>
+            <link/>
+        </entry>
+        {% endfor %}
+</feed>

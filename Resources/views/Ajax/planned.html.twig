@@ -1,0 +1,69 @@
+{# src/Arii/JIDBundle/Resources/views/Ajax/job.html.twig #}
+{% extends "AriiJIDBundle:Ajax:layout.html.twig" %}
+{% block content %}
+<div id="dhx_win" style="width:100%; height:100%;overflow:auto">
+<style>
+td.LATE {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: #fb8072;
+    line-height: 14px;
+}
+td.WAITING {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: #bebada;
+    line-height: 14px;
+}
+th.SUCCESS {
+    background-color: #749400;
+    color: white;
+}
+th.LATE {
+    background-color: red;
+    color: white;
+}
+th.WAITING {
+    background-color: purple;
+    color: white;
+}
+th.droite {
+    text-align: right;
+}
+</style>
+<div class="table_wrapper">
+        <div class="table_wrapper_inner">
+<table width="100%">
+<tr class="first">
+    <td>{{ "Status" | trans }}</td><th class="{{STATUS}}" colspan=3>{{ STATUS }}</th>
+</tr>
+
+<tr class="first">
+    <td>{{ "Schedule Time" | trans }}</td><th class="droite">{{ SCHEDULE_PLANNED }}</th>
+    
+</tr>
+<tr class="first">
+    <td>{{ "Start time" | trans }}</td><th class="droite">{{ PERIOD_BEGIN }}</th>
+    
+</tr>
+<tr class="first">
+    <td>{{ "End Time" | trans }}</td><th class="droite">{{ PERIOD_END }}</th>
+    
+</tr>
+<tr class="first">
+    <td>{{ "Delay" | trans }}</td><th class="droite">{{ DELAY }}</th>
+</tr>
+<tr>
+    <td>{{ "Planned ID" | trans }}</td>
+    <th colspan=3>{{ ID }}</th>
+</tr>
+
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

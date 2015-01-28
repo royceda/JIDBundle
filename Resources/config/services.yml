@@ -1,0 +1,14 @@
+parameters:
+#    arii_jid.example.class: Arii\JIDBundle\Example
+
+services:
+#    arii_jid.example:
+#        class: %arii_jid.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]
+
+services:
+    jid.twig.jid_extension:
+        class: Arii\JIDBundle\Twig\JIDExtension
+        tags:
+            - { name: twig.extension }
+            

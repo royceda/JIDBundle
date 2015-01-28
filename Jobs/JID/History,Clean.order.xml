@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<order  title="Purge des tables d'historique">
+    <params >
+        <include  live_file="../arii.params.xml" node=""/>
+    </params>
+
+    <run_time  let_run="no">
+        <period  repeat="00:30" begin="00:00" end="24:00"/>
+    </run_time>
+</order>

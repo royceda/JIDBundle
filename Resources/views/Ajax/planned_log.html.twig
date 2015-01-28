@@ -1,0 +1,43 @@
+{# src/Arii/JIDBundle/Resources/views/Ajax/job_log.html.twig #}
+{% extends "AriiJIDBundle:Ajax:layout.html.twig" %}
+{% block content %}
+<div id="dhx_win" style="width:100%; height:100%;overflow:auto">
+<style>
+tr.log {
+    border: 0;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+}
+td.log {
+    font-family: courier;
+    background-image: none;   
+    padding-left: 3px;
+    margin: 0;
+    line-height: 14px;
+}
+td.info {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: blue;
+    line-height: 14px;
+}
+#info table {
+    border-width: 1px;
+    border-color: graytext;
+    border-style: solid;
+}
+</style>
+
+<table id="info">
+    {% for l in LOG %}
+<tr class="log">
+    {{ l | log | raw }}
+</tr>
+{% endfor %}
+</table>
+</div>
+
+{% endblock %}

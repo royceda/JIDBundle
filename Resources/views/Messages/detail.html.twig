@@ -1,0 +1,104 @@
+{# src/Arii/JIDBundle/Resources/views/Ajax/job.html.twig #}
+{% extends "AriiJIDBundle:Ajax:layout.html.twig" %}
+{% block content %}
+<div id="dhx_win" style="width:100%; height:100%;overflow:auto">
+<style>
+tr.log {
+    border: 0;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+}
+td.log {
+    font-family: courier;
+    background-image: none;   
+    padding-left: 3px;
+    margin: 0;
+    line-height: 14px;
+}
+td.info {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: blue;
+    line-height: 14px;
+}
+td.ERROR {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: red;
+    line-height: 14px;
+}
+td.WARN {
+    font-family: courier;
+    background-image: none;   
+    padding: 0;
+    margin: 0;
+    color: orange;
+    line-height: 14px;
+}
+th.SUCCESS {
+    background-color: green;
+    color: white;
+}
+th.ERROR {
+    background-color: red;
+    color: white;
+}
+th.WARN {
+    background-color: orange;
+    color: white;
+}
+th.droite {
+    text-align: right;
+}
+</style>
+<div class="table_wrapper">
+        <div class="table_wrapper_inner">
+<table width="100%">
+<tr>
+<td>{{ "Log time" | trans }}</td>
+<th>{{ LOGTIME  }}</th>    
+    <td>{{ "Message" | trans }}</td>
+    <th class="droite">{{ MESSAGE_ID }} {% if  REFERENCE_MESSAGE_ID > 0 %}&lt; {{ REFERENCE_MESSAGE_ID }}{% endif %}</th>   
+</tr>
+
+<tr class="first">
+    <td>{{ "Status" | trans }}</td><th class="{{SEVERITY}}">{{ SEVERITY }}{% if  STATUS > 0 %} {{ STATUS }}{% endif %}</th>
+    <td>{{ "Count" | trans }}</td>
+    <th class="droite">{{ CNT }}</th>   
+</tr>
+<tr class="first">
+    <td>{{ "Message" | trans }}</td>
+    <th colspan="3">{{ LOG }}</th>
+</tr>
+<td>{{ "Spooler" | trans }}</td>
+    <th colspan="3">{{ SCHEDULER_ID }}</th>
+{% if ORDER_ID != 'nil' %}
+<tr class="second">
+    <td>{{ "Order" | trans }}</td><th colspan=3>{{ ORDER_ID }}</th>
+</tr>
+{% endif %}
+{% if JOB_CHAIN != 'nil' %}
+<tr class="first">
+    <td>{{ "Job chain" | trans }}</td><th colspan=3>{{ JOB_CHAIN }}</th>
+</tr>
+{% endif %}
+{% if JOB_NAME != 'nil' %}
+<tr class="first">
+    <td>{{ "Job name" | trans }}</td><th  colspan="3">{{ JOB_NAME }}</th>
+</tr>
+{% endif %}
+{% if TASK > 0 %}
+<tr class="first">
+    <td>{{ "Task" | trans }}</td><th  colspan="3">{{ TASK }}</th>
+</tr>
+{% endif %}
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

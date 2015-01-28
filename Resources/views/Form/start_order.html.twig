@@ -1,0 +1,54 @@
+[
+    { type: "settings", position: "label-left", labelWidth: 100, inputWidth: 420, labelAlign: "left", position: "label-left" },
+    {   type: "hidden", 
+        name: "command",     
+        value: "start_order"
+    },
+    {   type: "hidden", 
+        name: "order",     
+        value: "{{ order_id }}"
+    },
+    {   type: "hidden", 
+        name: "spooler",     
+        value: "{{ spooler_id }}"
+    },
+    {   type: "hidden", 
+        name: "job_chain",     
+        value: "{{ job_chain }}"
+    },
+    {   type: "hidden", 
+        name: "scheduler",     
+        value: "{{ HOSTNAME }}"
+    },
+    {   type: "hidden", 
+        name: "port",     
+        value: "{{ TCP_PORT }}"
+    },                
+    {   type: "fieldset",
+        label: "[{{ spooler_id }}/{{ job_chain }}] {{ order_id }}",
+        width: 580,
+        list: [ {   type: "calendar", 
+                    name: "at", 
+                    label: "{{ "Start time" | trans }}", 
+                    dateFormat: "%Y-%m-%d %H:%i:%s", 
+                    calendarPosition: "right",
+                    inputWidth: 220
+                },
+                
+        ]
+    },
+    {   type: "block", 
+        width: 580, 
+        list: [ {   type: "button",
+                    name: "submit",
+                    value: "{{ "Start order on " | trans }} {{ HOSTNAME}}#{{TCP_PORT}}"
+                },
+                {   type: "newcolumn" 
+                },
+                {   type: "button",
+                    name: "cancel",
+                    value: "{{ "Cancel" | trans }}"
+                }
+        ]
+    }
+]

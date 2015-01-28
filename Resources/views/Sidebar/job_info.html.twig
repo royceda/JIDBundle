@@ -1,0 +1,57 @@
+{# src/Arii/AriiBundle/Resources/views/shortlink.html.twig #}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section">
+        <!--[if !IE]>start title wrapper<![endif]-->
+        <div class="title_wrapper">
+                <h2>{{ "Job information" | trans }}</h2>
+                <span class="title_wrapper_left"></span>
+                <span class="title_wrapper_right"></span>
+        </div>
+        <!--[if !IE]>end title wrapper<![endif]-->
+        <!--[if !IE]>start section content<![endif]-->
+        <div class="section_content">
+                <!--[if !IE]>start section content top<![endif]-->
+                <div class="sct">
+                        <div class="sct_left">
+                                <div class="sct_right">
+                                        <div class="sct_left">
+                                                <div class="sct_right">
+                                                   
+<table>
+<tr><td>
+<div id="form_container" style="width:220px;height:360px;"></div>                                                      
+</td></tr>
+</table>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+                <!--[if !IE]>end section content top<![endif]-->
+                <!--[if !IE]>start section content bottom<![endif]-->
+                <span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+                <!--[if !IE]>end section content bottom<![endif]-->
+
+        </div>
+        <!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+<script>
+var structureAr = [
+    { type: "settings", position: "label-left", labelWidth: 85, inputWidth: 130, labelAlign: "left", readonly: 1, position: "label-left" },
+    { type: "input", name: "job_name",     label: "{{ "Job name" | trans }}", width: "220", position: "label-top" },
+    { type: "input", name: "location",     label: "{{ "Location" | trans }}", width: "220", position: "label-top" },
+    { type: "label", name: "state",      label: "{{ "State" | trans }}", width: "220", className: "form_job_info" },
+    { type: "input", name: "status", label: "{{ "Status" | trans }}" },
+    { type: "input", name: "exit_code", label:"{{ "Exit code" | trans }}" },
+    { type: "input", name: "error_text", label: '', width: "215", rows: 2 },
+    { type: "label", name: "params",      label: "{{ "Parameters" | trans }}", width: "220", className: "form_job_info" },
+    { type: "input", name: "parameters", label: "", width: "215", rows: 2 },
+    { type: "label", name: "execution", label: "{{ "Execution" | trans }}", width: "220" },
+    { type: "input", name:"spooler_id", label:"Spooler"  },
+    { type: "input", name:"cause", label:"Cause" },
+    { type: "input", name:"pid", label:"PID" }
+]
+myForm = new dhtmlXForm("form_container", structureAr);
+//myForm.load(  "{{ url('arii_JID_ajax_job_info') }}" );
+</script>

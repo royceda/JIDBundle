@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<?xml-stylesheet type="text/xsl" href="scheduler_configuration_documentation.xsl"?> 
+<settings>
+    <job_chain name="History">
+        <note language="de"/>
+
+        <note language="en"/>
+
+        <order>
+            <params/>
+
+            <process state="HISTORY">
+                <note language="de"/>
+
+                <note language="en"/>
+
+                <params>
+                    <param name="url"
+                           value="${ARII_WEB}/public/purge/history"/>
+
+                    <note language="de">
+                        <div xmlns="http://www.w3.org/1999/xhtml"/>
+                    </note>
+
+                    <note language="en"/>
+                </params>
+            </process>
+
+            <process state="STEPS">
+                <note language="de"/>
+
+                <note language="en"/>
+
+                <params>
+                    <param name="url"
+                           value="${ARII_WEB}/public/purge/steps"/>
+
+                    <note language="de">
+                        <div xmlns="http://www.w3.org/1999/xhtml"/>
+                    </note>
+
+                    <note language="en"/>
+                </params>
+            </process>
+
+            <process state="ORDERS">
+                <note language="de"/>
+
+                <note language="en"/>
+
+                <params>
+                    <param name="url"
+                           value="${ARII_WEB}/public/purge/orders"/>
+
+                    <note language="de">
+                        <div xmlns="http://www.w3.org/1999/xhtml"/>
+                    </note>
+
+                    <note language="en"/>
+                </params>
+            </process>
+        </order>
+    </job_chain>
+</settings>

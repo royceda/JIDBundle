@@ -1,0 +1,70 @@
+{# src/Arii/AriiBundle/Resources/views/shortlink.html.twig #}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section">
+        <!--[if !IE]>start title wrapper<![endif]-->
+        <div class="title_wrapper">
+                <h2>{{ "Order status" | trans }}</h2>
+                <span class="title_wrapper_left"></span>
+                <span class="title_wrapper_right"></span>
+        </div>
+        <!--[if !IE]>end title wrapper<![endif]-->
+        <!--[if !IE]>start section content<![endif]-->
+        <div class="section_content">
+                <!--[if !IE]>start section content top<![endif]-->
+                <div class="sct">
+                        <div class="sct_left">
+                                <div class="sct_right">
+                                        <div class="sct_left">
+                                                <div class="sct_right">
+<div id="pie_chart_container" style="width:230px;height:230px;"></div>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+                <!--[if !IE]>end section content top<![endif]-->
+                <!--[if !IE]>start section content bottom<![endif]-->
+                <span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+                <!--[if !IE]>end section content bottom<![endif]-->
+
+        </div>
+        <!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->					
+<script>
+barChart =  new dhtmlXChart({
+        view:"donut",
+        container:"pie_chart_container",
+        value:"#JOBS#",
+        label:"",
+        tooltip: "#STATUS#",
+        color: "#COLOR#",
+        gradient:true,
+        border:false,
+        pieInnerText: "#JOBS#",
+        shadow: 0,
+        radius: 110,
+        x: 115,
+        y: 115,
+        legend:{
+	             width: 0,
+                     template: "#STATUS#"
+        }
+})
+barChart.load( "{{ url('arii_JID_pie_orders') }}" );
+barChart.attachEvent("onItemClick",function(id, value){
+   switch (id) {
+        case "1":
+            mygrid.filterTreeBy( 1, 'SUCCESS', true);
+        break;
+        case "2":
+            mygrid.filterTreeBy( 1, 'FAILURE', true);
+        break;
+        case "3":
+            mygrid.filterTreeBy( 1, 'RUNNING', true);
+        break;
+        default:
+            alert(id);
+    }    
+});
+</script>

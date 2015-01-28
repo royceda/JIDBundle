@@ -1,0 +1,22 @@
+# --------------------------------------------------------------------------
+# Partie public
+# --------------------------------------------------------------------------
+rss_JID_history_job:
+    pattern:  /jobs.atom
+    defaults: { _controller: AriiJIDBundle:RSS:jobs }
+
+rss_JID_history_orders:
+    pattern:  /orders.atom
+    defaults: { _controller: AriiJIDBundle:RSS:orders }
+
+rss_JID_history_chains:
+    pattern:  /chains.atom
+    defaults: { _controller: AriiJIDBundle:RSS:chains }
+
+ical_JID_waiting:
+    pattern:  /waiting.ical
+    defaults: { _controller: AriiJIDBundle:Planned:ical }
+
+png_JID_gantt:
+    pattern:  /gantt
+    defaults: { _controller: AriiJIDBundle:Gantt:image }

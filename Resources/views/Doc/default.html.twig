@@ -1,0 +1,14 @@
+{# src/Arii/JIDBundle/Resources/views/Ajax/job_log.html.twig #}
+{% extends "AriiJIDBundle:Ajax:layout.html.twig" %}
+{% block content %}
+<div id="dhx_win" style="width:100%; height:100%;overflow:auto">
+<table id="info">
+<tr><th>JOB_NAME</th><td>{{ app.request.get('JOB_NAME') }}</td></tr>
+<tr><th>JOB_CHAIN</th><td>{{ app.request.get('JOB_CHAIN') }}</td></tr>  
+<tr><th>ORDER_ID</th><td>{{ app.request.get('ORDER_ID') }}</td></tr>  
+<tr><th>START_TIME</th><td>{{ app.request.get('START_TIME') }}</td></tr>  
+<tr><th>END_TIME</th><td>{{ app.request.get('END_TIME') }}</td></tr>
+</table>
+</div>
+
+{% endblock %}

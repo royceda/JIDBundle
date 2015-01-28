@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+    <channel>
+        <title>{{ "Job failures" | trans }}</title>
+        <description>{{ "Last jobs failed" | trans }}</description>
+        <link>{{ url( 'arii_JID_history' ) }}<link/>
+        <lastBuildDate>{{ "now" |date('Y-m-d H:i:s') }}</lastBuildDate>
+        {% for info in Infos %}
+        <item>
+            <title>[{{ info.SPOOLER_ID }}]/{{ info.JOB }} (exit {{ info.EXIT_CODE }})</title>
+            <guid>{{ info.ID }}</guid>
+            <description>{{ info.ERROR_TEXT }}</description>
+            <pubDate>{{ info.END_TIME}}</pubDate>
+            <category>{{ info.SPOOLER_ID }}</category>
+            <link/>
+        </item>
+        {% endfor %}
+    </channel>
+</rss>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<job  order="yes" stop_on_error="no" title="Appel d'une url">
+    <settings >
+        <log_level ><![CDATA[debug9]]></log_level>
+    </settings>
+
+    <lock.use  lock="../ARII_DB" exclusive="no"/>
+
+    <params >
+        <param  name="url" value="/public/purge/history"/>
+    </params>
+
+    <script  language="shell">
+        <![CDATA[
+perl Arii/Perl/Url.pl
+        ]]>
+    </script>
+
+    <monitor  name="configuration_monitor" ordering="0">
+        <script  java_class="sos.scheduler.managed.configuration.ConfigurationOrderMonitor" language="java"/>
+    </monitor>
+
+    <run_time />
+</job>

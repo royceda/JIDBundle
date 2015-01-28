@@ -1,0 +1,238 @@
+{# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
+{% extends "AriiJIDBundle::layout_scheduler.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Jobs" | trans }}</h2>
+<ul  class="section_menu">
+      <li><a href="{{ url('arii_JID_history') }}" class=""><span><span><img src="{{ asset('arii/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_history_timeline') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history_last') }}" class=""><span><span><img src="{{ asset('arii/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+</ul>
+		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+                                                <div class="sct_right">
+    <div id="mygrid" style="height:500px;background-color:white;position:relative;overflow:hidden;"></div>
+                                                </div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100%;'>
+<div class="dhx_cal_navline">
+<div class="dhx_cal_prev_button">&nbsp;</div>
+<div class="dhx_cal_next_button">&nbsp;</div>
+<div class="dhx_cal_today_button"></div>
+<div class="dhx_cal_date"></div>
+<div class="dhx_cal_tab" name="day_tab" style="right:205px;"></div>
+<div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div>
+<div class="dhx_cal_tab" name="month_tab" style="right:75px;"></div>
+<div class="dhx_cal_tab" name="agenda_tab" style="right:10px;"></div>
+<div class="dhx_cal_tab" name="timeline_tab" 
+
+style="right:280px;"></div>
+</div>
+<div class="dhx_cal_header">
+</div>
+<div class="dhx_cal_data">
+</div>	
+</div>
+<!--[if !IE]>end section<![endif]-->
+<script>
+dhtmlx.skin = "dhx_skyblue";
+var max_history = 0; // pas d'historique
+{% if  app.request.get('ordered')>0 %}
+var ordered = true;
+{% else %}
+var ordered = false; // que des standalone
+{% endif %}
+/*
+menu = new dhtmlXMenuObject();
+menu.setIconsPath( "{{ asset('arii/images/menu/') }}" );
+menu.renderAsContextMenu();
+// menu.attachEvent("onClick", onButtonClick);
+menu.loadXML("{{ url('arii_JID_menu_history') }}");
+*/
+var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
+var toolbar = dhxLayout.attachToolbar();
+toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+toolbar.loadXML("{{ url('arii_JID_history_timeline_toolbar') }}");
+
+//scheduler.locale.labels.section_custom="Section";
+scheduler.config.details_on_create=false;
+scheduler.config.details_on_dblclick=false;
+scheduler.config.server_utc = true; 
+scheduler.config.xml_date="%Y-%m-%d %H:%i";
+
+scheduler.config.first_hour = 0;
+scheduler.config.last_hour = 24;
+
+scheduler.locale.labels.timeline_tab = "{{ "Timeline." | trans }}";
+scheduler.locale.labels.agenda_tab = "{{ "Agenda" | trans }}";
+
+//===============
+//Configuration
+//===============
+scheduler.createTimelineView({
+    name: "timeline",
+    x_unit: "minute",
+    x_date: "%H:%i",
+    x_step: {{ Timeline.step }},
+    x_size: 24,
+    x_start: {{ Timeline.start }},
+    x_length: 48,
+    y_unit:	[ {% for spooler in Timeline.spoolers %}
+                  { key: "{{ spooler }}", label: "{{ spooler }}" },
+                  {% endfor %} 
+               ],
+y_property:	"section_id",
+render:  "bar"
+});
+//===============
+//Data loading
+//===============
+scheduler.config.lightbox.sections=[	
+    { name:"description", height:130, map_to:"text", type:"textarea" , focus:true},
+    {name:"time", height:72, type:"time", map_to:"auto"}
+ ];
+
+scheduler.templates.event_class=function(start,end,event){
+ return event.color;
+}
+
+scheduler.config.readonly = true;
+scheduler.init('scheduler_here',new Date( {{ Timeline.js_date }} ),"timeline");	
+
+scheduler.load( "{{ url('xml_JID_timeline_history') }}" );
+timeline  = dhxLayout.cells("a").attachScheduler( new Date( {{ Timeline.js_date }} ) , "timeline", 'scheduler_here', scheduler);
+dhxLayout.cells("a").hideHeader();
+
+var tabbar = dhxLayout.cells("b").attachTabbar();
+tabbar.setImagePath("{{asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/")}}");
+tabbar.setSkin("dhx_skyblue");
+tabbar.addTab("b1","{{ "Information" | trans }}","100px");
+tabbar.addTab("b2","{{ "Log" | trans }}","100px");
+tabbar.addTab("b3","{{ "History" | trans }}","100px");
+tabbar.setTabActive("b1");
+dhxLayout.cells("b").collapse();
+
+var loggrid = tabbar.cells("b2").attachGrid();
+loggrid.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+loggrid.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+loggrid.setInitWidths("160,40,*,60");
+loggrid.setColAlign("right,left,left,right");
+loggrid.setColTypes("ro,ro,ro,ro");
+loggrid.setColSorting("date,str,str,int");
+loggrid.init();
+loggrid.setSkin('dhx_skyblue');
+
+var hstgrid = tabbar.cells("b3").attachGrid();
+hstgrid.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit code" | trans }},{{ "Message" | trans }}");
+hstgrid.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+hstgrid.setInitWidths("130,130,100,60,70,*");
+hstgrid.setColAlign("right,right,right,right,right,left");
+hstgrid.setColTypes("ro,ro,ro,ro,ro,ro");
+hstgrid.setColSorting("date,date,str,int,int,str");
+hstgrid.init();
+hstgrid.setSkin('dhx_skyblue');
+//hstgrid.loadXML( "{{ url('arii_JID_grid_history_job') }}" );
+hstgrid.enableAlterCss("even_row","odd_row");
+
+scheduler.attachEvent("onClick",function(id, value){
+    if (id.substr(0,2)=='J#') {
+       tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_future_job') }}?id="+id.substr(2),true); 
+       loggrid.clearAll();
+       hstgrid.clearAll();
+    }
+    else if (id.substr(0,2)=='O#') {
+       tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_order_plan') }}?id="+id.substr(2),true); 
+       loggrid.clearAll();
+       hstgrid.clearAll();
+    }
+    else {
+        dhxLayout.cells("b").progressOn();
+         tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}?id="+id,true); 
+         loggrid.loadXML("{{ url('xml_JID_job_log') }}?id="+id); 
+         hstgrid.clearAll();
+         hstgrid.loadXML( "{{ url('arii_JID_grid_history_job') }}?id="+id, function () {
+            dhxLayout.cells("b").progressOff();
+         });  
+    }
+    dhxLayout.cells("b").expand();
+    toolbar.setItemState("contract",true);
+});
+
+/*
+scheduler.attachEvent("onContextMenu", function (event_id, e){
+menu.showContextMenu(e.clientX,e.clientY);
+return false;
+});
+*/
+toolbar.attachEvent("onStateChange", function(id,state) {
+    switch (id) {
+        case 'history':
+            if (state) {
+                max_history = 20;
+            }
+            else {
+                max_history = 0;
+            }
+            GlobalRefresh();
+            break;
+        case 'ordered':
+            ordered = state;
+            GlobalRefresh();
+            break;
+        case 'contract':
+            if (state) {
+                dhxLayout.cells("b").expand();
+            }
+            else {
+                dhxLayout.cells("b").collapse();
+            }
+            break;
+        default:
+            break;
+    }
+ });
+
+function GlobalRefresh() {
+    dhtmlxAjax.get( "{{ url('xml_JID_timeline_jobs') }}", function(loader1){
+        dhtmlxAjax.get( "{{ url('xml_JID_timeline_history') }}?ordered="+ordered+"&history="+max_history, function(loader3){
+              scheduler.clearAll();
+              scheduler.parse(loader1.xmlDoc.responseText);
+              scheduler.parse(loader3.xmlDoc.responseText);
+              scheduler.update_view(); 
+            var currentTime = new Date();
+            var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
+            toolbar.setItemText( "refresh", FormatTime(nextTime));
+        });      
+    });
+}
+
+
+</script>
+{% endblock %}
+{% block calendar %}      
+    {{ render(controller("AriiJIDBundle:Sidebar:calendar", { 'mode': 'Past'} )) }}
+{% endblock %}

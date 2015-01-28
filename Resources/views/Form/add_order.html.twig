@@ -1,0 +1,76 @@
+[
+    { type: "settings", position: "label-left", labelWidth: 100, inputWidth: 420, labelAlign: "left", position: "label-left" },
+    {   type: "hidden", 
+        name: "command",     
+        value: "add_order"
+    },
+    {   type: "hidden", 
+        name: "spooler",     
+        value: "{{ spooler_id }}"
+    },
+    {   type: "hidden", 
+        name: "job_chain",     
+        value: "{{ job_chain }}"
+    },
+    {   type: "hidden", 
+        name: "scheduler",     
+        value: "{{ HOSTNAME }}"
+    },
+    {   type: "hidden", 
+        name: "port",     
+        value: "{{ TCP_PORT }}"
+    },                
+    {   type: "fieldset",
+        label: "Add Order on {{ spooler_id }}/{{ job_chain }}",
+        width: 580,
+        list: [ {   type: "input",
+                    name: "order_id",
+                    label: "{{ "Order ID" | trans }}",
+                    inputWidth: 220,
+                    note: {
+                        text: "Please give one Order ID."
+                    }
+                },
+                {   type: "calendar", 
+                    name: "at", 
+                    label: "{{ "Start time" | trans }}", 
+                    dateFormat: "%Y-%m-%d %H:%i:%s", 
+                    calendarPosition: "right",
+                    inputWidth: 220
+                },
+                {   type: "select",
+                    name: "start_state",
+                    label: "{{ "Start state" | trans }}",
+                    connector: "{{ url('arii_JID_select_start_state') }}?id={{ job_chain }}",
+                    width: 220,
+                    note: {
+                        text: "Please choose one start state."
+                    }
+                },
+                {   type: "select",
+                    name: "end_state",
+                    label: "{{ "End state" | trans }}",
+                    options: [{text: "none",value: ""}],
+                    connector: "{{ url('arii_JID_select_end_state') }}?id={{ job_chain }}",
+                    width: 220,
+                    note: {
+                        text: "{{ "Please choose one end state." | trans }}"
+                    }
+                }
+        ]
+    },
+    {   type: "block", 
+        width: 580, 
+        list: [ {   type: "button",
+                    name: "submit",
+                    value: "{{ "Add order" | trans }}"
+                },
+                {   type: "newcolumn" 
+                },
+                {   type: "button",
+                    name: "cancel",
+                    value: "{{ "Cancel" | trans }}"
+                }
+        ]
+    }
+]

@@ -1,0 +1,366 @@
+{# src/Arii/JIDBundle/Resources/views/index.html.twig #}
+
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Jobs" | trans }}</h2>
+		<!--[if !IE]>start section menu<![endif]-->
+                {{ render(controller("AriiJIDBundle:Default:submenu")) }}
+		<!--[if !IE]>end section menu<![endif]-->
+		
+		
+		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+                                                <div class="sct_right">
+<table border="0" width="100%" height="715">
+<tr height="28"><td>
+    <div id="toolbarObj"></div>
+</td></tr>
+<tr height="661"><td>
+    <div id="mygrid" style="height:661px;background-color:white;overflow:hidden"></div>
+</td></tr>
+<tr height="28"><td>
+    <div id="recinfoArea"></div>
+</td></tr>
+</table>
+			
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+<script language="javascript">
+dhtmlx.skin = "dhx_skyblue";
+
+var menu = new dhtmlXMenuObject();
+menu.setIconsPath( "{{ asset('arii/images/menu/') }}" );
+/*menu.setImagePath( "{{ asset('arii/images/menu') }}" );*/
+menu.renderAsContextMenu();
+menu.attachEvent("onClick", onButtonClick);
+menu.loadXML("{{ url('arii_JID_menu_history') }}");
+
+var toolbar;
+toolbar = new dhtmlXToolbarObject("toolbarObj");
+toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+toolbar.loadXML("{{ url('arii_JID_toolbar_refresh') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+        case "refresh":
+            GridRefresh();
+        break;
+        default:
+            alert(id);
+    }
+});
+toolbar.attachEvent( "onValueChange", function(id, value) {
+   switch (id) {
+        case "slider":
+            clearInterval( autorefresh );
+            GridRefresh();
+            autorefresh = setInterval( "GridRefresh()",value*1000);
+        break;
+        default:
+            alert(id);
+    }
+});
+
+var mygrid;
+var barChart;
+var myForm;
+
+mygrid = new dhtmlXGridObject( "mygrid" );
+mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.setHeader("{{ "Log time" | trans }},{{ "Spooler" | trans }},{{ "Severity" | trans }},{{ "Error" | trans }},{{ "Message" | trans }},{{ "Information" | trans }},{{ "Count" | trans }},TASK");
+mygrid.attachHeader("#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter,#cspan");
+mygrid.setInitWidths("150,150,100,50,*,*,60,0");
+mygrid.setColAlign("left,left,left,right,left,left,right,left");
+mygrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro");
+mygrid.setColSorting("date,str,str,int,str,str,int,int");
+mygrid.enableContextMenu(menu);
+mygrid.attachEvent("onBeforeContextMenu", onShowMenu);
+mygrid.enablePaging(true, 30, 20, "recinfoArea");
+mygrid.setPagingSkin("bricks");
+mygrid.init();
+mygrid.setSkin('dhx_skyblue');
+mygrid.loadXML( "{{ url('arii_JID_db_messages') }}" );
+mygrid.enableLightMouseNavigation( true );
+mygrid.attachEvent("onXLE",function(){
+    //will be called after each xml loading
+    mygrid.refreshFilters();
+    mygrid.filterByAll();
+    var currentTime = new Date()
+    toolbar.setItemText( "refresh", FormatTime(currentTime));
+    var currentTime = new Date()
+    var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
+    Globaltoolbar.setItemText( "refresh", FormatTime(nextTime));
+});
+
+mygrid.attachEvent("onRowDblClicked",function(id, value){
+    if (id*1>0)
+       myForm.load(  "{{ url('arii_JID_ajax_job_info' ) }}?id="+id );
+});
+
+// Autorefresh
+function GridRefresh() {
+     toolbar.setItemText( "refresh", "{{ 'Refreshing...' | trans}}" );
+    //mygrid.clearAll();
+    mygrid.clearAndLoad( "{{ url('arii_JID_db_messages') }}", "xml" );
+    barChart.load( "{{ url('arii_JID_pie_messages') }}" );
+}
+
+var dhxWins = new dhtmlXWindows();
+dhxWins.enableAutoViewport(false);
+dhxWins.attachViewportTo("wrapper");
+dhxWins.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+
+var nbwin=1;
+function JobLog( id ) { 
+    var p = 0;
+    dhxWins.forEachWindow(function() {
+        p++;
+    });
+    if (p > 3) {
+        alert("Too many windows");
+        return;
+    }
+    var idwin = 'win'+(nbwin++);
+    var win = dhxWins.createWindow( idwin, 5*nbwin, 20*nbwin, document.getElementById("wrapper").offsetWidth-20-( 5*nbwin), 320-( 20*nbwin));
+    win.setText("{{ "Job log" | trans }} "+id);
+    win.attachURL( "{{ url('arii_JID_detail_job') }}?id="+id , true);
+}
+
+function JobInfo( id ) { 
+    var win = dhxWins.createWindow( "job_info", 5*nbwin, 20*nbwin, document.getElementById("wrapper").offsetWidth-20-( 5*nbwin), 320-( 20*nbwin));
+    win.setText("{{ "Job info" | trans }} "+id);
+    // win.attachURL( "{ { url('arii_JID_info_job') }}?id="+id , true);
+    win.attachHTMLString( "{{ "Connecting on server..." | trans }}<br/><img src=\"{{ asset("arii/images/wait.gif") }}\"/>" );
+/*    win.progressOn();
+    dhtmlxAjax.post("{ { url('arii_JID_info_job') }}?id="+id,"post",function(loader,response){
+        win.attachHTMLString(loader.xmlDoc.responseText);
+        win.progressOff();   });
+*/
+}
+
+var dhxCalendar,
+msg;
+
+function StartJob( id ) { 
+var largeur = 600;
+    msg = dhxWins.createWindow( "msgwin" ,  (document.getElementById("wrapper").offsetWidth-largeur)/2, 200, largeur, 500 );
+    msg.setText("{{ "Start job" | trans }} "+id);
+var dhxForm = msg.attachForm();
+    dhxForm.loadStruct( "{{ url('arii_JID_form_start_job') }}?id="+id, "json", function() {
+
+dhtmlXCalendarObject.prototype.langData["fr"] = {
+	monthesFNames: ["Janvier","Février","Маrs","Аvril","Маi","Juin","Juillet","Аoût","Septembre","Оctobre","Novembre","Décembre"],
+	monthesSNames: ["Jan.","Fév.","Маrs","Аvr","Маi","Juin","Jui.","Août","Sep.","Оct.","Nov.","Déc."],
+	daysFNames: ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],
+	daysSNames: ["Di","Lu","Ma","Me","Je","Ve","Sa"],
+	weekstart: 1
+}
+dhxCalendar = dhxForm.getCalendar("start_time");
+dhxCalendar.loadUserLanguage("fr");
+dhxCalendar.showTime();
+        });
+
+dhxForm.attachEvent("onButtonClick", function(name, command){
+    if(name=="submit"){
+        msg.progressOn();
+        dhtmlx.message({
+        type: "Notice",
+        text: "{{ "Start job" | trans }} <strong>"+dhxForm.getItemValue("job")+"</strong> on <strong>"+dhxForm.getItemValue("spooler")+"</strong>" });
+        msg.close();
+        this.send("{{ url('arii_XML_Command') }}","post",function(loader,response){
+        dhtmlx.message({
+        type: "Notice",
+        expire: 10000,
+        text: loader.xmlDoc.responseText });
+        GridRefresh();
+//        msg.attachHTMLString(loader.xmlDoc.responseText);
+});
+    }
+    else if (name=="cancel" ) {
+/*     dhxCalendar.show();
+       dhxCalendar.hide();
+*/     msg.close();
+    }
+});
+}
+
+function KillJob( id ) { 
+var largeur = 600;
+    msg = dhxWins.createWindow( "msgwin" ,  (document.getElementById("wrapper").offsetWidth-largeur)/2, 200, largeur, 150 );
+    msg.setText("{{ "Kill job" | trans }} "+id);
+var dhxForm = msg.attachForm();
+    dhxForm.loadStruct( "{{ url('arii_JID_form_kill_job') }}?id="+id, "json", function() {
+});
+
+dhxForm.attachEvent("onButtonClick", function(name, command){
+    if(name=="submit"){
+        msg.progressOn();
+        dhtmlx.message({
+        type: "Notice",
+        text: "{{ "Kill task" | trans }} <strong>"+dhxForm.getItemValue("job")+"</strong> on <strong>"+dhxForm.getItemValue("spooler")+"</strong>" });
+        msg.close();
+        this.send("{{ url('arii_XML_Command') }}","post",function(loader,response){
+        dhtmlx.message({
+        type: "Notice",
+        expire: 30000,
+        text: loader.xmlDoc.responseText });
+        GridRefresh();
+//        msg.attachHTMLString(loader.xmlDoc.responseText);
+});
+    }
+    else if (name=="cancel" ) {
+        msg.close();
+    }
+});
+}
+
+function StopJob( id ) { 
+var largeur = 600;
+    msg = dhxWins.createWindow( "msgwin" ,  (document.getElementById("wrapper").offsetWidth-largeur)/2, 200, largeur, 150 );
+    msg.setText("{{ "Stop job" | trans }} "+id);
+var dhxForm = msg.attachForm();
+    dhxForm.loadStruct( "{{ url('arii_JID_form_stop_job') }}?id="+id, "json", function() {
+});
+
+dhxForm.attachEvent("onButtonClick", function(name, command){
+    if(name=="submit"){
+        msg.progressOn();
+        dhtmlx.message({
+        type: "Notice",
+        text: "{{ "Stop job" | trans }} <strong>"+dhxForm.getItemValue("job")+"</strong> on <strong>"+dhxForm.getItemValue("spooler")+"</strong>" });
+        msg.close();
+        this.send("{{ url('arii_XML_Command') }}","post",function(loader,response){
+        dhtmlx.message({
+        type: "Notice",
+        expire: 30000,
+        text: loader.xmlDoc.responseText });
+        GridRefresh();
+//        msg.attachHTMLString(loader.xmlDoc.responseText);
+});
+    }
+    else if (name=="cancel" ) {
+        msg.close();
+    }
+});
+}
+
+function UnstopJob( id ) { 
+var largeur = 600;
+    msg = dhxWins.createWindow( "msgwin" ,  (document.getElementById("wrapper").offsetWidth-largeur)/2, 200, largeur, 200 );
+    msg.setText("{{ "Unstop job" | trans }} "+id);
+var dhxForm = msg.attachForm();
+    dhxForm.loadStruct( "{{ url('arii_JID_form_unstop_job') }}?id="+id, "json", function() {
+});
+
+dhxForm.attachEvent("onButtonClick", function(name, command){
+    if(name=="submit"){
+        msg.progressOn();
+        dhtmlx.message({
+        type: "Notice",
+        text: "{{ "Unstop job" | trans }} <strong>"+dhxForm.getItemValue("job")+"</strong> on <strong>"+dhxForm.getItemValue("spooler")+"</strong>" });
+        msg.close();
+        this.send("{{ url('arii_XML_Command') }}","post",function(loader,response){
+        dhtmlx.message({
+        type: "Notice",
+        expire: 30000,
+        text: loader.xmlDoc.responseText });
+        GridRefresh();
+//        msg.attachHTMLString(loader.xmlDoc.responseText);
+});
+    }
+    else if (name=="cancel" ) {
+        msg.close();
+    }
+});
+}
+
+/* Gestion du menu contextuel */
+function onButtonClick(menuitemId, type) {
+    var data = mygrid.contextID.split("_");
+    //rowInd_colInd;
+    var rId = data[0];
+    var cInd = data[1];
+//     mygrid.setRowTextStyle(data[0], "color:" + menuitemId.split("_")[1]);
+    // alert("rId "+rId+" cInd "+cInd);
+    switch (menuitemId) {
+        case "show_log":
+            JobLog( rId );
+        break;
+       case "show_info":
+            JobInfo( rId );
+        break;        
+        case "start_task":
+            StartJob( rId );
+        break;
+        case "kill":
+            KillJob( rId );
+        break;
+        case "stop":
+            StopJob( rId );
+        break;
+        case "unstop":
+            UnstopJob( rId );
+        break;
+        default:
+            alert(menuitemId);    
+    }
+    return true;
+}
+
+function onShowMenu(rowId, celInd, grid) {
+    var status = grid.cells(rowId, 1 ).getValue();
+    menu.showItem("start_task");
+    menu.showItem("stop");
+    menu.showItem("show_history");
+    menu.hideItem("kill");
+    menu.hideItem("unstop");
+    switch (status) {
+    case 'SUCCESS':
+        break;
+    case 'FAILURE':
+        break;
+    case 'RUNNING':
+        menu.showItem("kill");
+       // Un job running ne peut pas avoir d'historique
+       menu.hideItem("show_history");
+        break;
+    case 'STOPPED':
+        menu.showItem("unstop");
+        menu.hideItem("stop");
+        break;
+    default:
+        return false;
+    }
+    // Un job ordonné ne peut être démarré 
+    if (grid.getUserData(rowId, "jobtype" )=='ordered_job') {
+        menu.hideItem("start_task");
+   }
+   
+return true;
+}
+</script>
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+{% endblock %}

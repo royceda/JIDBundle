@@ -1,0 +1,103 @@
+
+<!--[if !IE]>start section<![endif]-->	
+<div class="section">
+        <!--[if !IE]>start title wrapper<![endif]-->
+        <div class="title_wrapper">
+                <h2>{{ "Selection" | trans }}</h2>
+                <span class="title_wrapper_left"></span>
+                <span class="title_wrapper_right"></span>
+        </div>
+        <!--[if !IE]>end title wrapper<![endif]-->
+        <!--[if !IE]>start section content<![endif]-->
+        <div class="section_content">
+                <!--[if !IE]>start section content top<![endif]-->
+                <div class="sct">
+                        <div class="sct_left">
+                                <div class="sct_right">
+                                        <div class="sct_left">
+                                                <div class="sct_right">
+<script>
+
+function toncheck(id, state) {
+//    alert("Item " + tree.getItemText(id) + " was " + ((state) ? "checked": "unchecked"));
+// 
+	barchart.clearAll();
+	barchart.load( "database/scheduler_path.php?path="+id );
+	barchart.refresh( );
+	barChart.render( );
+};
+
+tree = new dhtmlXTreeObject("treeboxbox_tree", "100%", "100%", 0);
+ 
+tree.setSkin('dhx_skyblue');
+tree.setImagePath("dhtmlx/dhtmlxTree/codebase/imgs/csh_vista/");
+tree.enableSmartXMLParsing(true);
+tree.enableCheckBoxes(true);
+//tree.enableDragAndDrop(true);
+//tree.enableThreeStateCheckboxes(true);
+tree.setOnClickHandler(toncheck);
+tree.loadXML("database/scheduler_tree.php");
+
+ 
+</script>
+<form action="<? print $_SERVER['PHP_SELF']; ?>" method="POST">
+<div id="form_container" style="width:278px;height:240px;">
+</div><input type="hidden" name="page" value="<? print $_REQUEST['page']; ?>" />
+<center><input type="submit" value="Submit" /></center>
+</form>
+<script>
+var myForm, formData;
+formData = [
+		{
+			type: "settings",
+			position: "label-left",
+			labelWidth: 120,
+			inputWidth: 120			
+		},
+		{	
+			type: "input", 
+			name: 'order', 
+			label: 'Order:', 
+			value: '', 
+			inputWidth:140
+		}
+		,
+		{type: "input", name: 'job_chain', label: 'Jobchain:', value: '', position:"label-left", inputWidth:140,}
+		,
+		{type: "input", name: 'job_name', label: 'Jobname:', value: '', position:"label-left", inputWidth:140,}
+		,
+		{type: "input", name: 'state', label: 'State:', value: '', position:"label-left", inputWidth:140,}
+		,
+		{type: "input", name: 'exit', label: 'Exit:', value: '', position:"label-left", inputWidth:140,}
+		,
+		 {type: "calendar", userLanguage: "fr", dateFormat: "%Y-%m-%d %H:%i:%s", width:"140", name: "start_time", value: '', label: "Start:", position:"label-left" , readonly: false , inputWidth:140, options:{
+      setDateFormat: "%Y-%m-%d %H:%i:%s",
+      yearsRange: [2010, 2025],
+      isMonthEditable: true,
+      isYearEditable: true,
+      enableTime: true
+   }}, 
+		 {type: "calendar", userLanguage: "fr", dateFormat: "%Y-%m-%d %H:%i:%s", width:"140", name: "end_time", value: '', label: "End:", readonly: false, inputWidth:140, options:{
+      setDateFormat: "%Y-%m-%d %H:%i:%s",
+      yearsRange: [2010, 2025],
+      isMonthEditable: true,
+      isYearEditable: true,
+      enableTime: true
+   }}, 
+	];
+myForm = new dhtmlXForm("form_container", formData);
+</script>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+                <!--[if !IE]>end section content top<![endif]-->
+                <!--[if !IE]>start section content bottom<![endif]-->
+                <span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+                <!--[if !IE]>end section content bottom<![endif]-->
+
+        </div>
+        <!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->

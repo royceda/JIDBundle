@@ -1,0 +1,120 @@
+<!--[if !IE]>start calendar<![endif]-->
+<div class="calendar">
+    <div class="calendar_top">
+            <strong>{{ heure }}</strong>
+    </div>
+    <div class="calendar_middle">
+        <div class="calendar_data">
+        <!--[if !IE]>start calendar data<![endif]-->
+            <div class="cmonth">
+                <div class="ctrl">
+                    <table cellspacing="0" cellpadding="0" width="100%">
+                            <tr>
+                                    <td align="left" style="width: 15px;"><a class="calendar_prev" href="{{ precedent }}">&laquo; </a></td>
+                                    <td align="center"><span><strong>{{ mois | trans }} {{ annee }}</strong></span></td>
+                                    <td align="right" style="width: 15px;"><a class="calendar_next" href="{{ suivant }}">&raquo;</a></td>
+                            </tr>
+
+                    </table>
+                </div>
+            </div>
+            <div class="cont">
+                <ul class="chead">
+                        <li><span>{{ "short_dow.1" | trans }}</span></li>
+                        <li><span>{{ "short_dow.2" | trans }}</span></li>
+                        <li><span>{{ "short_dow.3" | trans }}</span></li>
+                        <li><span>{{ "short_dow.4" | trans }}</span></li>
+                        <li><span>{{ "short_dow.5" | trans }}</span></li>
+                        <li><span>{{ "short_dow.6" | trans }}</span></li>
+                        <li><span>{{ "short_dow.7" | trans }}</span></li>
+                </ul>
+                    <ul class="cdays">
+                    {% for tab in jours %}
+                        <li>{{ tab | raw }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+        <!--[if !IE]>end calendar data<![endif]-->
+        </div>
+    </div>
+    <div class="calendar_bottom"></div>
+    <!--[if !IE]>start section content footer<![endif]-->
+    <div class="section_content_footer">
+{% if Mode=='Full' %}        
+<style>
+#slider {
+    width: 150px;
+    height: 10px;
+}
+</style>
+        <ul>
+            <li>               
+        <table width="100%"> 
+            <tr><td align="right">{{ "from" | trans }} </td><td align="right"><div id="past"></div></td><td>{{ "day.d" | trans }}</td><td align="right">{{ "until" | trans }} </td><td align="right"><div id="future"></div></td><td>{{ "day.d" | trans }}</td></tr>
+            <tr><td colspan=3  height="20"><div id="slider"></div></td><td colspan=3><div id="slider2"></div></td></tr>
+        </table>
+            </li>
+        </ul>
+{% endif %}
+{% if Mode=='Past' %}        
+        <ul>
+            <li>               
+        <table width="100%" height="26"> 
+            <tr><td align="right" witdh=50><div id="past"></div></td><td>{{ "day.d" | trans }}</td>
+            <td colspan=2><div id="slider"></div></td></tr>
+        </table>
+            </li>
+        </ul>
+{% endif %}
+{% if Mode=='Future' %}        
+        <ul>
+            <li>               
+        <table width="100%"> 
+            <tr><td align="right">{{ "until" | trans }} </td><td align="right"><div id="future"></div></td><td>{{ "day.d" | trans }}</td>
+            <td colspan=3><div id="slider2"></div></td></tr>
+        </table>
+            </li>
+        </ul>
+{% endif %}
+        <span class="scf"></span>
+    </div>
+    <!--[if !IE]>end section content footer<![endif]-->
+</div>
+<script>
+{% if (Mode=='Full') or (Mode=='Past') %}
+var slider = new dhtmlXSlider( {
+    parent: "slider",
+    min: -35,
+    max: -1,
+    step: 1,
+    size: 160,
+    value: {{ ref_past }}
+});
+// slider.setImagePath("{{ asset('arii/dhtmlx/dhtmlxSlider/codebase/imgs/') }}");
+slider.linkTo('past');
+// slider.init();
+slider.attachEvent("onSlideEnd", function (value) { 
+       dhxLayout.progressOn();
+       dhtmlxAjax.get( "{{ url('arii_session_update') }}?ref_past="+value, 
+       GridRefresh());
+});
+{% endif %}
+{% if (Mode=='Full') or (Mode=='Future') %}
+var slider2 = new dhtmlXSlider("slider2", {
+    skin: "arrowgreen",
+    min: 1,
+    max: 15,
+    step: 1,
+    size: 80,
+    value: "{{ ref_future }}"
+});
+// slider2.setImagePath("{{ asset('arii/dhtmlx/dhtmlxSlider/codebase/imgs/') }}");
+slider2.linkTo('future');
+// slider2.init();
+slider2.attachEvent("onSlideEnd", function (value) { 
+    dhtmlxAjax.get( "{{ url('arii_session_update') }}?ref_future="+value,
+    GlobalRefresh()); 
+});
+{% endif %}
+</script>
+<!--[if !IE]>end calendar<![endif]-->

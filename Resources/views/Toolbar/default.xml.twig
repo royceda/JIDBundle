@@ -1,0 +1,14 @@
+<toolbar>
+    <item type="button" id="refresh" text="{{ "Refresh" | trans }}" img="refresh.png" action="GlobalRefresh"/>
+
+<item id="sep1" type="separator"/>
+<item type="buttonSelect" id="selected" text="{{ "Selected jobs" | trans }}" img="tick.png">
+    <item type="button" id="start_jobs" text="{{ "Start jobs" | trans }}" img="start_task.png" action="SartJobs" />
+    <item type="button" id="stop_jobs" text="{{ "Stop jobs" | trans }}" img="stop.png" action="StopJobs" />
+    <item type="button" id="unstop_jobs" text="{{ "Unstop jobs" | trans }}" img="unstop.png" action="UnstopJobs" />
+</item>
+<item id="sep2" type="separator"/>
+    {% set site = app.session.get('site') %}     
+    <item id="timezone" type="text" img="world.png" text="{{ site.timezone }}"/>
+
+</toolbar>
