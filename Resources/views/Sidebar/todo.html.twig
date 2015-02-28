@@ -19,7 +19,7 @@
                                                         <div class="todo_list">
                                                             {% for todo in Todo %}
                                                                 <dl {% if loop.last %}class="last"{% endif %}>
-                                                                        <dt><span class=""><img src="{{ asset('arii/images') }}/{{ todo.type }}.png" ></span> {{ todo.title | trans }}</dt>
+                                                                        <dt><span class=""><img src="{{ asset('bundles/ariicore/images') }}/{{ todo.type }}.png" ></span> {{ todo.title | trans }}</dt>
                                                                         <dd>{{ todo.message | trans }}
                                                                                 <ul class="todo_menu">
                                                                                     {% for action,link in todo.actions %}

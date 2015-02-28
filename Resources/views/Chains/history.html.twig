@@ -5,7 +5,7 @@
 <div class="section table_section">
 	<!--[if !IE]>start title wrapper<![endif]-->
 	<div class="title_wrapper">
-		<h2>[{{spooler}}] <img src="{{ asset('arii/images/wa/order.png') }}"/>{{ order }} <img src="{{ asset('arii/images/wa/bullet_go.png') }}"/> {{ job_chain }}</h2>
+		<h2>[{{spooler}}] <img src="{{ asset('bundles/ariicore/images/wa/order.png') }}"/>{{ order }} <img src="{{ asset('bundles/ariicore/images/wa/bullet_go.png') }}"/> {{ job_chain }}</h2>
 <ul  class="section_menu">
       <li><a href="{{ url('arii_JID_order_history') }}?id={{ id }}" class="active"><span><span>{{ "History" | trans }}</span></span></a></li>
       <li><a href="{{ url('arii_JID_orders_list') }}" class=""><span><span>{{ "List" | trans }}</span></span></a></li>
@@ -48,7 +48,7 @@ dhxLayout.cells("a").hideHeader();
 
 HistoryGrid = dhxLayout.cells("a").attachGrid();
 HistoryGrid.selMultiRows = true;
-HistoryGrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+HistoryGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 HistoryGrid.setHeader("{{ "State" | trans }},{{ "State" | trans }},{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Message" | trans }}");
 HistoryGrid.attachHeader("#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter");
 HistoryGrid.setInitWidths("200,60,140,140,100,*");

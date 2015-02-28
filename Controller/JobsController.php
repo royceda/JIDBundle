@@ -13,7 +13,7 @@ class JobsController extends Controller
     public function __construct( )
     {
           $request = Request::createFromGlobals();
-          $this->images = $request->getUriForPath('/../images/wa');          
+          $this->images = $request->getUriForPath('/../bundles/ariicore/images/wa');          
     }
 
     // Index des traitements
@@ -154,7 +154,7 @@ class JobsController extends Controller
             $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>'; 
             $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';           
             $list .='<cell>'.$status.'</cell>'; 
-            $list .='<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($status).'.png"/>]]></cell>'; 
+            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>'; 
             if ($status=='RUNNING') {
                 list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );                                     
                 $list .='<cell>'.$start.'</cell>'; 
@@ -170,7 +170,7 @@ class JobsController extends Controller
             $list .='<cell>'.$line['EXIT_CODE'].'</cell>';
             $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($start,$end,$status).'"/>]]></cell>'; 
             $list .='<cell>'.$line['PID'].'</cell>';
-            $list .='<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($line['CAUSE']).'.png"/>]]></cell>'; 
+            $list .='<cell>'.$this->images.'/'.strtolower($line['CAUSE']).'.png</cell>'; 
             $list .='</row>';
         }
         
@@ -199,7 +199,7 @@ class JobsController extends Controller
             $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>'; 
             $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';           
             $list .='<cell>'.$status.'</cell>'; 
-            $list .='<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($status).'.png"/>]]></cell>'; 
+            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>'; 
             list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );                                     
             $list .='<cell>'.$date->ShortDate($start).'</cell>'; 
             $list .='<cell/>'; 
@@ -207,7 +207,7 @@ class JobsController extends Controller
             $list .='<cell/>';
             $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt(gmdate("Y-M-d H:i:s"),$start,$status).'"/>]]></cell>'; 
             $list .='<cell/>';
-            $list .='<cell><![CDATA[<img src="'.$this->images.'/queue.png"/>]]></cell>'; 
+            $list .='<cell>'.$this->images.'/queue.png</cell>'; 
             $list .='</row>';
         }
 

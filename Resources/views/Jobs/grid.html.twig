@@ -8,10 +8,12 @@
 		<h2>{{ "Jobs" | trans }}</h2>
 <ul  class="section_menu">
 {% if arii_pro %}
-    <li><a href="{{ url('arii_JID_history') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
 {% endif %}
-    <li><a href="{{ url('arii_JID_history_last') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_history_timeline') }}" class=""><span><span><img src="{{ asset('arii/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history_last') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+{% if arii_pro %}
+    <li><a href="{{ url('arii_JID_history_timeline') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
+{% endif %}
 </ul>
                 <span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
@@ -55,7 +57,7 @@ var ordered = 0; // que des standalone
 var currentrow;
 
 menu = new dhtmlXMenuObject(null);
-menu.setIconsPath( "{{ asset('images/wa/') }}" );
+menu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
 menu.renderAsContextMenu();
 menu.loadStruct("{{ url('xml_JID_jobs_menu') }}");
 
@@ -63,7 +65,7 @@ var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 dhxLayout.cells("b").collapse();
 
 var toolbar = dhxLayout.attachToolbar();
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
 
 toolbar.loadStruct("{{ url('xml_JID_jobs_toolbar') }}", function() {
 {% if  app.request.get('ordered')>0 %}
@@ -77,13 +79,13 @@ dhxLayout.cells("b").setText("{{ "Job detail" | trans }}");
 
 var mygrid = dhxLayout.cells("a").attachGrid();
 mygrid.selMultiRows = true;
-mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 // mygrid.enableTreeCellEdit(false);
 mygrid.setHeader("{{ "Spooler" | trans }},{{ "Path" | trans }},{{ "Job" | trans }},{{ "Status" | trans }},#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Exit Code" | trans }},{{ "Timeline" | trans }},{{ "PID" | trans }},&nbsp;");
-mygrid.attachHeader("#select_filter,#text_filter,#text_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter,#text_filter,<img src='{{app.request.baseurl}}/public/gantt'/>,#text_filter,#rspan");
-mygrid.setInitWidths("100,*,*,80,30,130,130,100,50,490,50,20");
+mygrid.attachHeader("#select_filter,#text_filter,#text_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter,#text_filter,<img width='480' src='{{app.request.baseurl}}/public/gantt'/>,#text_filter,#rspan");
+mygrid.setInitWidths("100,*,*,80,30,130,130,100,50,495,50,25");
 mygrid.setColAlign("left,left,left,center,center,right,right,right,right,right,right,center");
-mygrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");
+mygrid.setColTypes("ro,ro,ro,ro,img,ro,ro,ro,ro,ro,ro,img");
 mygrid.setColSorting("str,str,str,str,str,date,date,str,str,str,int,str");
 mygrid.enableContextMenu(menu);
 mygrid.attachEvent("onBeforeContextMenu", onShowMenu);
@@ -322,7 +324,8 @@ function GlobalRefresh() {
 var dhxWins = new dhtmlXWindows();
 // dhxWins.enableAutoViewport(false);
 dhxWins.attachViewportTo("wrapper");
-// dhxWins.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+
+// dhxWins.setImagePath("{{ asset('bundles/ariicore/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
 
 function onShowMenu(rowId, celInd, grid) {
     var status = grid.cells(rowId, 3 ).getValue();

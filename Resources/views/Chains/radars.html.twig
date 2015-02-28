@@ -50,8 +50,8 @@
 <script>
 var toolbar;
 toolbar = new dhtmlXToolbarObject("toolbarObj");
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-toolbar.loadXML("{{ url('arii_JID_toolbar_refresh') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar_refresh') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
         case "refresh":

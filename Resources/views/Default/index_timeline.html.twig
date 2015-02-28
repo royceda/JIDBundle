@@ -7,9 +7,9 @@
 	<div class="title_wrapper">
 		<h2>{{ "Overview" | trans }}</h2>
 <ul  class="section_menu">
-      <li><a href="{{ url('arii_JID_index') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/chart_pie.png') }}"/>&nbsp;{{ "Chart" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_timeline') }}" class=""><span><span><img src="{{ asset('arii/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
-    <li><a href="{{ url('arii_JID_last') }}" class=""><span><span><img src="{{ asset('arii/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_index') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/chart_pie.png') }}"/>&nbsp;{{ "Chart" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_timeline') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_last') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
 </ul>      
                 <span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
@@ -63,8 +63,8 @@ var dhxLayoutA =  dhxLayout.cells("a").attachLayout("3W");
 dhxLayout.cells("b").setText("{{ 'Schedule' | trans }}");
 
 var toolbar = dhxLayoutA.attachToolbar();
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-toolbar.loadXML("{{ url('arii_JID_toolbar') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
     case "menu":
@@ -100,11 +100,11 @@ toolbar.attachEvent( "onClick", function(id, value) {
 });
 
 dhxTabbar = dhxLayoutA.cells("a").attachTabbar();
-dhxTabbar.setImagePath("{{ asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/") }}");
+// dhxTabbar.setImagePath("{{ asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/") }}");
 dhxTabbar.setSkin("dhx_skyblue");
 dhxTabbar.addTab("a1", "{{ "Standalone jobs" | trans }}",170);
 dhxTabbar.addTab("a2", "{{ "Ordered jobs" | trans }}",170);
-dhxTabbar.setTabActive("a1");
+dhxTabbar.tabs("a1").setActive();
 
 var barChart = dhxTabbar.cells("a1").attachChart({
         view:"donut",

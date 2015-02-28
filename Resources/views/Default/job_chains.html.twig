@@ -63,15 +63,15 @@ function onButtonClick(menuitemId) {
     return true;
 }
 menu = new dhtmlXMenuObject();
-menu.setIconsPath( "{{ asset('arii/dhtmlx/dhtmlxMenu/codebase/imgs/dhxmenu_dhx_skyblue/') }}" );
+menu.setIconsPath( "{{ asset('bundles/ariicore/dhtmlx/dhtmlxMenu/codebase/imgs/dhxmenu_dhx_skyblue/') }}" );
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);
 menu.loadXML("{{ url('arii_JID_menu_history') }}");
 
 var toolbar;
 toolbar = new dhtmlXToolbarObject("toolbarObj");
-toolbar.setIconsPath("{{ asset('arii/images/') }}");
-toolbar.loadXML("{{ url('arii_JID_toolbar_history') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar_history') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
         case "refresh":
@@ -100,8 +100,8 @@ var myForm, formData;
 mygrid = new dhtmlXGridObject( "mygrid" );
 mygrid.selMultiRows = true;
 //mygrid.setImagePath( "dhtmlx/dhtmlxGrid/codebase/imgs/" );
-//mygrid.setImagePath( "{{ asset('arii/dhtmlx/dhtmlxTree/codebase/imgs/csh_dhx_skyblue/') }}");
-mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+//mygrid.setImagePath( "{{ asset('bundles/ariicore/dhtmlx/dhtmlxTree/codebase/imgs/csh_dhx_skyblue/') }}");
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 mygrid.enableTreeCellEdit(false);
 //mygrid.setHeader("Location,StaState,Title,Information,Next run time");
 mygrid.setHeader("{{ "Location" | trans }},{{ "State" | trans }},{{ "Status" | trans }},#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }}");
@@ -120,7 +120,7 @@ mygrid.saveOpenStates();
 //mygrid.setFilrationLevel(-2);
 mygrid.setSkin('dhx_skyblue');
 //mygrid.kidsXmlFile = "database/state_job_chains.php";
-mygrid.loadXML( "{{ url('arii_JID_db_orders') }}" );
+mygrid.loadStruct( "{{ url('arii_JID_db_orders') }}" );
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onXLE",function(){
     //will be called after each xml loading
@@ -144,7 +144,7 @@ function GridRefresh() {
     }
     toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     //mygrid.clearAll();
-    mygrid.loadXML( "{{ url('arii_JID_db_orders') }}"+'?time='+seconds );
+    mygrid.loadStruct( "{{ url('arii_JID_db_orders') }}"+'?time='+seconds );
     barChart.load( "{{ url('arii_JID_pie_orders') }}" );
     myForm.load(  "{{ url('arii_JID_ajax_job_info') }}" );
 }
@@ -152,7 +152,7 @@ function GridRefresh() {
 var dhxWins = new dhtmlXWindows();
 dhxWins.enableAutoViewport(false);
 dhxWins.attachViewportTo("wrapper");
-dhxWins.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+dhxWins.setImagePath("{{ asset('bundles/ariicore/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
 
 var nbwin=1;
 function JobLog( id ) { 

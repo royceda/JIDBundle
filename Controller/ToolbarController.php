@@ -122,11 +122,6 @@ class ToolbarController extends Controller
     {
         return $this->render("AriiJIDBundle:Toolbar:toolbar_order_param.html.twig");
     }
-
-    public function add_order_parametersAction()
-    {
-        
-    }
     
     public function job_listAction()
     {

@@ -90,7 +90,7 @@ var slider = new dhtmlXSlider( {
     size: 160,
     value: {{ ref_past }}
 });
-// slider.setImagePath("{{ asset('arii/dhtmlx/dhtmlxSlider/codebase/imgs/') }}");
+// slider.setImagePath("{{ asset('bundles/ariicore/dhtmlx/dhtmlxSlider/codebase/imgs/') }}");
 slider.linkTo('past');
 // slider.init();
 slider.attachEvent("onSlideEnd", function (value) { 
@@ -108,7 +108,7 @@ var slider2 = new dhtmlXSlider("slider2", {
     size: 80,
     value: "{{ ref_future }}"
 });
-// slider2.setImagePath("{{ asset('arii/dhtmlx/dhtmlxSlider/codebase/imgs/') }}");
+// slider2.setImagePath("{{ asset('bundles/ariicore/dhtmlx/dhtmlxSlider/codebase/imgs/') }}");
 slider2.linkTo('future');
 // slider2.init();
 slider2.attachEvent("onSlideEnd", function (value) { 

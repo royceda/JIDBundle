@@ -21,6 +21,9 @@ function onButtonClick(menuitemId, type) {
        case "job_history":
             document.location.href = "{{ url('arii_JID_history_job') }}?id="+rId;
         break;
+       case "order_history":
+            document.location.href = "{{ url('arii_JID_order_history') }}?id="+rId;
+        break;
         case "start_task":
             Job(    "start_job", rId,
                     "{{ "Start job" | trans }}",
@@ -51,6 +54,12 @@ function onButtonClick(menuitemId, type) {
                     "{{ url('xml_JID_job_toolbar_delete_task') }}",
                     false );
             break;
+        case "modify_order":
+            Order(    "modify_order", rId,
+                    "{{ "Order" | trans }} "+rId,
+                    "{{ url('xml_JID_order_toolbar_start') }}",
+                    false );
+            break;
         case "show_why":
             ShowWhy( rId);
             break;
@@ -74,6 +83,9 @@ function onButtonClick(menuitemId, type) {
         break;
         case "job_detail":
             JobDetail( rId );
+        break;
+        case "order_detail":
+            OrderDetail( rId );
         break;
         default:
             alert("inconnu ! "+menuitemId);    
@@ -103,7 +115,7 @@ function Job( Command, id, Text, Toolbar, Time ) {
     winbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}?id="+id,true);
     
     var toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     toolbar.loadStruct( Toolbar, function(){
         if (Time) {
             GBCalendar = new dhtmlXCalendarObject(toolbar.getInput('ref_date'));
@@ -113,7 +125,7 @@ function Job( Command, id, Text, Toolbar, Time ) {
     });
     
     var toolbar2 = winbar.cells("b2").attachToolbar();
-    toolbar2.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+    toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     toolbar2.loadStruct("{{ url('xml_JID_job_toolbar_params') }}");
 
     var dhxgrid = winbar.cells("b2").attachGrid();
@@ -131,7 +143,6 @@ function Job( Command, id, Text, Toolbar, Time ) {
             case "unstop_job":
             case "delete_task":
             case "kill_task":
-                msg.progressOn();
                 var params = new Array();
                 dhxgrid.forEachRow(function(id){
                     var param = dhxgrid.cells(id,0).getValue() + "=" + encodeURIComponent(dhxgrid.cells(id,1).getValue());
@@ -144,8 +155,7 @@ function Job( Command, id, Text, Toolbar, Time ) {
                 dhtmlx.message({
                 type: "Notice",
                 text: Text+" <strong>"+id+"</strong>" });
-                msg.close();
-                alert("{{ url('arii_XML_Command') }}?command="+Command+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id); 
+                // alert("{{ url('arii_XML_Command') }}?command="+Command+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id); 
                 dhxLayout.cells("a").progressOn();
                 dhtmlxAjax.post("{{ url('arii_XML_Command') }}","command="+Command+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id,function(loader,response){
                     dhtmlx.message({
@@ -155,6 +165,7 @@ function Job( Command, id, Text, Toolbar, Time ) {
                     text: loader.xmlDoc.responseText });
                     GridRefresh();
                     dhxLayout.cells("a").progressOff();
+                    msg.close();                    
                 });
                 break;
             case "cancel":
@@ -191,8 +202,8 @@ function ShowWhy( id ) {
     winLayout.cells("a").progressOn();
     
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_job_why') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_job_why') }}");
     toolbar.attachEvent("onClick",function(buttonId){
         switch (buttonId) {
             case "cancel":
@@ -228,8 +239,8 @@ function PurgeJob( id ) {
 
     var toolbar;
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_purge_job') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_purge_job') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch (itemid) {
@@ -258,6 +269,214 @@ function PurgeJob( id ) {
     });
     
 return true;
+}
+
+function Order( Command, id, Text, Toolbar, Time, chain )
+{
+    var largeur = 640;
+        msg = dhxWins.createWindow( "msgwin" ,  (document.getElementById("wrapper").offsetWidth-largeur)/2, 50, largeur, 400 );
+        msg.setText(Text);
+        
+    var winLayout;
+    winLayout = msg.attachLayout("1C");
+    winLayout.cells("a").hideHeader();
+ 
+    var winbar = winLayout.cells("a").attachTabbar();
+    // tabbar.setImagePath("{{asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/")}}");
+    winbar.setSkin("dhx_skyblue");
+    winbar.addTab("b1","{{ "Detail" | trans }}","100px", null, true);
+    winbar.addTab("b2","{{ "Parameters" | trans }}","100px");
+   
+    var toolbar;
+    toolbar = winLayout.cells('a').attachToolbar();
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+
+    toolbar.loadStruct(Toolbar,function(){
+        if (Time) {
+            GBCalendar = new dhtmlXCalendarObject(toolbar.getInput('ref_date'));
+            GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
+            GBCalendar.setWeekStartDay(1);
+        }
+    });
+
+    var toolbar2;
+    toolbar2 = winbar.cells("b2").attachToolbar();
+    toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar2.loadStruct("{{ url('xml_JID_order_toolbar_params') }}");
+
+    var dhxgrid = winbar.cells("b2").attachGrid();
+    dhxgrid.selMultiRows = true;
+    dhxgrid.setHeader("{{ "Name" | trans }},{{ "Value" | trans }}");
+    dhxgrid.setColTypes("ed,ed");
+    dhxgrid.setInitWidths("*,*");
+    dhxgrid.init();
+
+    dhxForm = winbar.cells("b1").attachForm();
+    winbar.cells("b1").progressOn();
+    alert("{{ url('json_JID_order_form') }}?id="+id);
+    dhxForm.loadStruct("{{ url('json_JID_order_form') }}?id="+id, function(){
+        winbar.cells("b1").progressOff();    
+         dhxgrid.loadXML("{{ url('xml_JID_order_params') }}?id="+id);
+    });
+    
+    toolbar.attachEvent("onClick",function(itemid){
+        switch(itemid) {
+            case "new":
+                dhxgrid.addRow(dhxgrid.getRowsNum()+1,"");
+                break;
+            case "execute":
+                var params = new Array();
+                dhxgrid.forEachRow(function(id){
+                    var param = dhxgrid.cells(id,0).getValue() + "=" + encodeURIComponent(dhxgrid.cells(id,1).getValue());
+                    params.push(param);
+                });
+                var paramsStr = params.join(",");
+                var start_time = '';
+                if (Time)
+                    start_time = toolbar.getValue("ref_date");
+                dhtmlx.message({
+                    type: "Notice",
+                    text: Text 
+                });
+                winLayout.cells("a").progressOn();
+                dhxForm.send("{{ url('arii_XML_Command') }}?command="+Command+"&chain="+chain+"&order_id="+id+"&paramsStr="+encodeURIComponent(paramsStr),"POST",function(loader,response){
+                    dhtmlx.message({
+                        type: "Notice",
+                        expire: 10000,
+                        width: "500px",
+                        text: loader.xmlDoc.responseText
+                    });
+                    GridRefresh();
+                    winLayout.cells("a").progressOff();
+                    msg.close();
+                });               
+                break;
+            case "cancel":
+                msg.close();
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+        return true;
+    });
+
+    toolbar2.attachEvent("onClick",function(itemid){
+        switch(itemid) {
+            case "new":
+                dhxgrid.addRow(dhxgrid.getRowsNum()+1,"");
+                break;
+            default:
+                break;
+        }
+        return true;
+    });
+
+    dhtmlXCalendarObject.prototype.langData["fr"] = {
+            monthesFNames: ["Janvier","Février","Маrs","Аvril","Маi","Juin","Juillet","Аoût","Septembre","Оctobre","Novembre","Décembre"],
+            monthesSNames: ["Jan.","Fév.","Маrs","Аvr","Маi","Juin","Jui.","Août","Sep.","Оct.","Nov.","Déc."],
+            daysFNames: ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],
+            daysSNames: ["Di","Lu","Ma","Me","Je","Ve","Sa"],
+            weekstart: 1
+    };
+    dhxCalendar = new dhtmlXCalendarObject(dhxForm.getInput("at"));
+    dhxCalendar.loadUserLanguage("fr");
+    dhxCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
+    dhxCalendar.showTime();
+      
+    return true;
+    
+}
+
+function ViewOrder( Command, id, Text, Toolbar, Time ) {
+var largeur = 600;
+
+    msg = dhxWins.createWindow( "msgwin" ,  (document.getElementById("wrapper").offsetWidth-largeur)/2, 50, largeur, 500 );
+    msg.setText(Text+' '+id);
+        
+    var winLayout;
+    winLayout = msg.attachLayout("1C");
+    winLayout.cells("a").hideHeader();
+    winLayout.cells("a").setHeight(300);
+
+     var winbar = winLayout.cells("a").attachTabbar();
+    // tabbar.setImagePath("{{asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/")}}");
+    winbar.setSkin("dhx_skyblue");
+    winbar.addTab("b1","{{ "Detail" | trans }}","100px", null, true);
+    winbar.addTab("b2","{{ "Parameters" | trans }}","100px");
+    winbar.cells("b1").attachURL("{{ url('arii_JID_detail_order') }}?id="+encodeURIComponent(id),true);
+     
+    var toolbar = winLayout.cells("a").attachToolbar();
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct(Toolbar ,function(){
+        GBCalendar = new dhtmlXCalendarObject(toolbar.getInput('ref_date'));
+        GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
+        GBCalendar.setWeekStartDay(1);
+    });
+
+    var toolbar2;
+    toolbar2 = winbar.cells("b2").attachToolbar();
+    toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar2.loadXML("{{ url('xml_JID_toolbar_order_param') }}");
+
+    toolbar.attachEvent("onClick",function(itemid){
+        switch(itemid) {
+            case "modify_job":
+                msg.progressOn();
+                var params = new Array();
+                dhxgrid.forEachRow(function(id){
+                    var param = dhxgrid.cells(id,0).getValue() + "=" + encodeURIComponent(dhxgrid.cells(id,1).getValue());
+                    params.push(param);
+                });
+                var paramsStr = params.join(",");
+                var start_time = '';
+                if (Time)
+                    start_time = toolbar.getValue("ref_date");
+                dhtmlx.message({
+                type: "Notice",
+                text: "{{ "Start order" | trans }} <strong>"+id+"</strong>" });
+                
+                winLayout.cells("a").progressOn();
+                dhtmlxAjax.post("{{ url('arii_XML_Command') }}","command=start_order&params="+encodeURIComponent(params)+"&time="+start_time+"&plan=yes&order_id="+encodeURIComponent(id),function(loader,response){
+                    dhtmlx.message({
+                    type: "Notice",
+                    expire: 10000,
+                    width: "500px",
+                    text: loader.xmlDoc.responseText });
+                    GridRefresh();
+                    winLayout.cells("a").progressOff();
+                    msg.close();
+                });
+                break;
+            case "cancel":
+                msg.close();
+                break;
+            default:
+                break;
+        }
+        return true;
+    });
+
+    var dhxgrid = winbar.cells("b2").attachGrid();
+    dhxgrid.selMultiRows = true;
+    dhxgrid.setHeader("{{ "Name" | trans }},{{ "Value" | trans }}");
+    dhxgrid.setColTypes("ed,ed");
+    dhxgrid.setInitWidths("*,*");
+    dhxgrid.init();
+    dhxgrid.loadXML("{{ url('xml_JID_start_order_parameters') }}?id="+encodeURIComponent(id));
+    
+    toolbar.attachEvent("onClick",function(itemid){
+        switch(itemid) {
+            case "new":
+                dhxgrid.addRow(dhxgrid.getRowsNum()+1,"");
+                break;
+            default:
+                break;
+        }
+        return true;
+    });
+
+    return true;          
 }
 
 // Fonctions

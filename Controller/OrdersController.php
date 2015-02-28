@@ -8,6 +8,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class OrdersController extends Controller
 {
+    protected $ColorStatus = array( 
+        "SUCCESS" => "#ccebc5",
+        "TRUE" => "#ccebc5",
+        "SUSPENDED" => "red",
+        "SETBACK" => "lightsalmon",
+        "RUNNING" => "#ffffcc",
+        "ERROR" => "#fbb4ae",
+        "WARNING" => "#fbb4ae",
+        "FAILURE" => "#fbb4ae",
+        "FALSE" => "#fbb4ae",
+        "ACTIVATED" => "lightblue"
+        );
+
     protected $images;
     
     public function __construct( )
@@ -406,23 +419,9 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
     {
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
+        $tools = $this->container->get('arii_core.tools');   
         
         $date = $this->container->get('arii_core.date');
-        
-        $sql = $this->container->get('arii_core.sql');
-        $Fields = array (
-            '{spooler}'    => 'soh.SPOOLER_ID',
-            '{start_time}' => 'soh.START_TIME',
-            '{end_time}'   => 'soh.END_TIME' );
-
-        $qry = $sql->Select(array('soh.HISTORY_ID','soh.SPOOLER_ID','soh.JOB_CHAIN','soh.ORDER_ID','soh.TITLE','soh.STATE as ORDER_STATE','soh.STATE_TEXT','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
-                  'sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.STATE','sosh.ERROR','sosh.ERROR_TEXT'  ))
-                .$sql->From(array('SCHEDULER_ORDER_HISTORY soh'))
-                .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
-                .$sql->where($Fields)
-                .$sql->OrderBy(array('soh.HISTORY_ID desc','sosh.TASK_ID','sosh.STEP'));
-
-        $res = $data->sql->query( $qry );
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml');
         $list = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -432,6 +431,10 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
                 <call command="clearAll"/>
             </afterInit>
         </head>';
+        $Infos = array();
+        
+        $sql = $this->container->get('arii_core.sql');
+        
         $Fields = array (
             '{spooler}'    => 'soh.SPOOLER_ID',
             '{job_chain}'   => 'soh.JOB_CHAIN',
@@ -475,8 +478,105 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
             }
             
             if ($Nb[$id]>$history) continue;
-            list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );    
-            $list .=  '<row id="'.$line['HISTORY_ID'].'"  style="background-color: '.$color.';">';
+            
+            $line['DBID'] = $line['HISTORY_ID']; 
+            $line['status'] = $status;
+            if ($line['ERROR_TEXT']!='') {
+                $line['information'] = $line['ERROR_TEXT'];
+            }
+            else {
+                $line['information'] = $line['TITLE'];
+            }
+            $Infos[$id] = $line;
+        }
+        
+        // On complete avec les ordres stockés
+        $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID',
+            '{job_chain}'  => 'JOB_CHAIN',
+            '{order_id}'  => 'ID',
+/*          'created_time' => 'CREATED_TIME',
+*/          '{start_time}' => 'MOD_TIME'
+                );
+        
+        $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ID as ORDER_ID','PRIORITY','STATE','STATE_TEXT','TITLE','CREATED_TIME','MOD_TIME','ORDERING','INITIAL_STATE','ORDER_XML' ) )
+                .$sql->From( array('SCHEDULER_ORDERS') )
+                .$sql->Where( $Fields )
+                .$sql->OrderBy( array('ORDERING desc') );
+        //when we want to store the planned orders, we also need to store the job chains which the planned orders belong.
+        $res = $data->sql->query( $qry );
+        $nb = 0;
+        while ($line = $data->sql->get_next($res)) {
+            $CI = explode('/',$line['JOB_CHAIN']);
+            $chain = array_pop($CI);
+            $dir = implode('/',$CI);
+            
+            $on = $line['SPOOLER_ID'].'/'.$dir.'/'.$line['ORDER_ID'];
+            $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
+            
+            $id = $cn.'/'.$line['ORDER_ID'];
+            
+            // on pense a proteger les ORDER_ID
+            $jn = $cn.'/'.str_replace('/','£',$line['ORDER_ID']);
+
+            $order_status = 'ACTIVATED';
+            if ($line['ORDER_XML']!=null)
+            {
+                if (gettype($line['ORDER_XML'])=='object') {
+                    $order_xml = $tools->xml2array($line['ORDER_XML']->load());
+                }
+                else {
+                    $order_xml = $tools->xml2array($line['ORDER_XML']);
+                }
+                $setback = 0; $setback_time = '';
+                if (isset($order_xml['order_attr']['suspended']) && $order_xml['order_attr']['suspended'] == "yes")
+                {
+                    $order_status = "SUSPENDED";
+                }
+                elseif (isset($order_xml['order_attr']['setback_count']))
+                {
+                    $order_status = "SETBACK";
+                    $setback = $order_xml['order_attr']['setback_count'];
+                    $setback_time = $order_xml['order_attr']['setback'];
+                }
+                $next_time = '';
+                if (isset($order_xml['order_attr']['start_time'])) {
+                    $next_time = $order_xml['order_attr']['start_time'];
+                }
+                $at = '';
+                if (isset($order_xml['order_attr']['at'])) {
+                    $at = $date->Date2Local($order_xml['order_attr']['at'],$line['SPOOLER_ID']);
+                }
+                $hid = 0;
+                if (isset($order_xml['order_attr']['history_id'])) {
+                    $hid = $order_xml['order_attr']['history_id'];
+                }
+            }
+            
+            $line['DBID'] = 'O:'.$jn;
+
+            if ($at==''){
+                $at = $Infos[$id]['START_TIME']; 
+            }
+            $line['START_TIME'] = $at;
+            $line['END_TIME'] = $Infos[$id]['END_TIME'];;
+            $line['STEP'] = '';
+            $line['status'] = $order_status;
+            $line['information'] = $line['STATE_TEXT'];
+            $Infos[$id] = $line;
+        }
+
+        $Keys = array_keys($Infos);
+        sort($Keys);
+        
+        foreach ($Keys as $k) {
+            $line = $Infos[$k];
+            list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );
+            
+            $status = $line['status'];
+            if (isset($this->ColorStatus[$status])) $color=$this->ColorStatus[$status];
+                else $color='yellow';
+            $list .=  '<row id="'.$line['DBID'].'"  style="background-color: '.$color.';">';
             $list .=  '<cell>'.$line['SPOOLER_ID'].'</cell>';
             $list .=  '<cell>'.$line['JOB_CHAIN'].'</cell>';
             $list .=  '<cell>'.$line['ORDER_ID'].'</cell>';
@@ -485,15 +585,10 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
             $list .=  '<cell>'.$status.'</cell>';
             $list .=  '<cell>'.$start.'</cell>';
             $list .=  '<cell>'.$end.'</cell>';
-            if ($line['ERROR_TEXT']!='') {
-                $information = $line['ERROR_TEXT'];
-            }
-            else {
-                $information = $line['TITLE'];
-            }
-            $list .=  '<cell>'.$information.'</cell>';
+            $list .=  '<cell>'.$line['information'].'</cell>';
             $list .=  '</row>';
         }
+        
         $list .=  "</rows>\n";
         $response->setContent( $list );
         return $response;        

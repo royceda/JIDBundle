@@ -1,5 +1,5 @@
 {# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
-{% extends "AriiJIDBundle::layout_scheduler.html.twig" %}
+{% extends "AriiJIDBundle::layout.html.twig" %}
 {% block content %}
 <!--[if !IE]>start section<![endif]-->	
 <div class="section table_section">
@@ -7,9 +7,9 @@
 	<div class="title_wrapper">
 		<h2>{{ "Overview" | trans }}</h2>
 <ul  class="section_menu">
-      <li><a href="{{ url('arii_JID_index') }}" class=""><span><span><img src="{{ asset('arii/images/wa/chart_pie.png') }}"/>&nbsp;{{ "Chart" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_timeline') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
-    <li><a href="{{ url('arii_JID_last') }}" class=""><span><span><img src="{{ asset('arii/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_index') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/chart_pie.png') }}"/>&nbsp;{{ "Chart" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_timeline') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_last') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
 </ul>
 		<span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
@@ -69,8 +69,8 @@ var ordered = false; // que des standalone
     
 var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 var toolbar = dhxLayout.attachToolbar();
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-toolbar.loadXML("{{ url('arii_JID_timeline_toolbar') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_timeline_toolbar') }}");
 
 //scheduler.locale.labels.section_custom="Section";
 scheduler.config.details_on_create=false;

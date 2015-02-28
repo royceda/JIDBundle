@@ -8,10 +8,10 @@
 		<h2>{{ "Jobs" | trans }}</h2>
 <ul  class="section_menu">
 {% if arii_pro %}
-    <li><a href="{{ url('arii_JID_history') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
 {% endif %}
-    <li><a href="{{ url('arii_JID_history_last') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_history_timeline') }}" class=""><span><span><img src="{{ asset('arii/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history_last') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_history_timeline') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
 </ul>
                 <span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
@@ -55,14 +55,14 @@ var ordered = 0; // que des standalone
 var currentrow;
 
 menu = new dhtmlXMenuObject(null);
-menu.setIconsPath( "{{ asset('arii/images/menu/') }}" );
+menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);
 menu.loadStruct("{{ url('xml_JID_menu_activities') }}");
 
 var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 var toolbar = dhxLayout.attachToolbar();
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
 
 toolbar.loadStruct("{{ url('xml_JID_toolbar_activities') }}", function() {
 {% if  app.request.get('ordered')>0 %}
@@ -75,7 +75,7 @@ dhxLayout.cells("a").setHeight(295);
     
 var mygrid = dhxLayout.cells("a").attachGrid();
 mygrid.selMultiRows = true;
-mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 // mygrid.enableTreeCellEdit(false);
 mygrid.setHeader("{{ "Spooler" | trans }},{{ "Path" | trans }},{{ "Job" | trans }},{{ "Status" | trans }},#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Exit Code" | trans }},{{ "Timeline" | trans }},&nbsp;");
 mygrid.attachHeader("#select_filter,#text_filter,#text_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter,#text_filter,<img src='{{app.request.baseurl}}/public/gantt'/>,#rspan");
@@ -113,7 +113,7 @@ mygrid.i18n.paging={
 mygrid.setColumnHidden(9,true);   
 {% if  app.request.get('status') != '' %}
 max_history=20;
-mygrid.loadXML( "{{ url('xml_JID_last') }}?ordered="+ordered+"&history="+max_history, function() {
+mygrid.loadStruct( "{{ url('xml_JID_last') }}?ordered="+ordered+"&history="+max_history, function() {
 //    currentrow = mygrid.getRowId(0);
     toolbar.setItemState("deploy",true);
     toolbar.setItemState("history",true);
@@ -122,7 +122,7 @@ mygrid.loadXML( "{{ url('xml_JID_last') }}?ordered="+ordered+"&history="+max_his
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadXML( "{{ url('xml_JID_last') }}?history="+max_history);
+mygrid.loadStruct( "{{ url('xml_JID_last') }}?history="+max_history);
 {% endif %}
 
 mygrid.enableLightMouseNavigation( true );
@@ -294,7 +294,7 @@ function GridRefresh() {
     toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     mygrid.refreshFilters();
 //    var page_number = mygrid.currentPage;
-    mygrid.loadXML("{{ url('xml_JID_last') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
+    mygrid.loadStruct("{{ url('xml_JID_last') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
 //        mygrid.showRow(currentrow); 
 //        mygrid.changePage(page_number);
         mygrid.refreshFilters();
@@ -317,7 +317,7 @@ function GlobalRefresh() {
 var dhxWins = new dhtmlXWindows();
 // dhxWins.enableAutoViewport(false);
 dhxWins.attachViewportTo("wrapper");
-// dhxWins.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+// dhxWins.setImagePath("{{ asset('bundles/ariicore/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
 
 /* Gestion du menu contextuel */
 function onButtonClick(menuitemId, type) {
@@ -395,8 +395,8 @@ function StartJob( id ) {
     
     var toolbar;
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_start_job') }}",function(){
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_start_job') }}",function(){
         GBCalendar = new dhtmlXCalendarObject(toolbar.getInput('ref_date'));
         GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
         GBCalendar.setWeekStartDay(1);
@@ -404,7 +404,7 @@ function StartJob( id ) {
     
     var toolbar2;
     toolbar2 = winLayout.cells("b").attachToolbar();
-    toolbar2.setIconsPath("{{ asset('arii/images/toolbar/') }}");
+    toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     toolbar2.loadXML("{{ url('arii_JID_toolbar_start_job_param') }}");
 
     var dhxgrid = winLayout.cells("b").attachGrid();
@@ -476,8 +476,8 @@ function KillJob( id ) {
 
     var toolbar;
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_kill_job') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_kill_job') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch (itemid) {
@@ -518,8 +518,8 @@ function ShowWhy( id ) {
     winLayout.cells("a").progressOn();
     
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_job_why') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_job_why') }}");
     toolbar.attachEvent("onClick",function(buttonId){
         switch (buttonId) {
             case "cancel":
@@ -554,8 +554,8 @@ function StopJob( id ) {
 
     var toolbar;
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_stop_job') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_stop_job') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch (itemid) {
@@ -598,8 +598,8 @@ function PurgeJob( id ) {
 
     var toolbar;
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_purge_job') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_purge_job') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch (itemid) {
@@ -642,8 +642,8 @@ function UnstopJob( id ) {
 
     var toolbar;
     toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-    toolbar.loadXML("{{ url('arii_JID_toolbar_unstop_job') }}");
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar_unstop_job') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch (itemid) {

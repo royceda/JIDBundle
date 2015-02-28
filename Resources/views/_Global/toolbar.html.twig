@@ -13,7 +13,7 @@ autorefresh = setInterval( "GlobalRefresh()", refreshing*1000 );
 var GlobalBar,
     GBCalendar;
 GlobalBar = new dhtmlXToolbarObject("GlobalBarObj", "dhx_skyblue");
-GlobalBar.setIconsPath( "{{ asset('arii/images/toolbar/') }}" );
+GlobalBar.setIconsPath( "{{ asset('bundles/ariicore/images/toolbar/') }}" );
 GlobalBar.loadXML( "{{ url('xml_toolbar') }}", function(){
     GBCalendar = new dhtmlXCalendarObject(GlobalBar.getInput('ref_date'));
 //    GBCalendar.enableTime (true);
@@ -196,7 +196,7 @@ function About() {
     var WAbout = new dhtmlXWindows();
     WAbout.enableAutoViewport(false);
     WAbout.attachViewportTo("wrapper");
-    WAbout.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+    WAbout.setImagePath("{{ asset('bundles/ariicore/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
 
     msg = WAbout.createWindow( "about" , (document.getElementById("wrapper").offsetWidth-largeur)/2, 100, largeur, 300 ); 
     msg.setText("{{ "About Ari'i" | trans }}");

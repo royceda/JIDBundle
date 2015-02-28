@@ -92,38 +92,6 @@ class TimelineController extends Controller
         return $this->render('AriiJIDBundle:Default:timeline.html.twig', array('refresh' => $refresh, 'Timeline' => $Timeline ) );
     }
 
-    public function listOLDAction()
-    {
-        $dhtmlx = $this->container->get('arii_core.dhtmlx');
-        $data = $dhtmlx->Connector('scheduler');
-
-       $session =  $this->container->get('arii_core.session'); 
-        $this->ref_date  =  $session->getRefDate();
-
-        $sql = $this->container->get('arii_core.sql');
-        $Fields = array (
-            '{spooler}'    => 'sh.SPOOLER_ID',
-            '{!(spooler)}'    => 'sh.JOB_NAME',
-            '{job_name}'   => 'sh.JOB_NAME',
-            '{error}'      => 'sh.ERROR',
-            '{start_time}' => 'sh.START_TIME',
-            '{end_time}'   => 'sh.END_TIME' );
-
-  /*        $qry = 'SELECT distinct sh.SPOOLER_ID as label, sh.SPOOLER_ID as value
-                  FROM SCHEDULER_HISTORY sh
-                  where not(sh.JOB_NAME="(Spooler)") and '.$sql->History($Fields).' order by sh.SPOOLER_ID';  
-          $options->render_sql($qry,"section_id","value,label");
- */          
-          $qry = $sql->Select(array('sh.ID','sh.SPOOLER_ID as section_id','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID',"sh.ID as color","sh.ID as textColor"))  
-                  .$sql->From(array('SCHEDULER_HISTORY sh'))
-                  .$sql->Where($Fields)
-//                  .' where not(sh."JOB_NAME"="(Spooler)") and '..' order by ';  
-                  .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME'));
-//          $data->set_options("section_id", $options );
-          $data->event->attach("beforeRender", array( $this, "color_rows") );
-          $data->render_sql($qry,"ID","START_TIME,END_TIME,JOB_NAME,color,textColor,section_id");
-    }
-    
     function color_rows($row){
         $row->set_value("textColor", 'yellow');
         $row->set_value("JOB_NAME", '<img src="'.$this->images.'/running.png"/>');

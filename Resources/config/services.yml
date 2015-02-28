@@ -11,4 +11,8 @@ services:
         class: Arii\JIDBundle\Twig\JIDExtension
         tags:
             - { name: twig.extension }
-            
+
+    arii_jid.sos:
+        class: Arii\JIDBundle\Service\AriiSOS
+        arguments: ["@arii_core.dhtmlx", "@arii_core.sql"]
+        

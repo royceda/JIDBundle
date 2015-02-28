@@ -46,15 +46,15 @@
 dhtmlx.skin = "dhx_skyblue";
 
 var menu = new dhtmlXMenuObject();
-menu.setIconsPath( "{{ asset('arii/images/menu/') }}" );
-/*menu.setImagePath( "{{ asset('arii/images/menu') }}" );*/
+menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
+/*menu.setImagePath( "{{ asset('bundles/ariicore/images/menu') }}" );*/
 menu.renderAsContextMenu();
 menu.loadXML("{{ url('arii_JID_menu_history') }}");
 
 var toolbar;
 toolbar = new dhtmlXToolbarObject("toolbarObj");
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-toolbar.loadXML("{{ url('arii_JID_toolbar_history') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar_history') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
         case "refresh":
@@ -68,7 +68,7 @@ toolbar.attachEvent( "onClick", function(id, value) {
 var mygrid;
 
 var mygrid = new dhtmlXGridObject( "mygrid" );
-mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 mygrid.setHeader( "{{ "Spooler" | trans }},{{ "Hostname" | trans }},{{ "Port" | trans }}" );
 mygrid.attachHeader("#text_filter,#text_filter,#numeric_filter");
 mygrid.setColumnIds(  "scheduler,HOSTNAME,TCP_PORT" );
@@ -80,13 +80,13 @@ mygrid.enablePaging(true, 25, 20, "recinfoArea");
 mygrid.setPagingSkin("bricks");
 mygrid.init();
 mygrid.setSkin('dhx_skyblue');
-mygrid.loadXML( "{{ url('arii_JID_db_spoolers') }}" );
+mygrid.loadStruct( "{{ url('arii_JID_db_spoolers') }}" );
 mygrid.enableLightMouseNavigation( true );
 
 function GlobalRefresh() {
     toolbar.setItemText( "refresh", "{{ 'Refreshing...' | trans}}" );
     //mygrid.clearAll();
-    mygrid.loadXML( "{{ url('arii_JID_db_spoolers') }}" );
+    mygrid.loadStruct( "{{ url('arii_JID_db_spoolers') }}" );
     var currentTime = new Date()
     var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
     toolbar.setItemText( "refresh", FormatTime(nextTime));

@@ -61,8 +61,8 @@ style="right:280px;"></div>
 dhtmlx.skin = "dhx_skyblue";
 var dhxLayout = new dhtmlXLayoutObject("mygrid","3U");
 var toolbar = dhxLayout.attachToolbar();
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-toolbar.loadXML("{{ url('arii_JID_toolbar') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
         case "refresh":

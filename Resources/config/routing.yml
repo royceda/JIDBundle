@@ -68,52 +68,6 @@ xml_JID_job_toolbar_execute:
 
     
     
-    
-
-arii_JID_timeline:
-    pattern:  /timeline
-    defaults: { _controller: AriiJIDBundle:Timeline:index }
-
-arii_JID_last:
-    pattern:  /activities
-    defaults: { _controller: AriiJIDBundle:Default:last }
-
-xml_JID_last:
-    pattern:  /activities/list.xml
-    defaults: { _controller: AriiJIDBundle:Default:last_xml }
-
-arii_JID_toolbar:
-    pattern:  /toolbar
-    defaults: { _controller: AriiJIDBundle:Toolbar:default }
-
-arii_JID_toolbar_footer:
-    pattern:  /toolbar/footer
-    defaults: { _controller: AriiJIDBundle:Toolbar:footer }
-
-arii_JID_toolbar_add_order:
-    pattern:  /toolbar/add_order
-    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_add_order }
-
-arii_JID_toolbar_start_orders:
-    pattern:  /toolbar/start_orders
-    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_start_orders}
-
-arii_JID_orders_selected_orders:
-    pattern:  /orders/selected_orders
-    defaults: { _controller: AriiJIDBundle:Orders:selected_orders }
-
-xml_JID_toolbar_global:
-    pattern:  /toolbar/global
-    defaults: { _controller: AriiJIDBundle:Toolbar:global }
-
-arii_JID_timeline_toolbar:
-    pattern:  /timeline/toolbar.xml
-    defaults: { _controller: AriiJIDBundle:Timeline:toolbar }
-
-arii_JID_history_timeline_toolbar:
-    pattern:  /history/timeline/toolbar.xml
-    defaults: { _controller: AriiJIDBundle:History:toolbar_timeline }
-
 # --------------------------------------------------------------------------
 # Orders
 # --------------------------------------------------------------------------
@@ -135,7 +89,25 @@ xml_JID_orders_grid:
 
 
 
+# --------------------------------------------------------------------------
+# Order
+# --------------------------------------------------------------------------
+xml_JID_order_toolbar_start:
+    pattern:  /order/toolbar_start.xml
+    defaults: { _controller: AriiJIDBundle:Order:toolbar_start }
 
+json_JID_order_form:
+    pattern:  /order/form.json
+    defaults: { _controller: AriiJIDBundle:Order:form }
+
+xml_JID_order_toolbar_params:
+    pattern:  /order/toolbar_params.xml
+    defaults: { _controller: AriiJIDBundle:Order:toolbar_params }
+
+xml_JID_order_params:
+    pattern:  /order/params.xml
+    defaults: { _controller: AriiJIDBundle:Order:params}
+    
 
 arii_JID_orders_list:
     pattern:  /orders/list
@@ -161,10 +133,6 @@ xml_JID_orders_list:
     pattern:  /orders/list.xml
     defaults: { _controller: AriiJIDBundle:Orders:list_xml }
 
-xml_JID_add_order_parameters:
-    pattern:  /add_order/parameters
-    defaults: { _controller: AriiJIDBundle:Toolbar:add_order_parameters}
-    
 xml_JID_orders_pie:
     pattern:  /orders/pie.xml
     defaults: { _controller: AriiJIDBundle:Orders:pie }
@@ -221,6 +189,55 @@ xml_JID_orders_toolbar_activities:
     pattern:  /orders/activities/toolbar.xml
     defaults: { _controller: AriiJIDBundle:Orders:toolbar_activities }
 
+
+
+    
+    
+ 
+
+arii_JID_timeline:
+    pattern:  /timeline
+    defaults: { _controller: AriiJIDBundle:Timeline:index }
+
+arii_JID_last:
+    pattern:  /activities
+    defaults: { _controller: AriiJIDBundle:Default:last }
+
+xml_JID_last:
+    pattern:  /activities/list.xml
+    defaults: { _controller: AriiJIDBundle:Default:last_xml }
+
+arii_JID_toolbar:
+    pattern:  /toolbar
+    defaults: { _controller: AriiJIDBundle:Toolbar:default }
+
+arii_JID_toolbar_footer:
+    pattern:  /toolbar/footer
+    defaults: { _controller: AriiJIDBundle:Toolbar:footer }
+
+arii_JID_toolbar_add_order:
+    pattern:  /toolbar/add_order
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_add_order }
+
+arii_JID_toolbar_start_orders:
+    pattern:  /toolbar/start_orders
+    defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_start_orders}
+
+arii_JID_orders_selected_orders:
+    pattern:  /orders/selected_orders
+    defaults: { _controller: AriiJIDBundle:Orders:selected_orders }
+
+xml_JID_toolbar_global:
+    pattern:  /toolbar/global
+    defaults: { _controller: AriiJIDBundle:Toolbar:global }
+
+arii_JID_timeline_toolbar:
+    pattern:  /timeline/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Timeline:toolbar }
+
+arii_JID_history_timeline_toolbar:
+    pattern:  /history/timeline/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:History:toolbar_timeline }
 
 # --------------------------------------------------------------------------
 # Activities

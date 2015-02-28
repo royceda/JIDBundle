@@ -8,7 +8,7 @@
 	<div class="title_wrapper">
 		<h2>{{ "Messages" | trans }}</h2>
 <ul  class="section_menu">                
-      <li><a href="{{ url('arii_JID_messages') }}" class="active"><span><span><img src="{{ asset('arii/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_messages') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
 </ul>
                 <span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
@@ -38,8 +38,8 @@ dhxLayout.cells("a").setHeight(315);
 var toolbar = dhxLayout.cells("a").attachToolbar();
 
 
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-toolbar.loadXML("{{ url('arii_JID_toolbar_refresh') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar_refresh') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
         case "refresh":
@@ -51,7 +51,7 @@ toolbar.attachEvent( "onClick", function(id, value) {
 });
 
 var mygrid = dhxLayout.cells("a").attachGrid();
-mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 mygrid.setHeader("{{ "Log time" | trans }},{{ "Spooler" | trans }},{{ "Severity" | trans }},{{ "Error" | trans }},{{ "Message" | trans }},{{ "Objects" | trans }},{{ "Count" | trans }}");
 mygrid.attachHeader("#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter");
 mygrid.setInitWidths("130,150,80,50,*,250,60,0");
@@ -81,7 +81,7 @@ mygrid.i18n.paging={
       last:"{{ "To last Page" | trans }}",
       of:" {{ "of" | trans }} ",
       notfound:"{{ "No Records Found" | trans }}" };
-mygrid.loadXML( "{{ url('xml_JID_messages') }}" );
+mygrid.loadStruct( "{{ url('xml_JID_messages') }}" );
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onXLE",function(){
     //will be called after each xml loading
@@ -100,7 +100,7 @@ mygrid.attachEvent("onRowDblClicked",function(id, value){
 function GlobalRefresh() {
     toolbar.setItemText( "refresh", "{{ 'Refreshing...' | trans}}" );
     //mygrid.clearAll();
-    mygrid.loadXML( "{{ url('xml_JID_messages') }}" );
+    mygrid.loadStruct( "{{ url('xml_JID_messages') }}" );
 }
 </script>
 		<!--[if !IE]>end section content top<![endif]-->

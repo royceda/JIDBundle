@@ -45,16 +45,16 @@
 dhtmlx.skin = "dhx_skyblue";
 
 var menu = new dhtmlXMenuObject();
-menu.setIconsPath( "{{ asset('arii/images/menu/') }}" );
-/*menu.setImagePath( "{{ asset('arii/images/menu') }}" );*/
+menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
+/*menu.setImagePath( "{{ asset('bundles/ariicore/images/menu') }}" );*/
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);
 menu.loadXML("{{ url('arii_JID_menu_history') }}");
 
 var toolbar;
 toolbar = new dhtmlXToolbarObject("toolbarObj");
-toolbar.setIconsPath("{{ asset('arii/images/toolbar/') }}");
-toolbar.loadXML("{{ url('arii_JID_toolbar_refresh') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar_refresh') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
         case "refresh":
@@ -81,7 +81,7 @@ var barChart;
 var myForm;
 
 mygrid = new dhtmlXGridObject( "mygrid" );
-mygrid.setImagePath( "{{ asset('arii/images/treegrid/') }}");
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 mygrid.setHeader("{{ "Log time" | trans }},{{ "Spooler" | trans }},{{ "Severity" | trans }},{{ "Error" | trans }},{{ "Message" | trans }},{{ "Information" | trans }},{{ "Count" | trans }},TASK");
 mygrid.attachHeader("#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter,#cspan");
 mygrid.setInitWidths("150,150,100,50,*,*,60,0");
@@ -94,7 +94,7 @@ mygrid.enablePaging(true, 30, 20, "recinfoArea");
 mygrid.setPagingSkin("bricks");
 mygrid.init();
 mygrid.setSkin('dhx_skyblue');
-mygrid.loadXML( "{{ url('arii_JID_db_messages') }}" );
+mygrid.loadStruct( "{{ url('arii_JID_db_messages') }}" );
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onXLE",function(){
     //will be called after each xml loading
@@ -123,7 +123,7 @@ function GridRefresh() {
 var dhxWins = new dhtmlXWindows();
 dhxWins.enableAutoViewport(false);
 dhxWins.attachViewportTo("wrapper");
-dhxWins.setImagePath("{{ asset('arii/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
+dhxWins.setImagePath("{{ asset('bundles/ariicore/js/dhtmlx/dhtmlxWindows/codebase/imgs/') }}");
 
 var nbwin=1;
 function JobLog( id ) { 
