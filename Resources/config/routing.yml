@@ -410,7 +410,7 @@ arii_JID_job_doc:
 # --------------------------------------------------------------------------
 arii_JID_planned:
     pattern:  /planned
-    defaults: { _controller: AriiJIDBundle:Planned:list }
+    defaults: { _controller: AriiJIDBundle:Planned:index }
 
 arii_JID_planned_list:
     pattern:  /planned/list
@@ -523,7 +523,7 @@ xml_JID_spoolers_menu:
 # --------------------------------------------------------------------------
 arii_JID_clusters:
     pattern:  /clusters
-    defaults: { _controller: AriiJIDBundle:Clusters:list }
+    defaults: { _controller: AriiJIDBundle:Clusters:index }
 
 xml_JID_clusters_list:
     pattern:  /clusters/list.xml

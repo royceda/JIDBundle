@@ -133,7 +133,7 @@ mygrid.i18n.paging={
       
 {% if  app.request.get('status') != '' %}
 max_history=20;
-mygrid.loadStruct( "{{ url('xml_JID_history_list') }}?ordered="+ordered+"&history="+max_history, function() {
+mygrid.loadXML( "{{ url('xml_JID_history_list') }}?ordered="+ordered+"&history="+max_history, function() {
     toolbar.setItemState("deploy",true);
     toolbar.setItemState("history",true);
     mygrid.getFilterElement(2).value='{{ app.request.get('status') }}';
@@ -141,7 +141,7 @@ mygrid.loadStruct( "{{ url('xml_JID_history_list') }}?ordered="+ordered+"&histor
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadStruct( "{{ url('xml_JID_history_list') }}?history="+max_history);
+mygrid.loadXML( "{{ url('xml_JID_history_list') }}?history="+max_history);
 {% endif %}
 mygrid.enableLightMouseNavigation( true );
 // mygrid.attachEvent("onXLE",function(){ });
@@ -326,7 +326,7 @@ function GridRefresh() {
     var checked_id = mygrid.getCheckedRows(1);
     if (checked_id === "")
     {
-        mygrid.loadStruct("{{ url('xml_JID_history_list') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
+        mygrid.loadXML("{{ url('xml_JID_history_list') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
             mygrid.refreshFilters();
             mygrid.filterByAll();
 {% if arii_save_states %}
@@ -336,7 +336,7 @@ function GridRefresh() {
         });    
     } else
     {
-        mygrid.loadStruct("{{ url('xml_JID_history_list') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered+"&checked_rows="+checked_id, function(){
+        mygrid.loadXML("{{ url('xml_JID_history_list') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered+"&checked_rows="+checked_id, function(){
 {% if arii_save_states %}
             mygrid.loadOpenStates();
 {% endif %}

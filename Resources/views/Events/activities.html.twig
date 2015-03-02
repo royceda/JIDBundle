@@ -92,7 +92,7 @@ mygrid.i18n.paging={
       last:"{{ "To last Page" | trans }}",
       of:" {{ "of" | trans }} ",
       notfound:"{{ "No Records Found" | trans }}" };
-mygrid.loadStruct( "{{ url('xml_JID_events_last') }}" );
+mygrid.loadXML( "{{ url('xml_JID_events_last') }}" );
 mygrid.enableLightMouseNavigation( true );
 
 dhxLayout.cells("b").hideHeader();
@@ -164,7 +164,7 @@ toolbar.attachEvent("onStateChange", function(id,state) {
  
 
 function GlobalRefresh() {
-    mygrid.loadStruct( "{{ url('xml_JID_events_last') }}" );
+    mygrid.loadXML( "{{ url('xml_JID_events_last') }}" );
     var currentTime = new Date();
     var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
     toolbar.setItemText( "refresh", FormatTime(nextTime));

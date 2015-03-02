@@ -16,9 +16,12 @@ class MessagesController extends Controller
           $this->images = $request->getUriForPath('/../arii/images/wa');          
     }
 
-    public function indexAction()   
+    public function indexAction()
     {
-        return $this->render('AriiJIDBundle:Messages:index.html.twig' );
+      $arii_pro = $this->container->getParameter('arii_pro');
+      if ($arii_pro === true) 
+        return $this->render('AriiJIDBundle:Messages:treegrid.html.twig' );
+      return $this->render('AriiJIDBundle:Messages:grid.html.twig' );
     }
     
     public function pieAction()

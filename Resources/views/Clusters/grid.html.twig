@@ -1,14 +1,13 @@
 {# src/Arii/JIDBundle/Resources/views/index.html.twig #}
-
 {% extends "AriiJIDBundle::layout.html.twig" %}
 {% block content %}
 <!--[if !IE]>start section<![endif]-->	
 <div class="section table_section">
 	<!--[if !IE]>start title wrapper<![endif]-->
 	<div class="title_wrapper">
-		<h2>{{ "Spoolers" | trans }}</h2>
+		<h2>{{ "High availability" | trans }}</h2>
 <ul  class="section_menu">
-      <li><a href="{{ url('arii_JID_spoolers') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
+      <li><a href="{{ url('arii_JID_clusters') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
 </ul>		<span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
 	</div>
@@ -40,20 +39,11 @@ var dhxLayout = new dhtmlXLayoutObject("mygrid","1C");
 var toolbar;
 toolbar = dhxLayout.attachToolbar();
 toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-toolbar.loadStruct("{{ url('xml_JID_spoolers_toolbar') }}");
+toolbar.loadStruct("{{ url('xml_JID_clusters_toolbar') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
         case "refresh":
             GridRefresh();
-        break;
-    case "menu":
-        document.location.href = "{{ url('arii_JID_index') }}";
-        break;
-    case "menu_ha":
-        document.location.href = "{{ url('arii_JID_spoolers') }}";
-        break;
-    case "menu_msg":
-        document.location.href = "{{ url('arii_JID_messages') }}";
         break;
         default:
             alert(id);
@@ -63,25 +53,17 @@ toolbar.attachEvent( "onClick", function(id, value) {
 dhxLayout.cells("a").hideHeader();
 dhxLayout.cells("a").setHeight(300);
 var mygrid = dhxLayout.cells("a").attachGrid();
-var sb = dhxLayout.cells("a").attachStatusBar();
-dhxLayout.cells("a").vs[dhxLayout.cells("a").av].sbHeight = 40;
-sb.setText('<div id="recinfoArea"></div>');
 mygrid.selMultiRows = true;
-mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
-mygrid.enableTreeCellEdit(false);
-//mygrid.setHeader("Location,StaState,Title,Information,Next run time");
-mygrid.setHeader( "{{ "Spooler" | trans }},{{ "Status" | trans }},{{ "Start time" | trans }},{{ "Hostname" | trans }},{{ "Port" | trans }}" );
-mygrid.attachHeader("#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
-mygrid.setColumnIds(  "SCHEDULER,STATUS,START_TIME,HOSTNAME,TCP_PORT" );
-mygrid.setInitWidths( "*,100,130,200,80" );
-mygrid.setColTypes(   "ro,ro,ro,ro,ro" );
-mygrid.setColAlign(   "left,center,right,left,right" );
-mygrid.setColSorting( "str,str,str,str,int" );
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/wa/') }}");
+mygrid.setHeader( "{{ "Spooler" | trans }},{{ "Status" | trans }},#cspan,{{ "Running since" | trans }},{{ "Last heartbeat" | trans }},#cspan,{{ "PID" | trans }},{{ "Version" | trans }}" );
+mygrid.attachHeader("#text_filter,#select_filter,#cspan,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter");
+mygrid.setColumnIds(  "SCHEDULER,STATUS,ICON,RUNNING_SINCE,LAST_HEART_BEAT,DURATION,PID,VERSION" );
+mygrid.setInitWidths( "*,100,50,140,140,60,80,80,80" );
+mygrid.setColTypes(   "ro,ro,ro,ro,ro,ro,ro,ro,ro" );
+mygrid.setColAlign(   "left,center,center,right,right,right,right,right,right" );
+mygrid.setColSorting( "str,str,str,date,date,int,int,str" );
 mygrid.enableContextMenu(menu);
 mygrid.attachEvent("onBeforeContextMenu", onShowMenu );
-mygrid.enablePaging(true, 10, 3, "recinfoArea");
-mygrid.setPagingSkin("toolbar","dhx_skyblue");
-mygrid.setPagingWTMode(true,true,true,[5,10,20,50,100,200,500,1000]);
 mygrid.init();
 mygrid.setSkin('dhx_skyblue');
 mygrid.i18n.paging={
@@ -98,13 +80,12 @@ mygrid.i18n.paging={
       of:" {{ "of" | trans }} ",
       notfound:"{{ "No Records Found" | trans }}" };
 
-mygrid.loadXML( "{{ url('xml_JID_spoolers_list') }}" );
+mygrid.loadXML( "{{ url('xml_JID_clusters_list') }}" );
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onXLE",function(){
     mygrid.refreshFilters();
     mygrid.filterByAll();
 });
-
 function onShowMenu(rowId,cleInd,grid) {
     var status = grid.cells(rowId,1).getValue();
     if (status == 'PAUSED') {
@@ -243,7 +224,6 @@ function GridRefresh() {
     }
     toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     //mygrid.clearAll();
-    mygrid.loadXML( "{{ url('xml_JID_spoolers_list') }}"+'?time='+seconds );
 }
 
 </script>

@@ -91,8 +91,10 @@
                                     <ul class="sidebar_menu">
                                     <li class="job"><a href="{{ url('arii_JID_jobs') }}">&nbsp;{{ "Jobs" | trans  }}&nbsp;</a></li>
                                     <li class="orders"><a href="{{ url('arii_JID_orders') }}">&nbsp;{{ "Orders" | trans  }}&nbsp;</a></li>
-                                    <li class="schedule"><a href="{{ url('arii_JID_history') }}">&nbsp;{{ "Plan" | trans  }}&nbsp;</a></li>
+{% if arii_pro %}
+                                    <li class="schedule"><a href="{{ url('arii_JID_planned') }}">&nbsp;{{ "Plan" | trans  }}&nbsp;</a></li>
                                     <li class="spooler"><a href="{{ url('arii_JID_spoolers') }}">&nbsp;{{ "Spoolers" | trans  }}&nbsp;</a></li>
+{% endif %}
                                     <li class="cluster"><a href="{{ url('arii_JID_clusters') }}">&nbsp;{{ "High availability" | trans  }}&nbsp;</a></li>
                                     <li class="last error"><a href="{{ url('arii_JID_messages') }}">&nbsp;{{ "Messages" | trans  }}&nbsp;</a></li>
                                     </ul>
@@ -139,7 +141,6 @@ function resizeLayout(){
             dhxLayout.setSizes(false);
     },200);
 }
-
 // on gere les layouts
 {% if app.session.get('layout_header')=='false' %}
 document.getElementById(  "logo_user_details" ).style.display = 'none'; 

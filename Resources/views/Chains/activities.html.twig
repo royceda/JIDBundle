@@ -119,7 +119,7 @@ mygrid.i18n.paging={
  
 {% if  app.request.get('status') != '' %}
 max_history=20;
-mygrid.loadStruct( "{{ url('xml_JID_orders_last') }}?ordered="+ordered+"&history="+max_history, function() {
+mygrid.loadXML( "{{ url('xml_JID_orders_last') }}?ordered="+ordered+"&history="+max_history, function() {
     toolbar.setItemState("deploy",true);
     toolbar.setItemState("history",true);
     mygrid.getFilterElement(2).value='{{ app.request.get('status') }}';
@@ -127,7 +127,7 @@ mygrid.loadStruct( "{{ url('xml_JID_orders_last') }}?ordered="+ordered+"&history
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadStruct( "{{ url('xml_JID_orders_last') }}?history="+max_history);
+mygrid.loadXML( "{{ url('xml_JID_orders_last') }}?history="+max_history);
 {% endif %}
 mygrid.enableLightMouseNavigation( true );
 // mygrid.attachEvent("onXLE",function(){ });
@@ -335,7 +335,7 @@ function GridRefresh() {
 //    var page_number = mygrid.currentPage;
 var row = mygrid.getSelectedRowId();
 alert(row);
-    mygrid.loadStruct("{{ url('xml_JID_orders_last') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
+    mygrid.loadXML("{{ url('xml_JID_orders_last') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
 //        mygrid.changePage(page_number);
 mygrid.selectRow(row); 
         mygrid.refreshFilters();

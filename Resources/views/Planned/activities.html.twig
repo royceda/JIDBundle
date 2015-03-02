@@ -60,7 +60,7 @@ menu = new dhtmlXMenuObject();
 menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);
-menu.loadXML("{{ url('arii_JID_menu_history') }}");
+menu.loadStruct("{{ url('arii_JID_menu_history') }}");
 
 var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 var toolbar = dhxLayout.attachToolbar();
@@ -120,7 +120,7 @@ mygrid.i18n.paging={
 mygrid.setColumnHidden(9,true);   
 {% if  app.request.get('status') != '' %}
 max_history=20;
-mygrid.loadStruct( "{{ url('xml_JID_last') }}?ordered="+ordered+"&history="+max_history, function() {
+mygrid.loadXML( "{{ url('xml_JID_last') }}?ordered="+ordered+"&history="+max_history, function() {
     toolbar.setItemState("deploy",true);
     toolbar.setItemState("history",true);
     mygrid.getFilterElement(2).value='{{ app.request.get('status') }}';
@@ -128,7 +128,7 @@ mygrid.loadStruct( "{{ url('xml_JID_last') }}?ordered="+ordered+"&history="+max_
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadStruct( "{{ url('xml_JID_last') }}?history="+max_history);
+mygrid.loadXML( "{{ url('xml_JID_last') }}?history="+max_history);
 {% endif %}
 mygrid.enableLightMouseNavigation( true );
 // mygrid.attachEvent("onXLE",function(){ });
@@ -321,7 +321,7 @@ function GridRefresh() {
     }
     toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     var page_number = mygrid.currentPage;
-    mygrid.loadStruct("{{ url('xml_JID_last') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
+    mygrid.loadXML("{{ url('xml_JID_last') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
         mygrid.changePage(page_number);
         mygrid.refreshFilters();
         mygrid.filterByAll();

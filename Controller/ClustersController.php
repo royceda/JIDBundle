@@ -16,6 +16,14 @@ class ClustersController extends Controller
           $this->images = $request->getUriForPath('/../arii/images/wa');
     }
     
+    public function indexAction()
+    {
+      $arii_pro = $this->container->getParameter('arii_pro');
+      if ($arii_pro === true) 
+        return $this->render('AriiJIDBundle:Clusters:treegrid.html.twig' );
+      return $this->render('AriiJIDBundle:Clusters:grid.html.twig' );
+    }
+
     public function listAction()   
     {
         return $this->render('AriiJIDBundle:Clusters:list.html.twig' );

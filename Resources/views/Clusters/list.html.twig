@@ -1,5 +1,4 @@
 {# src/Arii/JIDBundle/Resources/views/index.html.twig #}
-
 {% extends "AriiJIDBundle::layout.html.twig" %}
 {% block content %}
 <!--[if !IE]>start section<![endif]-->	
@@ -33,7 +32,7 @@ menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 /*menu.setImagePath( "{{ asset('bundles/ariicore/images/menu') }}" );*/
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);
-menu.loadXML("{{ url('xml_JID_spoolers_menu') }}");
+menu.loadStruct("{{ url('xml_JID_spoolers_menu') }}");
 
 var dhxLayout = new dhtmlXLayoutObject("mygrid","1C");
 
@@ -54,9 +53,6 @@ toolbar.attachEvent( "onClick", function(id, value) {
 dhxLayout.cells("a").hideHeader();
 dhxLayout.cells("a").setHeight(300);
 var mygrid = dhxLayout.cells("a").attachGrid();
-var sb = dhxLayout.cells("a").attachStatusBar();
-dhxLayout.cells("a").vs[dhxLayout.cells("a").av].sbHeight = 40;
-sb.setText('<div id="recinfoArea"></div>');
 mygrid.selMultiRows = true;
 mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 mygrid.enableTreeCellEdit(false);
@@ -90,7 +86,7 @@ mygrid.i18n.paging={
       of:" {{ "of" | trans }} ",
       notfound:"{{ "No Records Found" | trans }}" };
 
-mygrid.loadStruct( "{{ url('xml_JID_clusters_list') }}" );
+mygrid.loadXML( "{{ url('xml_JID_clusters_list') }}" );
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onXLE",function(){
     mygrid.refreshFilters();
@@ -237,7 +233,7 @@ function GridRefresh() {
     }
     toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     //mygrid.clearAll();
-    mygrid.loadStruct( "{{ url('xml_JID_clusters_list') }}"+'?time='+seconds , function(){
+    mygrid.loadXML( "{{ url('xml_JID_clusters_list') }}"+'?time='+seconds , function(){
             mygrid.loadOpenStates();
         });
 }

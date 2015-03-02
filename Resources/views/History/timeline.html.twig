@@ -71,7 +71,7 @@ menu = new dhtmlXMenuObject();
 menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 menu.renderAsContextMenu();
 // menu.attachEvent("onClick", onButtonClick);
-menu.loadXML("{{ url('arii_JID_menu_history') }}");
+menu.loadStruct("{{ url('arii_JID_menu_history') }}");
 */
 var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 var toolbar = dhxLayout.attachToolbar();

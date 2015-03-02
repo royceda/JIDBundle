@@ -49,7 +49,7 @@ menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 /*menu.setImagePath( "{{ asset('bundles/ariicore/images/menu') }}" );*/
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);
-menu.loadXML("{{ url('arii_JID_menu_history') }}");
+menu.loadStruct("{{ url('arii_JID_menu_history') }}");
 
 var toolbar;
 toolbar = new dhtmlXToolbarObject("toolbarObj");
@@ -94,7 +94,7 @@ mygrid.enablePaging(true, 30, 20, "recinfoArea");
 mygrid.setPagingSkin("bricks");
 mygrid.init();
 mygrid.setSkin('dhx_skyblue');
-mygrid.loadStruct( "{{ url('arii_JID_db_messages') }}" );
+mygrid.loadXML( "{{ url('arii_JID_db_messages') }}" );
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onXLE",function(){
     //will be called after each xml loading

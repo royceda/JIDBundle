@@ -46,7 +46,7 @@ menu = new dhtmlXMenuObject();
 menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);
-menu.loadXML("{{ url('arii_JID_menu_orders') }}");
+menu.loadStruct("{{ url('arii_JID_menu_orders') }}");
 
 var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 var toolbar = dhxLayout.attachToolbar();
@@ -145,14 +145,14 @@ mygrid.i18n.paging={
       notfound:"{{ "No Records Found" | trans }}" };
 
 {% if  app.request.get('status') != '' %}
-mygrid.loadStruct( "{{ url('xml_JID_orders_list') }}", function() {
+mygrid.loadXML( "{{ url('xml_JID_orders_list') }}", function() {
 //    toolbar.setItemState("deploy",true);
     mygrid.getFilterElement(4).value='{{ app.request.get('status') }}';
 //    mygrid.filterBy(4,"{{ app.request.get('status') }}",true);
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadStruct( "{{ url('xml_JID_orders_list') }}");
+mygrid.loadXML( "{{ url('xml_JID_orders_list') }}");
 {% endif %}
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onRowSelect",function(id,ind){
@@ -343,7 +343,7 @@ function GridRefresh() {
     var checkedRows = mygrid.getCheckedRows(1);
     if (checkedRows === "")
     {
-        mygrid.loadStruct( "{{ url('xml_JID_orders_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps, function(){
+        mygrid.loadXML( "{{ url('xml_JID_orders_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps, function(){
 //            mygrid.loadOpenStates();
 //            toolbar.setItemState("deploy",false);
             mygrid.changePage(page_number);
@@ -353,7 +353,7 @@ function GridRefresh() {
         });
     } else
     {
-        mygrid.loadStruct( "{{ url('xml_JID_orders_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps+"&checked_rows="+encodeURIComponent(checkedRows), function(){
+        mygrid.loadXML( "{{ url('xml_JID_orders_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps+"&checked_rows="+encodeURIComponent(checkedRows), function(){
 //            mygrid.loadOpenStates();
 //            toolbar.setItemState("deploy",false);
             mygrid.changePage(page_number); 

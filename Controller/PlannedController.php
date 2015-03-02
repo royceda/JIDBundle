@@ -18,6 +18,14 @@ class plannedController extends Controller
           $this->images = $request->getUriForPath('/../arii/images/wa');
     }
 
+    public function indexAction()
+    {
+      $arii_pro = $this->container->getParameter('arii_pro');
+      if ($arii_pro === true) 
+        return $this->render('AriiJIDBundle:Planned:treegrid.html.twig' );
+      return $this->render('AriiJIDBundle:Planned:grid.html.twig' );
+    }
+
     public function icalAction()
     {
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
