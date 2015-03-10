@@ -1,18 +1,17 @@
-{# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
+{# src/Arii/JIDBundle/Resources/views/History/list.html.twig #}
 {% extends "AriiJIDBundle::layout.html.twig" %}
 {% block content %}
 <!--[if !IE]>start section<![endif]-->	
 <div class="section table_section">
 	<!--[if !IE]>start title wrapper<![endif]-->
 	<div class="title_wrapper">
-		<h2>{{ "Orders" | trans }}</h2>
+		<h2>{{ "Jobs" | trans }}</h2>
 <ul  class="section_menu">
 {% if arii_pro %}
-    <li><a href="{{ url('arii_JID_orders_treegrid') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/tree.png') }}"/>&nbsp;{{ "Tree" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
 {% endif %}
-    <li><a href="{{ url('arii_JID_orders_grid') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_orders_timeline') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
-    <li><a href="{{ url('arii_JID_orders_last') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history_last') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_history_timeline') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
 </ul>
                 <span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
@@ -27,7 +26,7 @@
 					<div class="sct_left">
                                                 <div class="sct_right">
     <!--div id="mygrid" style="height:326px;background-color:white;width:100%"></div> -->
-    <div id="mygrid" style="height:576px;background-color:white;position:relative;overflow-x: auto; overflow-y: auto;"></div>
+    <div id="mygrid" style="height:556px;background-color:white;position:relative;overflow:hidden;"></div>
 		
 						</div>
 					</div>
@@ -44,6 +43,17 @@
 </div>
 <!--[if !IE]>end section<![endif]-->
 <script language="javascript">
+/*
+var w = window,
+d = document,
+e = d.documentElement,
+g = d.getElementsByTagName('body')[0],
+x = w.innerWidth || e.clientWidth || g.clientWidth,
+y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+var obj = document.getElementById('mygrid');
+obj.style.height = (y-300)+"px";
+*/
 var autorefresh = setInterval( "GridRefresh()",30000);
 var max_history = 0; // pas d'historique
 {% if  app.request.get('ordered')>0 %}
@@ -53,59 +63,62 @@ var ordered = 0; // que des standalone
 {% endif %}
 
 menu = new dhtmlXMenuObject(null);
-menu.setIconsPath( "{{ asset('bundles/ariicore/images/wa/') }}" );
+menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 menu.renderAsContextMenu();
-menu.loadStruct("{{ url('xml_JID_orders_menu') }}");
+menu.loadStruct("{{ url('arii_JID_menu_history') }}");
 
 var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 var toolbar = dhxLayout.attachToolbar();
 toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-toolbar.loadStruct("{{ url('xml_JID_orders_toolbar') }}", function() {
+toolbar.loadStruct("{{ url('xml_JID_toolbar_history') }}", function() {
 {% if  app.request.get('ordered')>0 %}
 toolbar.setItemState("ordered",true);
 {% endif %}
 });
-/*
-toolbar.attachEvent("onStateChange",function(id,state){
-    dhtmlxAjax.get("{{ url('arii_global_toolbar_update') }}?"+id+"="+state,function(loader){
-        GlobalRefresh();
-    });
+toolbar.attachEvent("onValueChange",function(id,value){
+       dhxLayout.cells("a").progressOn();
+       dhtmlxAjax.get( "{{ url('arii_session_update') }}?ref_past="+value, function() {
+            dhxLayout.cells("a").progressOff();
+            GlobalRefresh();
+       });
 });
-*/
 dhxLayout.cells("a").hideHeader();
 dhxLayout.cells("a").setHeight(295);
-dhxLayout.cells("b").collapse();
-dhxLayout.cells("b").setText( "{{ "Detail" | trans }}" );
     
 var mygrid = dhxLayout.cells("a").attachGrid();
-//mygrid.selMultiRows = true;
+mygrid.selMultiRows = true;
 mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
-// mygrid.enableTreeCellEdit(false);
-mygrid.setHeader("{{ "Spooler" | trans }},{{ "Job chain" | trans }},{{ "Order" | trans }},{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Information" | trans }}");
-mygrid.attachHeader("#select_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter,#numeric_filter");
-mygrid.setInitWidths("100,*,140,40,120,100,130,130,*");
-mygrid.setColAlign("left,left,left,right,left,center,right,right,left");
-mygrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro");
-mygrid.setColSorting("str,str,str,str,str,str,date,date,str");
+mygrid.enableTreeCellEdit(false);
+mygrid.setHeader("{{ "Location" | trans }},#cspan,{{ "Status" | trans }},#cspan,#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Exit Code" | trans }},{{ "Next start time" | trans }},&nbsp;");
+mygrid.attachHeader("#text_filter,#cspan,#select_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#rspan");
+mygrid.setInitWidths("0,*,90,0,30,130,130,130,60,120,20");
+mygrid.setColAlign("left,left,center,center,center,right,right,right,right,right,right");
+mygrid.setColTypes("ro,tree,ro,ro,ro,ro,ro,ro,ro,ro,ro");
+mygrid.setColSorting("str,str,str,str,str,date,date,str,str,str,date");
+mygrid.setColumnHidden(9,true);
+mygrid.enableTreeGridLines(false);
 mygrid.enableContextMenu(menu);
 mygrid.attachEvent("onBeforeContextMenu", onShowMenu);
-
-{% if arii_pro %}
+mygrid.attachEvent("onOpenEnd",function(index, state) {
+{% if arii_save_states %}
+    mygrid.saveOpenStates();
+{% endif %}
+    dhtmlxAjax.get( "{{ url('arii_session_update') }}?state=history::"+encodeURIComponent(index)+'::'+state, function (loader) {
+    });    
+});
 /*
 var sb = dhxLayout.cells("a").attachStatusBar();
 dhxLayout.cells("a").vs[dhxLayout.cells("a").av].sbHeight = 30;
 sb.setText('<div id="recinfoArea"></div>');
+*/
 mygrid.enablePaging(true, 20, 5, "recinfoArea");
 mygrid.setPagingSkin("toolbar","dhx_skyblue");
 mygrid.setPagingWTMode(true,true,true,[ 5, 10, 20, 50, 100, 200, 400, 800]);
-*/
-// mygrid.setFiltrationLevel(-2);
-{% endif %}
+mygrid.setFiltrationLevel(-2);
 mygrid.init();
 mygrid.setSkin('dhx_skyblue');
 mygrid.enableAlterCss("even_row","odd_row");
-{% if arii_pro %}
-    mygrid.i18n.paging={
+mygrid.i18n.paging={
       results: "{{ "Results" | trans }}",
       records: "{{ "From" | trans }} ",
       to: " {{ "to" | trans }} ",
@@ -118,10 +131,10 @@ mygrid.enableAlterCss("even_row","odd_row");
       last:"{{ "To last Page" | trans }}",
       of:" {{ "of" | trans }} ",
       notfound:"{{ "No Records Found" | trans }}" };
-{% endif %}
+      
 {% if  app.request.get('status') != '' %}
 max_history=20;
-mygrid.loadXML( "{{ url('xml_JID_orders_grid') }}?ordered="+ordered+"&history="+max_history, function() {
+mygrid.loadXML( "{{ url('xml_JID_history_list') }}?ordered="+ordered+"&history="+max_history, function() {
     toolbar.setItemState("deploy",true);
     toolbar.setItemState("history",true);
     mygrid.getFilterElement(2).value='{{ app.request.get('status') }}';
@@ -129,42 +142,26 @@ mygrid.loadXML( "{{ url('xml_JID_orders_grid') }}?ordered="+ordered+"&history="+
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadXML( "{{ url('xml_JID_orders_grid') }}?history="+max_history);
+mygrid.loadXML( "{{ url('xml_JID_history_list') }}?history="+max_history);
 {% endif %}
 mygrid.enableLightMouseNavigation( true );
 // mygrid.attachEvent("onXLE",function(){ });
-function OrderDetail(id) {
-    dhxLayout.cells("b").progressOn();
-    dhxLayout.cells("b").setText("{{ "Order" | trans }}");
-    tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_order') }}?id="+id,true);
-    // dans tous les cas on recharge le log
-    hstgrid.load( "{{ url('arii_JID_grid_history_order') }}?id="+ id, function () {
-        loggrid.load( "{{ url('arii_JID_order_log') }}?id="+ id, function () {
-        // tabbar.cells("b5").attachURL("{{ url('arii_JID_process_graphviz') }}?order_id="+id,true);
-        dhxLayout.cells("b").expand();
-        toolbar.setItemState("contract",true);
-        dhxLayout.cells("b").progressOff();
-      });
-    });
-}
 
 mygrid.attachEvent("onRowDblClicked",function(id, value){
-    return true;
-     if(mygrid.getUserData(id,"type")==="step_job")
-    {
+
+    if ( this.getUserData(id,"type") === "spooler" )  {
+    }
+    else /* if  ( this.getUserData(id,"jobtype") === "instance" )  */ {
        dhxLayout.cells("b").progressOn();
-       id = id.substr(1);
-       dhxLayout.cells("b").setText("{{ "Job" | trans }}");
-       tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}?id="+id,true);
-       jobloggrid.load( "{{ url('xml_JID_job_log') }}?id="+id, function () {
-            tabbar.showTab("b3");
-            tabbar.hideTab("b2",true);
-            tabbar.hideTab("b4",true);
-            dhxLayout.cells("b").progressOff();
+        tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}?id="+id,true); 
+        loggrid.loadXML("{{ url('xml_JID_job_log') }}?id="+id); 
+        hstgrid.clearAll();
+        hstgrid.loadXML( "{{ url('arii_JID_grid_history_job') }}?id="+id, function () {
+           dhxLayout.cells("b").expand();
+           toolbar.setItemState("contract",true);
+           dhxLayout.cells("b").progressOff();
         });
-    } 
-    else
-    {   OrderDetail(id);   }
+    }
 });
 
 toolbar.attachEvent( "onClick", function(id, value) {
@@ -179,6 +176,15 @@ toolbar.attachEvent( "onClick", function(id, value) {
             // mygrid.setColumnHidden(1,true);
             mygrid.printView();
             break;
+    case "start_jobs":
+        StartJobs();
+        break;
+    case "stop_jobs":
+        StopJobs();
+        break;
+    case "unstop_jobs":
+        UnstopJobs();
+        break;
     case "rss":
         document.location.href = "{{ url('rss_JID_history_job') }}";
         break;
@@ -213,7 +219,6 @@ toolbar.attachEvent( "onClick", function(id, value) {
             alert(id);
     }
 });
-
 toolbar.attachEvent("onStateChange", function(id,state) {
     switch (id) {
         case 'deploy':
@@ -256,25 +261,17 @@ toolbar.attachEvent("onStateChange", function(id,state) {
              }
              GridRefresh();
             break;
-        case 'gantt':
-            mygrid.setColumnHidden(5,state);      
-            mygrid.setColumnHidden(6,state);      
-            mygrid.setColumnHidden(7,state);  
-            mygrid.setColumnHidden(8,state);   
-            mygrid.setColumnHidden(9,!state);  
-            break;
         default:
             break;
     }
  });
 
 var tabbar = dhxLayout.cells("b").attachTabbar();
-// tabbar.setImagesPath("{{asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/")}}");
+// tabbar.setImagePath("{{asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/")}}");
 tabbar.setSkin("dhx_skyblue");
 tabbar.addTab("b1","{{ "Information" | trans }}","100px", null, true);
 tabbar.addTab("b2","{{ "Log" | trans }}","100px");
 tabbar.addTab("b3","{{ "History" | trans }}","100px");
-// tabbar.setTabActive("b1");
 
 tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}",true);
 
@@ -289,20 +286,29 @@ loggrid.init();
 loggrid.setSkin('dhx_skyblue');
 
 var hstgrid = tabbar.cells("b3").attachGrid();
-hstgrid.setHeader("{{ "State" | trans }},{{ "Step" | trans }},{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Message" | trans }}");
-hstgrid.attachHeader("#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter");
-hstgrid.setInitWidths("200,60,140,140,100,*");
+hstgrid.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit code" | trans }},{{ "Message" | trans }}");
+hstgrid.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+hstgrid.setInitWidths("130,130,100,60,50,*");
+hstgrid.setColAlign("right,right,right,right,right,left");
 hstgrid.setColTypes("ro,ro,ro,ro,ro,ro");
-hstgrid.setColAlign("left,right,right,right,right,left");
-hstgrid.setColSorting("str,int,date,date,str,str");
-// hstgrid.enableTreeGridLines(true);
-// hstgrid.enableTreeCellEdit(false);
-hstgrid.setSkin('dhx_skyblue');
+hstgrid.setColSorting("date,date,str,int,int,str");
 hstgrid.init();
-
+hstgrid.setSkin('dhx_skyblue');
+//hstgrid.loadXML( "{{ url('arii_JID_grid_history_job') }}" );
 hstgrid.enableAlterCss("even_row","odd_row");
-
-//dhxLayout.cells("b").collapse();
+/*
+dhtmlxEvent (document.getElementById('master_checkbox'), "click", function(ev){
+            //alert("Hello, world!"+ev);
+            var value = document.getElementById('master_checkbox').checked;
+            mygrid.forEachRow(function(id){
+                if (mygrid.getUserData(id,"jobtype") === "instance" || mygrid.getUserData(id,"jobtype") === "ordered_job")
+                {
+                    mygrid.cells(id,1).setValue(value);
+                }
+            });
+});
+*/
+dhxLayout.cells("b").collapse();
 
 function GridRefresh() {
     var currentTime = new Date();
@@ -316,16 +322,29 @@ function GridRefresh() {
     seconds = "0" + seconds;
     }
     toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-{% if arii_pro %}
     var page_number = mygrid.currentPage;
+    var checked_id = mygrid.getCheckedRows(1);
+    if (checked_id === "")
+    {
+        mygrid.loadXML("{{ url('xml_JID_history_list') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
+            mygrid.refreshFilters();
+            mygrid.filterByAll();
+{% if arii_save_states %}
+            mygrid.loadOpenStates();
 {% endif %}
-    mygrid.loadXML("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered, function(){
-{% if arii_pro %}
-        mygrid.changePage(page_number);
+            mygrid.changePage(page_number);
+        });    
+    } else
+    {
+        mygrid.loadXML("{{ url('xml_JID_history_list') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered+"&checked_rows="+checked_id, function(){
+{% if arii_save_states %}
+            mygrid.loadOpenStates();
 {% endif %}
-        mygrid.refreshFilters();
-        mygrid.filterByAll();
-    });    
+            mygrid.changePage(page_number);
+            mygrid.refreshFilters();
+            mygrid.filterByAll();
+        });
+    }
 }
 
 function GlobalRefresh() {
@@ -353,9 +372,12 @@ function onShowMenu(rowId, celInd, grid) {
     menu.hideItem("unstop");
     menu.hideItem("kill");
     menu.hideItem("show_why");
+    menu.hideItem("job_log");
+    menu.hideItem("job_detail");
     menu.hideItem('check_spooler');
     menu.hideItem('pause_spooler');
     menu.hideItem('continue_spooler');
+    menu.hideItem('spooler_go');
     menu.hideItem('purge');
     menu.hideItem('terminate_spooler');
     menu.hideItem('pause_spooler');
@@ -365,6 +387,7 @@ function onShowMenu(rowId, celInd, grid) {
         menu.showItem('check_spooler');
         {% if is_granted('ROLE_OPERATOR') %}
         menu.showItem('terminate_spooler');
+        menu.showItem('spooler_go');
         if (status ==='RUNNING') {
             menu.showItem('pause_spooler');    
         }
@@ -375,6 +398,8 @@ function onShowMenu(rowId, celInd, grid) {
         return true;
     } 
     menu.showItem('edit_sep_1');  
+    menu.showItem("job_log");
+    menu.showItem("job_detail");
     menu.showItem("show_history");
     {% if is_granted('ROLE_OPERATOR') %}
     menu.showItem("start_task");
@@ -418,5 +443,5 @@ return true;
 {% include "AriiJIDBundle:_Global:menu.html.twig" %}
 {% endblock %}
 {% block calendar %}      
-    {{ render(controller("AriiJIDBundle:Sidebar:calendar", { 'mode': 'Past'} )) }}
+    {{ render(controller("AriiJIDBundle:Sidebar:calendar", { 'mode': 'None'} )) }}
 {% endblock %}

@@ -10,7 +10,7 @@ function onButtonClick(menuitemId, type) {
     spooler = mygrid.cells(rId,0).getValue();
     switch (menuitemId) {
        case "spooler_go":
-           window.open("/js/"+spooler, spooler);
+           window.open('/js/'+spooler+'/', spooler);
             break;
        case "show_info":
             JobInfo( rId );
@@ -313,7 +313,7 @@ function Order( Command, id, Text, Toolbar, Time, chain )
 
     dhxForm = winbar.cells("b1").attachForm();
     winbar.cells("b1").progressOn();
-    alert("{{ url('json_JID_order_form') }}?id="+id);
+    // alert("{{ url('json_JID_order_form') }}?id="+id);
     dhxForm.loadStruct("{{ url('json_JID_order_form') }}?id="+id, function(){
         winbar.cells("b1").progressOff();    
          dhxgrid.loadXML("{{ url('xml_JID_order_params') }}?id="+id);

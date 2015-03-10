@@ -75,6 +75,14 @@ arii_JID_orders:
     pattern:  /orders
     defaults: { _controller: AriiJIDBundle:Orders:index }
 
+arii_JID_orders_grid:
+    pattern:  /orders/grid
+    defaults: { _controller: AriiJIDBundle:Orders:index_grid }
+
+arii_JID_orders_treegrid:
+    pattern:  /orders/treegrid
+    defaults: { _controller: AriiJIDBundle:Orders:index_treegrid }
+
 xml_JID_orders_menu:
     pattern:  /orders/menu.xml
     defaults: { _controller: AriiJIDBundle:Orders:menu }

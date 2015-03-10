@@ -26,7 +26,7 @@ class OrdersController extends Controller
     public function __construct( )
     {
           $request = Request::createFromGlobals();
-          $this->images = $request->getUriForPath('/../arii/images/wa');
+          $this->images = $request->getUriForPath('/../bundles/ariicore/images/wa');          
     }
 
     // Index des traitements
@@ -38,6 +38,16 @@ class OrdersController extends Controller
       if ($arii_pro === true) 
         return $this->render('AriiJIDBundle:Orders:treegrid.html.twig' );
       return $this->render('AriiJIDBundle:Orders:grid.html.twig' );
+    }
+
+    public function index_gridAction()
+    {
+      return $this->render('AriiJIDBundle:Orders:grid.html.twig' );
+    }
+ 
+    public function index_treegridAction()
+    {
+      return $this->render('AriiJIDBundle:Orders:treegrid.html.twig' );
     }
 
     public function toolbarAction()
@@ -556,10 +566,15 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
             $line['DBID'] = 'O:'.$jn;
 
             if ($at==''){
-                $at = $Infos[$id]['START_TIME']; 
+                if (isset($Infos[$id]['START_TIME']))
+                   $at = $Infos[$id]['START_TIME']; 
             }
             $line['START_TIME'] = $at;
-            $line['END_TIME'] = $Infos[$id]['END_TIME'];;
+            if (isset($Infos[$id]['END_TIME']))
+                $line['END_TIME'] = $Infos[$id]['END_TIME'];
+            else
+                $line['END_TIME'] = '';
+                
             $line['STEP'] = '';
             $line['status'] = $order_status;
             $line['information'] = $line['STATE_TEXT'];
@@ -1032,7 +1047,7 @@ if ($activated) {
                                 else {
                                     $cell .= '<cell>STOP</cell>';
                                 }
-                                $cell .= '<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($status).'.png"/>]]></cell>';
+                                $cell .= '<cell>'.$this->images.'/'.strtolower($status).'.png</cell>';
                                 list($start_str,$end_str,$next_str,$duration) = $date->getLocaltimes( $Info['start_time'], $Info['end_time'], substr($next_time,0,16), $Info['spooler'] ); 
                                 $cell .= '<cell>'.$start_str.'</cell>';
                                 $cell .= '<cell>'.$end_str.'</cell>';
@@ -1092,7 +1107,7 @@ if ($activated) {
                                 $cell .= '<cell>'.$start_str.'</cell>';
                                 $cell .= '<cell></cell>';
 //                                $cell .= '<cell>'.$this->Duration(strtotime($start_time),time()).'</cell>';
-                                $cell .= '<cell>'.$Next['title'].'</cell>';
+                                $cell .= '<cell><![CDATA['.$Next['title'].']]></cell>';
                                 $cell .= '<cell>'.$next_str.'</cell>';
                                 print "$cell\n";                               
                             }                            

@@ -62,7 +62,7 @@ function onButtonClick(menuitemId) {
     }
     return true;
 }
-menu = new dhtmlXMenuObject();
+menu = new dhtmlXMenuObject(null);
 menu.setIconsPath( "{{ asset('bundles/ariicore/dhtmlx/dhtmlxMenu/codebase/imgs/dhxmenu_dhx_skyblue/') }}" );
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);

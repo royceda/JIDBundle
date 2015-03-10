@@ -38,7 +38,7 @@
 <script language="javascript">
 var autorefresh = setInterval( "GridRefresh()",30000);
 
-var menu = new dhtmlXMenuObject();
+var menu = new dhtmlXMenuObject(null);
 menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 /*menu.setImagePath( "{{ asset('bundles/ariicore/images/menu') }}" );*/
 menu.renderAsContextMenu();

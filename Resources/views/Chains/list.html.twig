@@ -42,7 +42,7 @@ var activated = false;
 var steps = false;
 var rowId; // Index en cours pour le refresh
 
-menu = new dhtmlXMenuObject();
+menu = new dhtmlXMenuObject(null);
 menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
 menu.renderAsContextMenu();
 menu.attachEvent("onClick", onButtonClick);

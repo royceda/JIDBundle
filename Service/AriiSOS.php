@@ -8,7 +8,7 @@ class AriiSOS
     protected $db;
     protected $sql;
     
-    public function __construct(  
+    public function __construct (  
             \Arii\CoreBundle\Service\AriiDHTMLX $db, 
             \Arii\CoreBundle\Service\AriiSQL $sql ) {
         $this->db = $db;
@@ -20,7 +20,7 @@ class AriiSOS
  *********************************************************************/
 
    public function getJobInfos($job_id) {   
-        $dhtmlx = $this->$db;
+        $dhtmlx = $this->db;
         $data = $dhtmlx->Connector('data');
        
         // le job_id peut avoir une tâche
