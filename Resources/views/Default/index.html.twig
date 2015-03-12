@@ -166,27 +166,27 @@ var status;
     switch (target.getAttribute("userdata")) {
         case '0':
             status='SUCCESS';
-            window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+            window.location = "{{ url("arii_JID_jobs") }}?ordered=1&status="+status; 
             break;
         case '1':
-            window.location = "{{ url("arii_JID_history_list") }}?ordered=0&status="+status; 
+            window.location = "{{ url("arii_JID_jobs") }}?ordered=0&status="+status; 
             status='SUCCESS';
             break;
         case '2':
             status='FAILURE';
-            window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+            window.location = "{{ url("arii_JID_jobs") }}?ordered=1&status="+status; 
             break;
         case '3':
             status='FAILURE';
-            window.location = "{{ url("arii_JID_history_list") }}?ordered=0&status="+status; 
+            window.location = "{{ url("arii_JID_jobs") }}?ordered=0&status="+status; 
             break;
         case '4':
             status='RUNNING';
-            window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+            window.location = "{{ url("arii_JID_jobs") }}?ordered=1&status="+status; 
             break;
         case '5':
             status='RUNNING';
-            window.location = "{{ url("arii_JID_history_list") }}?ordered=0&status="+status; 
+            window.location = "{{ url("arii_JID_jobs") }}?ordered=0&status="+status; 
             break;
     }
 });
@@ -257,7 +257,7 @@ var status;
         status='FAILURE';
     else if (id == 3)
         status='RUNNING';
-    window.location = "{{ url("arii_JID_history_list") }}?ordered=1&status="+status; 
+    window.location = "{{ url("arii_JID_jobs") }}?ordered=1&status="+status; 
 });
 barChartb.attachEvent("onMouseMoving",function(e){
    var target = (e.target||e.srcElement);
@@ -294,7 +294,7 @@ var status;
         status='FAILURE';
     else if (id == 3)
         status='RUNNING';
-    window.location = "{{ url("arii_JID_orders_list") }}?status="+status; 
+    window.location = "{{ url("arii_JID_orders") }}?status="+status; 
 });
 barChart2.attachEvent("onMouseMoving",function(e){
    var target = (e.target||e.srcElement);

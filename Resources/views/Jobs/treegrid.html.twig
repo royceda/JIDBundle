@@ -8,9 +8,9 @@
 		<h2>{{ "Jobs" | trans }}</h2>
 <ul  class="section_menu">
 {% if arii_pro %}
-    <li><a href="{{ url('arii_JID_history') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/tree.png') }}"/>&nbsp;{{ "Tree" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_jobs_treegrid') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/tree.png') }}"/>&nbsp;{{ "Tree" | trans }}</span></span></a></li>
 {% endif %}
-    <li><a href="{{ url('arii_JID_jobs') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
+    <li><a href="{{ url('arii_JID_jobs_grid') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
 {% if arii_pro %}
     <li><a href="{{ url('arii_JID_history_timeline') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
 {% endif %}

@@ -12,10 +12,22 @@ arii_JID_jobs:
     pattern:  /jobs
     defaults: { _controller: AriiJIDBundle:Jobs:index }
 
+arii_JID_jobs_grid:
+    pattern:  /jobs/grid
+    defaults: { _controller: AriiJIDBundle:Jobs:indexGrid }
+
+arii_JID_jobs_treegrid:
+    pattern:  /jobs/treegrid
+    defaults: { _controller: AriiJIDBundle:Jobs:indexTreegrid }
+
 xml_JID_jobs_grid:
     pattern:  /jobs/grid.xml
     defaults: { _controller: AriiJIDBundle:Jobs:grid }
 
+xml_JID_jobs_grid_debug:
+    pattern:  /jobs/grid_debug.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:grid_debug }
+    
 xml_JID_jobs_toolbar:
     pattern:  /jobs/toolbar.xml
     defaults: { _controller: AriiJIDBundle:Jobs:toolbar }
