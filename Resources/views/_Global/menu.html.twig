@@ -64,19 +64,20 @@ function onButtonClick(menuitemId, type) {
             ShowWhy( rId);
             break;
         case "pause_spooler":
-            Spooler("{{ url('arii_XML_Command') }}?command=pause_spooler&spooler_id",'  '+spooler);
+            Spooler("{{ url('arii_XML_Command') }}?command=pause_spooler&spooler_id",spooler);
             break;
         case "continue_spooler":
-            Spooler("{{ url('arii_XML_Command') }}?command=continue_spooler&spooler_id",'  '+spooler);
+            Spooler("{{ url('arii_XML_Command') }}?command=continue_spooler&spooler_id",spooler);
             break;
         case "check_spooler":
-            Spooler("{{ url('arii_JID_spooler_update') }}?id",'  '+spooler);
+            // Spooler("{{ url('arii_JID_spooler_update') }}?id",spooler);
+            CheckSpooler(spooler)
             break;
         case "terminate_spooler":
-            Spooler("{{ url('arii_XML_Command') }}?command=restart_spooler&spooler_id",'  '+spooler);
+            Spooler("{{ url('arii_XML_Command') }}?command=restart_spooler&spooler_id",spooler);
             break;
         case "abort_spooler":
-            Spooler("{{ url('arii_XML_Command') }}?command=abort_spooler&spooler_id",rId);
+            Spooler("{{ url('arii_XML_Command') }}?command=abort_spooler&spooler_id",spooler);
             break;
         case "purge_job":
             PurgeJob( rId );
@@ -87,12 +88,70 @@ function onButtonClick(menuitemId, type) {
         case "order_detail":
             OrderDetail( rId );
         break;
+        case "stop_chain":
+            Chain(rId,menuitemId,"{{ "Stop chain" | trans }}",null);
+            break;
+        case "unstop_chain":
+            Chain(rId,menuitemId,"{{ "Unstop chain" | trans }}",null);
+            break;
+        case "stop_node":
+            nId = mygrid.getUserData(rId,'TASK_ID');
+            Node(rId,nId,menuitemId,"{{ "Stop node" | trans }}",null);
+            break;
+        case "unstop_node":
+            nId = mygrid.getUserData(rId,'TASK_ID');
+            Node(rId,nId,menuitemId,"{{ "Unstop node" | trans }}",null);
+            break;
+        case "skip_node":
+            nId = mygrid.getUserData(rId,'TASK_ID');
+            Node(rId,nId,menuitemId,"{{ "Skip node" | trans }}",null);
+            break;
+        case "unskip_node":
+            nId = mygrid.getUserData(rId,'TASK_ID');
+            Node(rId,nId,menuitemId,"{{ "Unskip node" | trans }}",null);
+            break;
         default:
             alert("inconnu ! "+menuitemId);    
     }
     return true;
 }
 menu.attachEvent("onClick", onButtonClick);
+
+function Chain(id,command,message,chain)
+{
+    dhtmlx.message({
+        type: "Notice",
+        text: message
+    });
+    alert("{{ url('arii_XML_Command') }}?command="+command+"&id="+id);
+    dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command="+command+"&id="+id+"&chain="+chain,function(loader){
+        dhtmlx.message({
+        type: "Notice",
+        expire: 10000,
+        width: "500px",
+        text: loader.xmlDoc.responseText
+        });
+        GridRefresh();
+    });
+}
+
+function Node(id,nid,command,message,chain)
+{
+    dhtmlx.message({
+        type: "Notice",
+        text: message
+    });
+    alert("{{ url('arii_XML_Command') }}?command="+command+"&node_id="+nid+"&id="+id);
+    dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command="+command+"&node_id="+nid+"&id="+id+"&chain="+chain,function(loader){
+        dhtmlx.message({
+        type: "Notice",
+        expire: 10000,
+        width: "500px",
+        text: loader.xmlDoc.responseText
+        });
+        GridRefresh();
+    });
+}
 
 var dhxCalendar;
 var msg;
@@ -480,10 +539,25 @@ var largeur = 600;
 }
 
 // Fonctions
+function CheckSpooler(rid) 
+{
+    dhxLayout.cells("a").progressOn();
+    dhtmlxAjax.get("{{ url('arii_JID_spooler_update') }}?id="+rid,function(loader,response){
+        dhxLayout.cells("a").progressOff();
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+    });
+return true;
+}
+
 function Spooler(url,rid)
 {
     dhxLayout.cells("a").progressOn();
-    dhtmlxAjax.get(url+"="+rid.substr(2),function(loader,response){
+    dhtmlxAjax.get(url+"="+rid,function(loader,response){
         dhxLayout.cells("a").progressOff();
         dhtmlx.message({
             type: "Notice",
@@ -495,4 +569,5 @@ function Spooler(url,rid)
     });
     return true;
 }
+
 </script>

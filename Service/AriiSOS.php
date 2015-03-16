@@ -96,13 +96,13 @@ class AriiSOS
         $data = $dhtmlx->Connector('data');
 
         $sql = $this->sql;
-        $qry = $sql->Select(array('ID','JOB_CHAIN','SPOOLER_ID'))
-                .$sql->From(array('SCHEDULER_ORDERS'))
-                .$sql->Where(array('ORDERING' => $id));
+        $qry = $sql->Select(array('soh.JOB_CHAIN','soh.SPOOLER_ID','soh.ORDER_ID'))
+                .$sql->From(array('SCHEDULER_ORDER_HISTORY soh'))
+                .$sql->Where(array('soh.history_id' => $id));
 
         $res = $data->sql->query( $qry );
         $line = $data->sql->get_next($res);
-        return array($line['SPOOLER_ID'],$line['ID'],$line['JOB_CHAIN']);
+        return array($line['SPOOLER_ID'],$line['JOB_CHAIN'],$line['ORDER_ID']);
    }
 
    public function getStateInfos($id) {   

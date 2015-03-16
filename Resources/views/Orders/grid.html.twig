@@ -12,7 +12,8 @@
 {% endif %}
     <li><a href="{{ url('arii_JID_orders_grid') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
     <li><a href="{{ url('arii_JID_orders_timeline') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/timeline.png') }}"/>&nbsp;{{ "Timeline" | trans }}</span></span></a></li>
-    <li><a href="{{ url('arii_JID_orders_last') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+<!--    <li><a href="{{ url('arii_JID_orders_last') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/monitor.png') }}"/>&nbsp;{{ "Monitor" | trans }}</span></span></a></li>
+-->
 </ul>
                 <span class="title_wrapper_left"></span>
 		<span class="title_wrapper_right"></span>
@@ -81,12 +82,12 @@ var mygrid = dhxLayout.cells("a").attachGrid();
 //mygrid.selMultiRows = true;
 mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
 // mygrid.enableTreeCellEdit(false);
-mygrid.setHeader("{{ "Spooler" | trans }},{{ "Job chain" | trans }},{{ "Order" | trans }},{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Information" | trans }}");
-mygrid.attachHeader("#select_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter,#numeric_filter");
-mygrid.setInitWidths("100,*,140,40,120,100,130,130,*");
-mygrid.setColAlign("left,left,left,right,left,center,right,right,left");
-mygrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro");
-mygrid.setColSorting("str,str,str,str,str,str,date,date,str");
+mygrid.setHeader("{{ "Spooler" | trans }},{{ "Job chain" | trans }},{{ "Order" | trans }},{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Information" | trans }},{{ "Job name" | trans }}");
+mygrid.attachHeader("#select_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter");
+mygrid.setInitWidths("100,*,140,40,150,100,130,130,*,100");
+mygrid.setColAlign("left,left,left,right,left,center,right,right,left,left");
+mygrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");
+mygrid.setColSorting("str,str,str,num,str,str,date,date,str,str");
 mygrid.enableContextMenu(menu);
 mygrid.attachEvent("onBeforeContextMenu", onShowMenu);
 
@@ -121,6 +122,7 @@ mygrid.enableAlterCss("even_row","odd_row");
 {% endif %}
 {% if  app.request.get('status') != '' %}
 max_history=20;
+/*
 mygrid.loadXML( "{{ url('xml_JID_orders_grid') }}?ordered="+ordered+"&history="+max_history, function() {
     toolbar.setItemState("deploy",true);
     toolbar.setItemState("history",true);
@@ -128,8 +130,9 @@ mygrid.loadXML( "{{ url('xml_JID_orders_grid') }}?ordered="+ordered+"&history="+
 //    mygrid.filterBy(2,"{{ app.request.get('status') }}",true);
     mygrid.expandAll();
 });
+*/
 {% else %}
-mygrid.loadXML( "{{ url('xml_JID_orders_grid') }}?history="+max_history);
+// mygrid.loadXML( "{{ url('xml_JID_orders_grid') }}?history="+max_history);
 {% endif %}
 mygrid.enableLightMouseNavigation( true );
 // mygrid.attachEvent("onXLE",function(){ });
@@ -276,7 +279,7 @@ tabbar.addTab("b2","{{ "Log" | trans }}","100px");
 tabbar.addTab("b3","{{ "History" | trans }}","100px");
 // tabbar.setTabActive("b1");
 
-tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}",true);
+// tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}",true);
 
 var loggrid = tabbar.cells("b2").attachGrid();
 loggrid.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
@@ -328,6 +331,8 @@ function GridRefresh() {
     });    
 }
 
+mygrid.loadXML("{{ url('xml_JID_orders_grid') }}?history="+max_history+"&ordered="+ordered);
+
 function GlobalRefresh() {
     GridRefresh();
 }
@@ -342,76 +347,42 @@ function onShowMenu(rowId, celInd, grid) {
     {
         return false;
     }
-    var status = grid.cells(rowId, 2 ).getValue();    
-    menu.hideItem("start_task");
-    menu.hideItem("edit_sep_1");
-    menu.hideItem("edit_sep_2");
-    menu.hideItem("show_history");
-    menu.hideItem("doc");
-    menu.hideItem("kill");
-    menu.hideItem("stop");
-    menu.hideItem("unstop");
-    menu.hideItem("kill");
-    menu.hideItem("show_why");
-    menu.hideItem('check_spooler');
-    menu.hideItem('pause_spooler');
+    var status = grid.cells(rowId, 5 ).getValue();    
+    // RAZ
+    menu.hideItem('stop_chain');
+    menu.hideItem('unstop_chain');
+    menu.hideItem('stop_node');
+    menu.hideItem('unstop_node');
+    menu.hideItem('skip_node');
+    menu.hideItem('unskip_node');
+    menu.hideItem('stop_job');
+    menu.hideItem('unstop_job');
+    menu.hideItem('stop_job');
     menu.hideItem('continue_spooler');
-    menu.hideItem('purge');
-    menu.hideItem('terminate_spooler');
     menu.hideItem('pause_spooler');
-    menu.hideItem('continue_spooler');    
-    // Cas du spooler
-    if (mygrid.getUserData(rowId, "type" )=='spooler') {
-        menu.showItem('check_spooler');
-        {% if is_granted('ROLE_OPERATOR') %}
-        menu.showItem('terminate_spooler');
-        if (status ==='RUNNING') {
-            menu.showItem('pause_spooler');    
-        }
-        else {
-            menu.showItem('continue_spooler');    
-        }
-        {% endif %} 
-        return true;
-    } 
-    menu.showItem('edit_sep_1');  
-    menu.showItem("show_history");
-    {% if is_granted('ROLE_OPERATOR') %}
-    menu.showItem("start_task");
-    menu.showItem('purge');
-    {% endif %}
-    switch (status) {
-    case 'SUCCESS':
-        break;
-    case 'FAILURE':
-        break;
-    case 'RUNNING':
-        break;
-    default:
-        // Cas de l'instance
-        {% if is_granted('ROLE_OPERATOR') %}
-            if (grid.getUserData(rowId, "jobtype" )=='instance') {
-                // on ne demarre pas une tache RUNNING
-                menu.showItem("kill");
-            }
-        {% endif %}
-        break;
-    }
-    {% if is_granted('ROLE_OPERATOR') %}
-    // job stoppé
-    if (grid.cells(rowId, 3).getValue()== 'STOP') {    
-        menu.showItem("unstop");
-    }
-    else {
-        menu.showItem("stop");
-    }
-    // Un job ordonné ne peut être démarré 
-    if (grid.getUserData(rowId, "jobtype" )!='ordered_job') {
-        menu.showItem("start_task");
-    }
-    {% endif %} 
-    menu.showItem('edit_sep_1');  
-    menu.showItem("doc");
+    if (status == 'SPOOLER STOP.') 
+        { menu.showItem('continue_spooler'); }
+    if (status == 'SPOOLER PAUSED') 
+        { menu.showItem('continue_spooler'); }
+    else 
+        { menu.showItem('pause_spooler'); }
+    if (status == 'CHAIN STOP.') 
+        { menu.showItem('unstop_chain'); }
+    else
+        { menu.showItem('stop_chain'); }
+    if (status == 'JOB STOP.') 
+        { menu.showItem('unstop_job'); }
+    else 
+        { menu.showItem('stop_job'); }
+    if (status == 'NODE STOP.') 
+        { menu.showItem('unstop_node'); }
+    else 
+        { menu.showItem('stop_node'); }
+    if (status == 'NODE SKIP.') 
+        { menu.showItem('unskip_node'); }
+    else 
+        { menu.showItem('skip_node'); }
+
 return true;
 }
 </script>

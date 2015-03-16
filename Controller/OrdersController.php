@@ -11,7 +11,13 @@ class OrdersController extends Controller
     protected $ColorStatus = array( 
         "SUCCESS" => "#ccebc5",
         "TRUE" => "#ccebc5",
-        "SUSPENDED" => "red",
+        "SUSPENDED" => "#fbb4ae",
+        "CHAIN STOP." => "#fbb4ae",
+        "SPOOLER STOP." => "red",
+        "SPOOLER PAUSED" => "#fbb4ae",
+        "NODE STOP." => "#fbb4ae",
+        "NODE SKIP." => "#ffffcc",
+        "JOB STOP." => "#fbb4ae",        
         "SETBACK" => "lightsalmon",
         "RUNNING" => "#ffffcc",
         "ERROR" => "#fbb4ae",
@@ -445,50 +451,131 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
         
         $sql = $this->container->get('arii_core.sql');
         
+        // on commence par le scheduler
+        $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID' );
+        $qry = $sql->Select(array('SCHEDULER_ID as SPOOLER_ID','HOSTNAME','TCP_PORT','START_TIME','IS_RUNNING','IS_PAUSED'))
+               .$sql->From(array('SCHEDULER_INSTANCES'));
+
+        $Spoolers = array();
+        $res = $data->sql->query( $qry );
+        while ($line = $data->sql->get_next($res)) {
+                # Creation des icones
+                $spooler = $line['SPOOLER_ID'];
+                $Spoolers[$spooler] = $line;
+        } 
+
+        // On regarde les chaines stoppés
+        // On complete avec les ordres stockés
+        $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID',
+            '{job_chain}'  => 'JOB_CHAIN',
+            'STOPPED'  => 1 );
+        
+        $qry = $sql->Select( array('SPOOLER_ID','PATH as JOB_CHAIN') )
+                .$sql->From( array('SCHEDULER_JOB_CHAINS') )
+                .$sql->Where( $Fields );
+        $res = $data->sql->query( $qry );
+        $nb = 0;
+        $StopChain = array();
+        while ($line = $data->sql->get_next($res)) {
+            $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
+            $StopChain[$cn]=1;
+        }
+
+        // On regarde les nodes
+        // On complete avec les ordres stockés
+        $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID',
+            '{job_chain}'  => 'JOB_CHAIN',
+            'action'  => '(!null)' );
+        $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ORDER_STATE','ACTION') )
+                .$sql->From( array('SCHEDULER_JOB_CHAIN_NODES') )
+                .$sql->Where( $Fields );
+        $res = $data->sql->query( $qry );
+        $nb = 0;
+        $StopNode = $SkipNode = array();
+        while ($line = $data->sql->get_next($res)) {
+            $sn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'].'/'.$line['ORDER_STATE'];
+            if ($line['ACTION'] == 'next_state') $SkipNode[$sn]=1;
+            if ($line['ACTION'] == 'stop') $StopNode[$sn]=1;
+        }
+        // On regarde les jobs
+        // On complete avec les ordres stockés
+ /*       $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID',
+            '{job_chain}'  => 'JOB_CHAIN',
+            'STOPPED'  => 1 );
+        $qry = $sql->Select( array('SPOOLER_ID','PATH as JOB') )
+                .$sql->From( array('SCHEDULER_JOBS') )
+                .$sql->Where( $Fields );
+        $res = $data->sql->query( $qry );
+        $nb = 0;
+        $StopJob = array();
+        while ($line = $data->sql->get_next($res)) {
+            $jn = $line['SPOOLER_ID'].'/'.$line['JOB'];
+            $StopJob[$jn]=1;
+        }
+*/
+        // Historique des ordres
         $Fields = array (
             '{spooler}'    => 'soh.SPOOLER_ID',
             '{job_chain}'   => 'soh.JOB_CHAIN',
             '{start_time}' => 'soh.START_TIME' );
 
-        $qry = $sql->Select(array('soh.HISTORY_ID','soh.TITLE','soh.SPOOLER_ID','soh.ORDER_ID','soh.JOB_CHAIN','soh.STATE',
-                    'sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT','sosh.STEP'))  
+        $qry = $sql->Select(array('soh.HISTORY_ID','soh.TITLE','soh.SPOOLER_ID','soh.ORDER_ID','soh.JOB_CHAIN','soh.STATE as ORDER_STATE',
+                    'sosh.TASK_ID','sosh.STATE','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT','sosh.STEP',
+                    'sh.JOB_NAME'))  
                   .$sql->From(array('SCHEDULER_ORDER_HISTORY soh'))
                   .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
+                  .$sql->LeftJoin('SCHEDULER_HISTORY sh',array('sosh.TASK_ID','sh.ID'))
                   .$sql->Where($Fields)
                   .$sql->OrderBy(array('sosh.START_TIME desc','sosh.END_TIME desc'));
 
         $res = $data->sql->query( $qry );
         while ($line = $data->sql->get_next($res)) {
-            $id = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'].'/'.$line['ORDER_ID'];
+            $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
+//            $jn = $line['SPOOLER_ID'].'/'.$line['JOB'];
+            $sn = $cn.'/'.$line['STATE'];
+            $id = $cn.'/'.$line['ORDER_ID'];
             if (isset($Nb[$id])) {
                 $Nb[$id]++;
             }
             else {
                  $Nb[$id]=0;
             }
-            if ($line['END_TIME']!='') {
+            // Chain stoppée
+            if (isset($StopChain[$cn])) {
+                $status = 'CHAIN STOP.';
+            }
+/*            elseif (isset($StopJob[$jn])) {
+                $status = 'JOB STOP.';
+            }
+*/          elseif (isset($StopNode[$sn])) {
+                $status = 'NODE STOP.';
+            }
+            elseif (isset($SkipNode[$sn])) {
+                $status = 'NODE SKIP.';
+            }
+            elseif ($line['END_TIME']!='') {
                 if ($line['ERROR']>0) {
                     if (substr($line['STATE'],0,1)=='!') {
                         $status = 'FATAL';
-                        $color = 'red';
                     }
                     else {
                         $status = 'ERROR';
-                        $color  = '#fbb4ae';
                     }
                 }
                 else {
                     $status = 'SUCCESS';  
-                    $color  = '#ccebc5';
                 }
             }
             else {
                 $status = 'RUNNING';
-                $color  = '#ffffcc';
             }
             
             if ($Nb[$id]>$history) continue;
-            
+                        
             $line['DBID'] = $line['HISTORY_ID']; 
             $line['status'] = $status;
             if ($line['ERROR_TEXT']!='') {
@@ -509,7 +596,7 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
 */          '{start_time}' => 'MOD_TIME'
                 );
         
-        $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ID as ORDER_ID','PRIORITY','STATE','STATE_TEXT','TITLE','CREATED_TIME','MOD_TIME','ORDERING','INITIAL_STATE','ORDER_XML' ) )
+        $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ID as ORDER_ID','PRIORITY','STATE as ORDER_STATE','STATE_TEXT','TITLE','CREATED_TIME','MOD_TIME','ORDERING','INITIAL_STATE','ORDER_XML' ) )
                 .$sql->From( array('SCHEDULER_ORDERS') )
                 .$sql->Where( $Fields )
                 .$sql->OrderBy( array('ORDERING desc') );
@@ -588,19 +675,50 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
             $line = $Infos[$k];
             list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );
             
+            $spooler = $line['SPOOLER_ID'];            
             $status = $line['status'];
+            if ($Spoolers[$spooler]['IS_RUNNING']!=1) {
+                if ($Spoolers[$spooler]['IS_PAUSED']==1) 
+                    $status = 'SPOOLER PAUSED';
+                else
+                    $status = 'SPOOLER STOP.';
+            }
+
             if (isset($this->ColorStatus[$status])) $color=$this->ColorStatus[$status];
                 else $color='yellow';
             $list .=  '<row id="'.$line['DBID'].'"  style="background-color: '.$color.';">';
-            $list .=  '<cell>'.$line['SPOOLER_ID'].'</cell>';
-            $list .=  '<cell>'.$line['JOB_CHAIN'].'</cell>';
+            if (isset($line['TASK_ID']))
+                $list .=  '<userdata name="TASK_ID">'.$line['TASK_ID'].'</userdata>';
+            
+            # Cell color pour identifier le point de blocage
+            $cellcolor='';
+            if ($status == 'SPOOLER STOP.') $cellcolor=' style="background-color: red;"';            
+            if ($status == 'SPOOLER PAUSED') $cellcolor=' style="background-color: orange;"';            
+            $list .=  '<cell'.$cellcolor.'>'.$line['SPOOLER_ID'].'</cell>';
+            $cellcolor='';
+            if ($status == 'CHAIN STOP.') $cellcolor=' style="background-color: red;"';
+            $list .=  '<cell'.$cellcolor.'>'.$line['JOB_CHAIN'].'</cell>';
+            $cellcolor='';
             $list .=  '<cell>'.$line['ORDER_ID'].'</cell>';
-            $list .=  '<cell>'.$line['STEP'].'</cell>';
-            $list .=  '<cell>'.$line['STATE'].'</cell>';
+            $cellcolor='';
+            $list .=  '<cell>'.$line['STEP'].'</cell>';  
+            if ($status == 'NODE STOP.') $cellcolor=' style="background-color: red;"';
+            if ($status == 'NODE SKIP.') $cellcolor=' style="background-color: orange;"';
+            if (isset($line['ORDER_STATE']))
+                $list .=  '<cell'.$cellcolor.'>'.$line['ORDER_STATE'].'</cell>';
+            else 
+                $list .=  '<cell/>';
             $list .=  '<cell>'.$status.'</cell>';
             $list .=  '<cell>'.$start.'</cell>';
             $list .=  '<cell>'.$end.'</cell>';
             $list .=  '<cell>'.$line['information'].'</cell>';
+            if (isset($line['JOB_NAME'])) {
+                $cellcolor='';
+                // on se met en relatif par rapport à la chaine ?
+                $list .=  '<cell'.$cellcolor.'>'.basename($line['JOB_NAME']).'</cell>';  
+            }
+            else 
+                $list .= '<cell/>';
             $list .=  '</row>';
         }
         
