@@ -60,6 +60,12 @@ function onButtonClick(menuitemId, type) {
                     "{{ url('xml_JID_order_toolbar_start') }}",
                     false );
             break;
+        case "add_order":
+            Order(    "add_order", rId,
+                    "{{ "New order" | trans }}",
+                    "{{ url('xml_JID_order_toolbar_start') }}",
+                    false );
+            break;
         case "show_why":
             ShowWhy( rId);
             break;
@@ -109,6 +115,13 @@ function onButtonClick(menuitemId, type) {
         case "unskip_node":
             nId = mygrid.getUserData(rId,'TASK_ID');
             Node(rId,nId,menuitemId,"{{ "Unskip node" | trans }}",null);
+            break;            
+        case "suspend_order":
+        case "resume_order":
+                alert(menuitemId);
+            break;
+        case "reset_order":
+            XMLCommand(rId,menuitemId);
             break;
         default:
             alert("inconnu ! "+menuitemId);    
@@ -123,7 +136,6 @@ function Chain(id,command,message,chain)
         type: "Notice",
         text: message
     });
-    alert("{{ url('arii_XML_Command') }}?command="+command+"&id="+id);
     dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command="+command+"&id="+id+"&chain="+chain,function(loader){
         dhtmlx.message({
         type: "Notice",
@@ -375,7 +387,7 @@ function Order( Command, id, Text, Toolbar, Time, chain )
     // alert("{{ url('json_JID_order_form') }}?id="+id);
     dhxForm.loadStruct("{{ url('json_JID_order_form') }}?id="+id, function(){
         winbar.cells("b1").progressOff();    
-         dhxgrid.loadXML("{{ url('xml_JID_order_params') }}?id="+id);
+        dhxgrid.loadXML("{{ url('xml_JID_order_params') }}?id="+id);
     });
     
     toolbar.attachEvent("onClick",function(itemid){
@@ -398,7 +410,7 @@ function Order( Command, id, Text, Toolbar, Time, chain )
                     text: Text 
                 });
                 winLayout.cells("a").progressOn();
-                dhxForm.send("{{ url('arii_XML_Command') }}?command="+Command+"&chain="+chain+"&order_id="+id+"&paramsStr="+encodeURIComponent(paramsStr),"POST",function(loader,response){
+                dhxForm.send("{{ url('arii_XML_Command') }}?command="+Command+"&chain="+chain+"&id="+id+"&paramsStr="+encodeURIComponent(paramsStr),"POST",function(loader,response){
                     dhtmlx.message({
                         type: "Notice",
                         expire: 10000,
@@ -570,4 +582,23 @@ function Spooler(url,rid)
     return true;
 }
 
+function XMLCommand(id,Command) 
+{
+    alert("command");
+    dhtmlx.message({
+    type: "Notice",
+    text: "{{ "Execution" | trans }} <strong>"+id+"</strong>" });
+    dhxLayout.cells("a").progressOn();
+    dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command="+Command+"&id="+id,function(loader,response){
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        GridRefresh();
+        dhxLayout.cells("a").progressOff();
+        msg.close();
+    });               
+}
 </script>

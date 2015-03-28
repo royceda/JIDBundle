@@ -331,7 +331,7 @@ function GridRefresh() {
     });    
 }
 
-mygrid.loadXML("{{ url('xml_JID_orders_grid') }}?history="+max_history+"&ordered="+ordered);
+// mygrid.loadXML("{{ url('xml_JID_orders_grid') }}?history="+max_history+"&ordered="+ordered);
 
 function GlobalRefresh() {
     GridRefresh();
@@ -349,6 +349,10 @@ function onShowMenu(rowId, celInd, grid) {
     }
     var status = grid.cells(rowId, 5 ).getValue();    
     // RAZ
+    menu.hideItem('suspend_order');
+    menu.hideItem('resume_order');
+    menu.hideItem('reset_order');
+    menu.hideItem('remove_setback');
     menu.hideItem('stop_chain');
     menu.hideItem('unstop_chain');
     menu.hideItem('stop_node');
@@ -360,6 +364,12 @@ function onShowMenu(rowId, celInd, grid) {
     menu.hideItem('stop_job');
     menu.hideItem('continue_spooler');
     menu.hideItem('pause_spooler');
+    if (status == 'SUSPENDED') { 
+        menu.showItem('resume_order'); 
+        menu.showItem('reset_order'); 
+    }
+    else if (status == 'RUNNING') 
+        { menu.showItem('suspend_order'); }
     if (status == 'SPOOLER STOP.') 
         { menu.showItem('continue_spooler'); }
     if (status == 'SPOOLER PAUSED') 

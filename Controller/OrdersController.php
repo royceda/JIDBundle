@@ -542,7 +542,7 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
                 $Nb[$id]++;
             }
             else {
-                 $Nb[$id]=0;
+                $Nb[$id]=0;
             }
             // Chain stoppée
             if (isset($StopChain[$cn])) {
@@ -665,7 +665,10 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
             $line['STEP'] = '';
             $line['status'] = $order_status;
             $line['information'] = $line['STATE_TEXT'];
-            $Infos[$id] = $line;
+            
+            // Si c'est pas déja traité et statut <> ACTIVATED
+            if (!isset($Nb[$id]) or ($order_status!='ACTIVATED'))          
+                $Infos[$id] = $line;
         }
 
         $Keys = array_keys($Infos);
@@ -1194,8 +1197,8 @@ if ($activated) {
                                 {
                                     $color = "lightsalmon";
                                     $status = 'SETBACK';
-                                    $start_time =  $next_time;
-                                    $next = $setback_time;
+                                    $start_time =  $Next['next_time'];
+                                    $next = $Next['setback'];
                                 }
                                 else {
                                     $color = 'lightblue';

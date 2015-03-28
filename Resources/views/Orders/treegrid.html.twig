@@ -40,13 +40,13 @@ var steps = false;
 var rowId; // Index en cours pour le refresh
 
 menu = new dhtmlXMenuObject(null);
-menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
+menu.setIconsPath( "{{ asset('bundles/ariicore/images/wa/') }}" );
 menu.renderAsContextMenu();
 menu.loadStruct("{{ url('xml_JID_orders_menu') }}");
 
 var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
 var toolbar = dhxLayout.attachToolbar();
-toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/wa/') }}");
 toolbar.loadStruct("{{ url('xml_JID_toolbar_orders') }}");
 toolbar.attachEvent( "onClick", function(id, value) {
     switch (id) {
@@ -94,8 +94,8 @@ dhxLayout.cells("a").setHeight(295);
 
 var mygrid = dhxLayout.cells("a").attachGrid();
 mygrid.selMultiRows = true;
-mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
-mygrid.setIconsPath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/wa/') }}");
+mygrid.setIconsPath( "{{ asset('bundles/ariicore/images/wa/') }}");
 mygrid.enableTreeCellEdit(false);
 mygrid.setHeader("{{ "Location" | trans }},#cspan,{{ "State" | trans }},#cspan,{{ "Status" | trans }},#cspan,#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Information" | trans }},{{ "Next start time" | trans }}");
 mygrid.attachHeader("#text_filter,#cspan,#select_filter,#cspan,#select_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter,#text_filter");
@@ -322,7 +322,7 @@ function GridRefresh() {
     }
     toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     var page_number = mygrid.currentPage;
-    mygrid.loadXML( "{{ url('xml_JID_orders_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps, function(){
+    mygrid.loadXML( "{{ url('xml_JID_orders_list') }}?eric=test&time="+seconds+'&activated='+activated+'&steps='+steps, function(){
 //            mygrid.loadOpenStates();
 //            toolbar.setItemState("deploy",false);
         mygrid.changePage(page_number);
