@@ -1,8 +1,10 @@
 # JIDBundle
 
-_Fonction:_  Module de suivi des moteurs JobScheduler
-_Nécessite:_ CoreBundle
-_Paramètres:_
+## Module de suivi des traitements
+
+Nécessite le module CoreBundle
+
+## Paramètres
 ```
     repository_name:     Test SOS-Paris
     repository_dbname:   scheduler
