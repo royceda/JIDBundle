@@ -24,6 +24,22 @@ class DefaultController extends Controller
           $this->CurrentDate = date('Y-m-d');
     }
 
+    public function toolbarAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        
+        return $this->render('AriiJIDBundle:Default:toolbar.xml.twig',array(), $response );
+    }
+
+    public function ribbonAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        
+        return $this->render('AriiJIDBundle:Default:ribbon.json.twig',array(), $response );
+    }
+
     public function indexAction()   
     {
         $session = $this->container->get('arii_core.session');

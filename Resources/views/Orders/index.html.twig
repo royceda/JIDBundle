@@ -1,211 +1,446 @@
 {# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
-
 {% extends "AriiJIDBundle::layout.html.twig" %}
-{% block content %}
-<!--[if !IE]>start section<![endif]-->	
-<div class="section table_section">
-	<!--[if !IE]>start title wrapper<![endif]-->
-	<div class="title_wrapper">
-		<h2>{{ "Status chart" | trans }}</h2>
-		<!--[if !IE]>start section menu<![endif]-->
-                {{ render(controller("AriiJIDBundle:Orders:submenu")) }}
-		<!--[if !IE]>end section menu<![endif]-->
-		
-		<span class="title_wrapper_left"></span>
-		<span class="title_wrapper_right"></span>
-	</div>
-	<!--[if !IE]>end title wrapper<![endif]-->
-<!--[if !IE]>start section content<![endif]-->
-	<div class="section_content">
-		<!--[if !IE]>start section content top<![endif]-->
-		<div class="sct">
-			<div class="sct_left">
-				<div class="sct_right">
-					<div class="sct_left">
-                                                <div class="sct_right">
-    <div id="mygrid" style="height:776px;background-color:white;position:relative;overflow:hidden;"></div>
-                                                </div>
-					</div>
-				</div>
-			</div>
-		</div>
+{% block body %}
+<body>
+<script type="text/javascript">
+var max_history = 0; // pas d'historique
+{% if  app.request.get('ordered')=='true' %}
+var ordered = true;
+{% else %}
+var ordered = false; // que des standalone
+{% endif %}
+{% if  app.request.get('stopped')>0 %}
+var stopped = 1;
+{% else %}
+var stopped = 0; // que des standalone
+{% endif %}
+    
+dhtmlxEvent(window,"load",function(){ 
+    autorefresh = setInterval( "GlobalRefresh()",30000);
+    
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
+    globalLayout.cells("a").setWidth(250); 
+    globalLayout.cells("a").hideHeader(); 
+    globalLayout.cells("b").hideHeader(); 
 
-		<!--[if !IE]>end section content top<![endif]-->
-		<!--[if !IE]>start section content bottom<![endif]-->
-		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
-		<!--[if !IE]>end section content bottom<![endif]-->
-		
-	</div>
-	<!--[if !IE]>end section content<![endif]-->
-</div>
-<div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100%;'>
-<div class="dhx_cal_navline">
-<div class="dhx_cal_prev_button">&nbsp;</div>
-<div class="dhx_cal_next_button">&nbsp;</div>
-<div class="dhx_cal_today_button"></div>
-<div class="dhx_cal_date"></div>
-<div class="dhx_cal_tab" name="day_tab" 
-
-style="right:215px;"></div>
-<div class="dhx_cal_tab" name="timeline_tab" 
-
-style="right:280px;"></div>
-</div>
-<div class="dhx_cal_header">
-</div>
-<div class="dhx_cal_data">
-</div>	
-</div>
-<!--[if !IE]>end section<![endif]-->
-<script>
-dhtmlx.skin = "dhx_skyblue";
-var dhxLayout = new dhtmlXLayoutObject("mygrid","3U");
-var toolbar = dhxLayout.attachToolbar();
-toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-toolbar.loadStruct("{{ url('arii_JID_toolbar') }}");
-toolbar.attachEvent( "onClick", function(id, value) {
-    switch (id) {
-        case "refresh":
-            GlobalRefresh();
-        break;
-        default:
-            alert(id);
-    }
-});
-
-dhxLayout.cells("a").setText("{{ 'Orders status' | trans }}");
-dhxLayout.cells("a").setWidth(300);
-dhxLayout.cells("a").setHeight(300);
-
-donutChart =  dhxLayout.cells("a").attachChart({
-        view:"donut",
-        container:"pie_chart_container",
-        value:"#JOBS#",
-        label:"",
-        tooltip: "#STATUS#",
-        color: "#COLOR#",
-        gradient:true,
-        border:false,
-        pieInnerText: "#JOBS#",
-        shadow: 0,
-        legend:{
-	             width: 0,
-                     template: "#STATUS#"
-        }
-});
-donutChart.load( "{{ url('xml_JID_orders_pie') }}" );
-donutChart.attachEvent("onItemClick",function(id, value){
-    dhtmlxAjax.get( "{{ url('arii_global_toolbar_update') }}?"+id+'=true' , function(loader){
-        window.location = "{{ url("arii_JID_orders") }}"; 
+    myGridMenu = new dhtmlXMenuObject(null);
+    myGridMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
+    myGridMenu.renderAsContextMenu();
+    myGridMenu.loadStruct("{{ url('xml_JID_orders_grid_menu') }}");
+          
+    myAccordion = globalLayout.cells("a").attachAccordion();
+    myAccordion.addItem("a1", "Main Page");
+    
+    myTree = myAccordion.cells("a1").attachTree();
+    myTree.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    myTree.loadXML("{{ url('xml_JID_orders_tree') }}");
+    myTree.attachEvent("onDblClick", function(id){
+        globalLayout.cells("a").progressOn();
+        GridRefresh();
     });
-});
+    
+    myGrid = globalLayout.cells("b").attachGrid();
+    myGrid.selMultiRows = true;
+    myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myGrid.setHeader("{{ "Spooler" | trans }},{{ "Chain" | trans }},{{ "Order" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Information" | trans }}");
+    myGrid.attachHeader("#select_filter,#text_filter,#text_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter");
+    myGrid.setInitWidths("100,*,140,150,100,150,150,*");
+    myGrid.setColAlign("left,left,left,left,center,right,right,left");
+    myGrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro");
+    myGrid.setColSorting("str,str,str,str,str,date,date,str");
+    myGrid.enableContextMenu(myGridMenu);
+    myGrid.attachEvent("onBeforeContextMenu", onShowMenu );
+    myGrid.init();
+    myGrid.loadXML( "{{ url('xml_JID_orders_grid') }}");
+    myGrid.attachEvent("onRowDblClicked",JobDetail );
 
-dhxLayout.cells("b").setText("{{ 'Orders per hour' | trans }}");
-bar =  dhxLayout.cells("b").attachChart ({
-        view:"stackedBar",
-        container:"bar_container",
-        value:"#SUCCESS#",
-        label:"#SUCCESS#",
-        tooltip: "#SUCCESS#",
-        fill:true,
-        gradient:true,
-        color:"#749400",
-        yAxis:{
-                title:"{{ "Jobs" | trans }}",
-                lines: true
-        },
-        xAxis:{
-                title:"{{ "Hour" | trans }}",
-                template:"#HOUR#",
-                lines: false                
+    myFolderToolbar = globalLayout.cells("a").attachToolbar();
+    myFolderToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myFolderToolbar.loadStruct( "{{ url('xml_JID_orders_folder_toolbar') }}");
+    myFolderToolbar.attachEvent("onClick",function(itemid){
+        FolderRefresh();
+    });
+    myFolderToolbar.attachEvent("onStateChange",function(itemid){
+        switch(itemid) {
+             case 'ordered':
+                ordered = myFolderToolbar.getItemState(itemid);
+                break;
+             case 'stopped':
+                stopped = myFolderToolbar.getItemState(itemid);
+                break;
         }
-//        disableItems:true
+        FolderRefresh();
+    });
+
+    myGridToolbar = globalLayout.cells("b").attachToolbar();
+    myGridToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myGridToolbar.loadStruct( "{{ url('xml_JID_orders_grid_toolbar') }}");
+    myGridToolbar.attachEvent("onClick",function(itemid){
+         switch (itemid) {
+            case 'refresh':
+                globalLayout.cells("b").progressOn();
+                GridRefresh();
+                break;
+            case "print":
+                myGrid.printView();
+                break;
+            case "rss":
+                document.location.href = "{{ url('rss_JID_history_job') }}";
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+    });
+    myGridToolbar.attachEvent("onStateChange",function(itemid, state){
+         switch (itemid) {
+            case 'gantt':
+                myGrid.setColumnHidden(5,state);      
+                myGrid.setColumnHidden(6,state);      
+                myGrid.setColumnHidden(7,state);  
+                myGrid.setColumnHidden(8,state);   
+                myGrid.setColumnHidden(9,!state);  
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+    });
+    
+    myGridMenu.attachEvent("onClick", function (menuitemId, type) {
+        var data = myGrid.contextID.split("_");
+        var rId = data[0];
+        var cInd = data[1];
+        spooler = myGrid.cells(rId,0).getValue();
+        switch (menuitemId) {
+           case "spooler_go":
+                window.open('/js/'+spooler+'/', spooler);
+                break;
+           case "show_info":
+                JobInfo( rId );
+            break;
+            case "doc":
+                window.open('{{ url('arii_JID_job_doc') }}?id='+rId,'arii_doc');
+                break;
+           case "job_history":
+                document.location.href = "{{ url('arii_JID_history_job') }}?id="+rId;
+            break;
+           case "order_history":
+                document.location.href = "{{ url('arii_JID_order_history') }}?id="+rId;
+            break;
+            case "show_why":
+                ShowWhy( rId);
+                break;
+            case "pause_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=pause_spooler&spooler_id",spooler);
+                break;
+            case "continue_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=continue_spooler&spooler_id",spooler);
+                break;
+            case "check_spooler":
+                // Spooler("{{ url('arii_JID_spooler_update') }}?id",spooler);
+                CheckSpooler(spooler);
+                break;
+            case "terminate_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=restart_spooler&spooler_id",spooler);
+                break;
+            case "abort_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=abort_spooler&spooler_id",spooler);
+                break;
+            case "purge_job":
+                PurgeJob( rId );
+            break;
+            case "job_detail":
+                JobDetail( rId );
+            break;
+            case "order_detail":
+                OrderDetail( rId );
+            break;
+            case "stop_chain":
+                Chain(rId,menuitemId,"{{ "Stop chain" | trans }}",null);
+                break;
+            case "unstop_chain":
+                Chain(rId,menuitemId,"{{ "Unstop chain" | trans }}",null);
+                break;
+            case "stop_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Stop node" | trans }}",null);
+                break;
+            case "unstop_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Unstop node" | trans }}",null);
+                break;
+            case "skip_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Skip node" | trans }}",null);
+                break;
+            case "unskip_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Unskip node" | trans }}",null);
+                break;            
+            case "suspend_order":
+            case "resume_order":
+                    alert(menuitemId);
+                break;
+            case "reset_order":
+                XMLCommand(rId,menuitemId);
+                break;
+            default:
+                alert("inconnu ! "+menuitemId);    
+        }
+        return true;
+    });
+
+    var myTabbar = globalLayout.cells("c").attachTabbar();
+    myTabbar.addTab("b1","{{ "Job" | trans }}","100px", null, true);
+    myTabbar.addTab("b2","{{ "Log" | trans }}","100px");
+    myTabbar.addTab("b3","{{ "History" | trans }}","100px");
+
+    myDetailLayout = myTabbar.cells("b1").attachLayout("2U");
+    myDetailLayout.cells("a").hideHeader(); 
+    myDetailLayout.cells("b").hideHeader(); 
+    
+    myForm = myDetailLayout.cells("a").attachForm();
+    myForm.loadStruct("{{ url('json_JID_orders_form') }}");
+
+    myDetailToolbar = myDetailLayout.cells("a").attachToolbar();
+    myDetailToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myDetailToolbar.loadStruct( "{{ url('xml_JID_orders_form_toolbar') }}" , function(){
+        GBCalendar = new dhtmlXCalendarObject(myDetailToolbar.getInput('ref_date'));
+        GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
+        GBCalendar.setWeekStartDay(1);
+    });
+    
+    var myParametersToolbar = myDetailLayout.cells("b").attachToolbar();
+    myParametersToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myParametersToolbar.loadStruct("{{ url('xml_JID_job_params_toolbar') }}");
+
+    myParameters = myDetailLayout.cells("b").attachGrid();
+    myParameters.selMultiRows = true;
+    myParameters.setHeader("{{ "Parameter" | trans }},{{ "Value" | trans }}");
+    myParameters.setColTypes("ed,ed");
+    myParameters.setInitWidths("*,*");
+    myParameters.init();
+    
+    myLog = myTabbar.cells("b2").attachGrid();
+    myLog.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+    myLog.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+    myLog.setInitWidths("160,40,*,60");
+    myLog.setColAlign("right,left,left,right");
+    myLog.setColTypes("ro,ro,ro,ro");
+    myLog.setColSorting("date,str,str,int");
+    myLog.init();
+
+    myHistory = myTabbar.cells("b3").attachGrid();
+    myHistory.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit" | trans }},{{ "Message" | trans }}");
+    myHistory.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    myHistory.setInitWidths("140,140,110,70,70,*");
+    myHistory.setColAlign("right,right,right,right,right,left");
+    myHistory.setColTypes("ro,ro,ro,ro,ro,ro");
+    myHistory.setColSorting("date,date,str,int,int,str");
+    myHistory.init();
+    myHistory.enableAlterCss("even_row","odd_row");
+    
+    myDetailToolbar.attachEvent("onClick",function(itemid){
+        Text = '';
+        var id = myForm.getItemValue('ID');
+        switch(itemid) {
+            case "start_job":
+                Text = "{{ "Start job" | trans }}";
+                break;
+            case "stop_job":
+                Text = "{{ "Stop job" | trans }}";
+                break;
+            case "unstop_job":
+                Text = "{{ "Unstop job" | trans }}";
+                break;
+            case "delete_task":
+            case "kill_task":
+                Text = "{{ "Kill task" | trans }}";
+                break;
+        }
+        switch(itemid) {
+            case "start_job":
+            case "stop_job":
+            case "unstop_job":
+            case "delete_task":
+            case "kill_task":
+                var params = new Array();
+                myParameters.forEachRow(function(id){
+                    var param = myParameters.cells(id,0).getValue() + "=" + encodeURIComponent(myParameters.cells(id,1).getValue());
+                    params.push(param);
+                });
+                var paramsStr = params.join(",");
+                var start_time = '';
+                start_time = myDetailToolbar.getValue("ref_date");
+                // alert("{{ url('arii_XML_Command') }}?command="+Command+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id); 
+                dhtmlx.message({
+                type: "Notice",
+                text: Text });
+                globalLayout.cells("b").progressOn();
+                dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id,function(loader,response){
+                    dhtmlx.message({
+                    type: "Notice",
+                    expire: 10000,
+                    width: "500px",
+                    text: loader.xmlDoc.responseText });
+                    GridRefresh();
+                    globalLayout.cells("b").progressOff();        
+                });
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+        return true;
+    });
+    
+    myParametersToolbar.attachEvent("onClick",function(itemid){
+        switch(itemid) {
+            case "new":
+                myParameters.addRow(myParameters.getRowsNum()+1,"");
+                break;
+            default:
+                break;
+        }
+        return true;
+    });
+
 });
-bar.addSeries({
-	        value:"#FAILURE#",
-	        label:"<span style='background-color: red;color: yellow;'>#FAILURE#</span>",
-                tooltip: "#FAILURE#",
-                gradient:false,
-                color:"red",
-	        line:{
-		    color:"red",
-		    width:1
-	        }
-});
-bar.addSeries({
-	        value:"#RUNNING#",
-	        label:"<span style='background-color: orange;color: black;'>#RUNNING#</span>",
-                tooltip: "#RUNNING#",
-                gradient:false,
-                color:"black",
-	        line:{
-		    color:"orange",
-		    width:1
-	        }
-});
-bar.load( "{{ url('xml_JID_orders_bar') }}" );
-
-scheduler.locale.labels.timeline_tab = "Timeline";
-//scheduler.locale.labels.section_custom="Section";
-scheduler.config.details_on_create=false;
-scheduler.config.details_on_dblclick=false;
-scheduler.config.xml_date="%Y-%m-%d %H:%i";
-
-scheduler.config.first_hour = 0;
-scheduler.config.last_hour = 24;
-
-scheduler.locale.labels.day_tab = "{{ "Day" | trans }}";
-scheduler.locale.labels.timeline_tab = "{{ "Timeline" | trans }}";
-
-//===============
-//Configuration
-//===============
-scheduler.createTimelineView({
-    name: "timeline",
-    x_unit: "minute",
-    x_date: "%H:%i",
-    x_step: {{ Timeline.step }},
-    x_size: 24,
-    x_start: 48,
-    x_length: 48,
-    y_unit:	 [ {% for spooler in Timeline.spoolers %}
-                  { key: "{{ spooler }}", label: "{{ spooler }}" },
-                  {% endfor %} 
-               ],
-y_property:	"section_id",
-render:"bar"
-});
-//===============
-//Data loading
-//===============
-scheduler.config.lightbox.sections=[	
-    { name:"description", height:130, map_to:"text", type:"textarea" , focus:true},
-    {name:"time", height:72, type:"time", map_to:"auto"}
- ];
-
-scheduler.templates.event_class=function(start,end,event){
- return event.color;
-}
-
-scheduler.init('scheduler_here',new Date( {{ Timeline.js_date }} ),"timeline");	
-
-scheduler.load( "{{ url('xml_JID_orders_timeline') }}" );
-timeline  = dhxLayout.cells("c").attachScheduler( new Date( {{ Timeline.js_date }} ) , "timeline", 'scheduler_here', scheduler);
-dhxLayout.cells("c").hideHeader();
 
 function GlobalRefresh() {
-    donutChart.load( "{{ url('xml_JID_orders_pie') }}", function() {
-        toolbar.setItemText( "refresh", "{{ 'Pie chart refreshed.' | trans}}" );
-        bar.load( "{{ url('xml_JID_orders_bar') }}", function() {
-            bar.refresh();
-            toolbar.setItemText( "refresh", "{{ 'Bar chart refreshed.' | trans}}" );
-            scheduler.load( "{{ url('xml_JID_orders_timeline') }}", function() {
-                var currentTime = new Date();
-                var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
-                toolbar.setItemText( "refresh", FormatTime(nextTime));
-            });
-        } );
+    GridRefresh();
+    FolderRefresh();
+}
+
+function FolderRefresh() {
+    myTree.deleteChildItems(0);
+    myTree.loadXML("{{ url('xml_JID_orders_tree') }}?ordered="+ordered+"&stopped="+stopped, function() {
+        globalLayout.cells("a").progressOff();
+        GridRefresh();
     });
 }
+
+function GridRefresh() {
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+    if (minutes < 10){
+    minutes = "0" + minutes;
+    }
+    if (seconds < 10){
+    seconds = "0" + seconds;
+    }
+    myGridToolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+{% if arii_pro %}
+    myGrid.refreshFilters();
+    var page_number = myGrid.currentPage;
+{% endif %}
+    myGrid.loadXML("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered+"&stopped="+stopped, function(){
+        globalLayout.cells("b").progressOff();
+{% if arii_pro %}
+        myGrid.showRow(currentrow); 
+        myGrid.changePage(page_number);
+        myGrid.refreshFilters();
+{% endif %}
+        myGrid.filterByAll();
+    });    
+}
+
+function JobDetail(id) {
+    globalLayout.cells("c").progressOn();
+    myForm.load("{{ url('xml_JID_job_form') }}?id="+id);
+    // mise a jour de la toolbar
+    var status = myGrid.cells(id, 3 ).getValue();
+    myDetailToolbar.showItem('unstop_job');
+    myDetailToolbar.showItem('stop_job');
+    myDetailToolbar.showItem('kill_task');
+    if (status== 'STOPPED') {
+        myDetailToolbar.hideItem('stop_job');
+    }
+    else {
+        myDetailToolbar.hideItem('unstop_job');
+    }
+    if (status!= 'RUNNING') {
+        myDetailToolbar.hideItem('kill_task');      
+    }
+    myParameters.loadXML("{{ url('xml_JID_job_params') }}?id="+id );
+    myHistory.clearAll();
+    myHistory.loadXML("{{ url('xml_JID_job_history') }}?id="+id );  
+    myLog.clearAll();
+    myLog.loadXML("{{ url('xml_JID_job_log') }}?id="+id, function (id) {
+        globalLayout.cells("c").progressOff();    
+    });
+}
+
+function onShowMenu(rowId, celInd, grid) {
+
+    var status = grid.cells(rowId, 3 ).getValue();
+
+    // si on est operator 
+    {% if is_granted('ROLE_OPERATOR') %}
+    if (status !=='RUNNING') {
+        myGridMenu.hideItem('kill_task');    
+    }
+    else {
+        myGridMenu.showItem('kill_task');    
+    }
+    if (status !=='QUEUED')  {
+        myGridMenu.hideItem('delete_task');    
+    }
+    else {
+        myGridMenu.showItem('delete_task');    
+    }
+    // job stoppé
+    if ((grid.cells(rowId, 3).getValue()== 'STOPPED') 
+         || (grid.cells(rowId, 3).getValue()== 'STOPPING') ){    
+        myGridMenu.hideItem("stop_job");
+        myGridMenu.showItem("unstop_job");
+    }
+    else {
+        myGridMenu.hideItem("unstop_job");
+        myGridMenu.showItem("stop_job");
+    }
+    {% else %}
+        myGridMenu.hideItem('start_job');
+        myGridMenu.hideItem('kill_task');
+        myGridMenu.hideItem('stop_job');
+        myGridMenu.hideItem('unstop_job');
+        myGridMenu.hideItem('pause_spooler');    
+        myGridMenu.hideItem('continue_spooler');    
+    {% endif %} 
+ return true;
+}
+
+// Fonctions
+function CheckSpooler(rid) 
+{
+    dhx4.ajax.get("{{ url('arii_JID_spooler_update') }}?id="+rid,function(loader,response){
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+    });
+return true;
+}
+
+function Spooler(url,rid)
+{
+    dhx4.ajax.get.get(url+"="+rid,function(loader,response){
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        CheckSpooler(rid);
+    });
+    return true;
+}
+
 </script>
+</body>
 {% endblock %}

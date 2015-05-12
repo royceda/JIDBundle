@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <toolbar>
-<item type="buttonSelect" id="menu" text="" img="house.png">
+<item type="buttonSelect" id="menu" text="" img="jid.png">
     <item type="button" id="menu_history" text="{{ "Jobs" | trans }}" img="job.png"/>
     <item type="button" id="menu_orders" text="{{ "Orders" | trans }}" img="order.png"/>
     <item type="button" id="menu_chains" text="{{ "Chains" | trans }}" img="job_chain.png"/>
@@ -9,7 +10,64 @@
     <item type="button" id="menu_msg" text="{{ "Messages" | trans }}" img="message.png"/>
     <item type="button" id="menu_events" text="{{ "Events" | trans }}" img="event.png"/>
 </item>
-<item id="sepr" type="separator"/>
-    <item type="buttonTwoState" id="contract" text="" img="contract.png"/>
-    <item type="button" id="refresh" text="" img="refresh.png"/>
+    {% if (app.session.get('Databases')|length) >1 %}
+    {% set database = app.session.get('database') %}     
+    <item id="database" type="buttonSelect" img="database.png" text="{{ database.name }}">
+       {% set databases = app.session.get('Databases') %}     
+        {% for k,database in databases %}
+            <item type="button" id="database_{{ database.db }}" text="{{ database.name }} {{ database.db }}" />
+        {% endfor %}
+    </item>
+    {% endif %}
+    {% if (app.session.get('spooler')|length) >0 %}
+    {% set spooler = app.session.get('spooler') %}     
+    <item id="spooler" type="buttonSelect" img="spooler.png" text="{{ spooler.name }}">
+        <item type="button" id="default" text="{{ "spooler.all" | trans }}"/>
+        {% set spoolers = app.session.get('Spoolers') %}     
+        {% if spoolers|length > 0 %}
+        <item type="separator" id="sep"/>
+        {% for k,v in spoolers %}
+            <item type="button" id="spooler_{{ v.id }}" text="{{ v.name }}"/>
+        {% endfor %}
+        {% endif %}
+    </item>
+    {% endif %}
+    <item id="sep1" type="separator"/>
+    <item id="date_select" type="button" img="date.png" text="" />
+    <item id="ref_date" type="buttonInput" value="{{ app.session.get('ref_date') }}" width="140" title="{{ "date.reference" | trans }}"/>
+    {% if (app.session.get('UserFilters')|length) >0 %}
+    {% set filter = app.session.get('user_filter') %}     
+    <item id="filter" type="buttonSelect" img="filter.png" text="{{ filter.name }}">
+       {% set filters = app.session.get('UserFilters') %}     
+        {% for k,filter in filters %}
+            <item type="button" id="filter_{{ filter.id }}" text="{{ filter.name }}" />
+        {% endfor %}
+    </item>
+    {% endif %}
+    <item type="buttonSelect" id="refresh" text="{{ app.session.get('refresh') }}" img="refresh.png">
+<!--       <item type="button" id="never" text="{{ "Never" | trans }}" />
+        <item id="sep31" type="separator"/>    
+-->        <item type="button" id="5" text="5 {{ "seconds" | trans }}"/>
+        <item type="button" id="30" text="30 {{ "seconds" | trans }}" />
+        <item type="button" id="60" text="1 {{ "minute" | trans }}" />
+        <item type="button" id="300" text="5 {{ "minutes" | trans }}" />
+        <item type="button" id="1800" text="15 {{ "minutes" | trans }}" />
+        <item type="button" id="3600" text="1 {{ "hour" | trans }}" />
+    </item>
+    <item id="sep7" type="separator"/>
+    {% if (app.session.get('Sites')|length) >0 %}
+    {% set site = app.session.get('site') %}     
+    <item id="site" type="buttonSelect" img="world.png" text="{{ site.name }}">
+        {% set Sites = app.session.get('Sites') %}     
+        {% for k,v in Sites %}
+            <item img="../flags/{{ v.iso | lower }}.png" type="button" id="site_{{ v.id }}" text="{{ v.name }}"/>
+        {% endfor %}
+    </item>
+    <item id="sep8" type="separator"/>
+    {% endif %}
+    <item id="help" type="buttonSelect" img="help.png" text="">
+    <item id="about" type="button" text="{{ "About Ari'i" | trans }}" img="arii.png"/>
+    <item id="sep10" type="separator"/>
+    <item id="guide" type="button" text="{{ "User guide" | trans }}"  img="book.png"/>
+    </item>
 </toolbar>

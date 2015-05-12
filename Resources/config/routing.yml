@@ -3,65 +3,149 @@
 # --------------------------------------------------------------------------
 arii_JID_index:
     pattern:  /
-    defaults: { _controller: AriiJIDBundle:Default:index }
+    defaults: { _controller: AriiJIDBundle:Jobs:index }
+
+xml_JID_toolbar:
+    pattern:  /toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Default:toolbar }
+
+json_JID_ribbon:
+    pattern:  /ribbon.json
+    defaults: { _controller: AriiJIDBundle:Default:ribbon }
+
+xml_JID_menu:
+    pattern:  /menu.xml
+    defaults: { _controller: AriiJIDBundle:Default:menu }
 
 # --------------------------------------------------------------------------
 # Jobs
 # --------------------------------------------------------------------------
-arii_JID_jobs:
+arii_JID_jobs_index:
     pattern:  /jobs
     defaults: { _controller: AriiJIDBundle:Jobs:index }
 
-arii_JID_jobs_grid:
-    pattern:  /jobs/grid
-    defaults: { _controller: AriiJIDBundle:Jobs:indexGrid }
-
-arii_JID_jobs_treegrid:
-    pattern:  /jobs/treegrid
-    defaults: { _controller: AriiJIDBundle:Jobs:indexTreegrid }
+xml_JID_jobs_tree:
+    pattern:  /jobs/tree.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:tree }
 
 xml_JID_jobs_grid:
     pattern:  /jobs/grid.xml
     defaults: { _controller: AriiJIDBundle:Jobs:grid }
 
-xml_JID_jobs_grid_debug:
-    pattern:  /jobs/grid_debug.xml
-    defaults: { _controller: AriiJIDBundle:Jobs:grid_debug }
-    
+xml_JID_jobs_grid_menu:
+    pattern:  /jobs/grid_menu.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:grid_menu }
+
+json_JID_jobs_form:
+    pattern:  /jobs/form.json
+    defaults: { _controller: AriiJIDBundle:Jobs:form }
+
+xml_JID_jobs_form:
+    pattern:  /jobs/form.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:form2 }
+
+xml_JID_jobs_form_toolbar:
+    pattern:  /jobs/form_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:form_toolbar }
+
+arii_JID_jobs_treegrid:
+    pattern:  /jobs/treegrid
+    defaults: { _controller: AriiJIDBundle:Jobs:indexTreegrid }
+
 xml_JID_jobs_toolbar:
     pattern:  /jobs/toolbar.xml
-    defaults: { _controller: AriiJIDBundle:Jobs:toolbar }
+    defaults: { _controller: AriiJIDBundle:xJobs:toolbar }
 
-xml_JID_jobs_menu:
-    pattern:  /jobs/menu.xml
-    defaults: { _controller: AriiJIDBundle:Jobs:menu }
+xml_JID_jobs_folder_toolbar:
+    pattern:  /jobs/folder_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:folder_toolbar }
+
+xml_JID_jobs_grid_toolbar:
+    pattern:  /jobs/grid_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:grid_toolbar }
+
+xml_JID_jobs_bar:
+    pattern:  /jobs/bar.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:bar }
+
+xml_JID_jobs_pie:
+    pattern:  /jobs/pie.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:pie }
+
+xml_JID_jobs_timeline:
+    pattern:  /jobs/timeline.xml
+    defaults: { _controller: AriiJIDBundle:Jobs:timeline }
 
 # --------------------------------------------------------------------------
 # Job
 # --------------------------------------------------------------------------
-xml_JID_job_toolbar_start:
-    pattern:  /job/toolbar_start.xml
-    defaults: { _controller: AriiJIDBundle:Job:toolbar_start }
+xml_JID_job_form:
+    pattern:  /job/form.xml
+    defaults: { _controller: AriiJIDBundle:Job:form }
 
-xml_JID_job_toolbar_stop:
-    pattern:  /job/toolbar_stop.xml
-    defaults: { _controller: AriiJIDBundle:Job:toolbar_stop }
+xml_JID_job_params:
+    pattern:  /job/params.xml
+    defaults: { _controller: AriiJIDBundle:Job:params}
 
-xml_JID_job_toolbar_unstop:
-    pattern:  /job/toolbar_unstop.xml
-    defaults: { _controller: AriiJIDBundle:Job:toolbar_unstop }
+xml_JID_job_params_toolbar:
+    pattern:  /job/params/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Job:params_toolbar }
 
-xml_JID_job_toolbar_kill_task:
-    pattern:  /job/toolbar_kill.xml
-    defaults: { _controller: AriiJIDBundle:Job:toolbar_kill }
+xml_JID_job_log:
+    pattern:  /job/log.xml
+    defaults: { _controller: AriiJIDBundle:Job:log }
 
-xml_JID_job_toolbar_delete_task:
-    pattern:  /job/toolbar_delete.xml
-    defaults: { _controller: AriiJIDBundle:Job:toolbar_delete }
+xml_JID_job_history:
+    pattern:  /job/history.xml
+    defaults: { _controller: AriiJIDBundle:Job:history }
 
-xml_JID_job_toolbar_params:
-    pattern:  /job/toolbar_params.xml
-    defaults: { _controller: AriiJIDBundle:Job:toolbar_params }
+
+# --------------------------------------------------------------------------
+# Job (history)
+# --------------------------------------------------------------------------
+arii_JID_history_job:
+    pattern:  /history/job
+    defaults: { _controller: AriiJIDBundle:History:job }
+
+
+# --------------------------------------------------------------------------
+# Orders
+# --------------------------------------------------------------------------
+arii_JID_orders:
+    pattern:  /orders
+    defaults: { _controller: AriiJIDBundle:Orders:index }
+
+xml_JID_orders_grid:
+    pattern:  /orders/grid.xml
+    defaults: { _controller: AriiJIDBundle:Orders:grid }
+
+xml_JID_orders_grid_menu:
+    pattern:  /orders/grid_menu.xml
+    defaults: { _controller: AriiJIDBundle:Orders:grid_menu }
+
+xml_JID_orders_grid_toolbar:
+    pattern:  /orders/grid_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:grid_toolbar }
+    
+xml_JID_orders_folder_toolbar:
+    pattern:  /orders/folder_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:folder_toolbar }
+    
+arii_JID_orders_list:
+    pattern:  /orders/list
+    defaults: { _controller: AriiJIDBundle:Orders:list }
+
+xml_JID_orders_tree:
+    pattern:  /orders/tree.xml
+    defaults: { _controller: AriiJIDBundle:Orders:tree }
+
+json_JID_orders_form:
+    pattern:  /orders/form.json
+    defaults: { _controller: AriiJIDBundle:Orders:form }
+
+xml_JID_orders_form_toolbar:
+    pattern:  /orders/form_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:form_toolbar }
 
 arii_JID_toolbar_purge_job:
     pattern:  /toolbar/purge_job
@@ -70,26 +154,6 @@ arii_JID_toolbar_purge_job:
 arii_JID_toolbar_job_why:
     pattern:  /toolbar/job_why
     defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_job_why }
-
-# --------------------------------------------------------------------------
-# _Job (Fenetre JOB)
-# --------------------------------------------------------------------------
-xml_JID_job_toolbar_execute:
-    pattern:  /job/toolbar_execute.xml
-    defaults: { _controller: AriiJIDBundle:Job:toolbar_start }
-
-    
-    
-# --------------------------------------------------------------------------
-# Orders
-# --------------------------------------------------------------------------
-arii_JID_orders:
-    pattern:  /orders
-    defaults: { _controller: AriiJIDBundle:Orders:index }
-
-arii_JID_orders_grid:
-    pattern:  /orders/grid
-    defaults: { _controller: AriiJIDBundle:Orders:index_grid }
 
 arii_JID_orders_treegrid:
     pattern:  /orders/treegrid
@@ -103,19 +167,11 @@ xml_JID_orders_toolbar:
     pattern:  /orders/toolbar.xml
     defaults: { _controller: AriiJIDBundle:Orders:toolbar }
 
-xml_JID_orders_grid:
-    pattern:  /orders/grid.xml
-    defaults: { _controller: AriiJIDBundle:Orders:grid }
-
 
 
 # --------------------------------------------------------------------------
 # Order
 # --------------------------------------------------------------------------
-xml_JID_order_toolbar_start:
-    pattern:  /order/toolbar_start.xml
-    defaults: { _controller: AriiJIDBundle:Order:toolbar_start }
-
 json_JID_order_form:
     pattern:  /order/form.json
     defaults: { _controller: AriiJIDBundle:Order:form }
@@ -128,11 +184,6 @@ xml_JID_order_params:
     pattern:  /order/params.xml
     defaults: { _controller: AriiJIDBundle:Order:params}
     
-
-arii_JID_orders_list:
-    pattern:  /orders/list
-    defaults: { _controller: AriiJIDBundle:Orders:list }
-
 arii_JID_orders_timeline:
     pattern:  /orders/timeline
     defaults: { _controller: AriiJIDBundle:Orders:timeline }
@@ -208,8 +259,6 @@ arii_JID_orders_toolbar_timeline:
 xml_JID_orders_toolbar_activities:
     pattern:  /orders/activities/toolbar.xml
     defaults: { _controller: AriiJIDBundle:Orders:toolbar_activities }
-
-
 
     
     
@@ -356,10 +405,6 @@ xml_JID_history_history:
     pattern:  /history/history.xml
     defaults: { _controller: AriiJIDBundle:History:list_xml, history: 100 }
 
-xml_JID_start_job_parameters:
-    pattern:  /start_job/parameters
-    defaults: { _controller: AriiJIDBundle:Toolbar:start_job_parameters}
-
 xml_JID_job_list:
     pattern:  /job_list
     defaults: { _controller: AriiJIDBundle:Toolbar:job_list}
@@ -368,10 +413,6 @@ arii_JID_history_timeline:
     pattern:  /history/timeline
     defaults: { _controller: AriiJIDBundle:History:timeline }
 
-xml_JID_history_pie:
-    pattern:  /history/pie.xml
-    defaults: { _controller: AriiJIDBundle:History:pie }
-
 xml_JID_history_pie_ordered:
     pattern:  /history/pie_ordered.xml
     defaults: { _controller: AriiJIDBundle:History:pie, ordered: 1 }
@@ -379,10 +420,6 @@ xml_JID_history_pie_ordered:
 xml_JID_history_pie_states:
     pattern:  /history/states.xml
     defaults: { _controller: AriiJIDBundle:History:states }
-
-xml_JID_history_bar:
-    pattern:  /history/bar.xml
-    defaults: { _controller: AriiJIDBundle:History:bar }
 
 xml_JID_timeline_history:
     pattern:  /timeline/history.xml
@@ -409,9 +446,7 @@ xml_JID_timeline_ordered_jobs:
     defaults: { _controller: AriiJIDBundle:Timeline:ordered_jobs }
     
 
-arii_JID_history_job:
-    pattern:  /history/job
-    defaults: { _controller: AriiJIDBundle:History:job }
+
     
 xml_JID_toolbar_history:
     pattern:  /history/toolbar.xml

@@ -1,214 +1,656 @@
 {# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
-
 {% extends "AriiJIDBundle::layout.html.twig" %}
-{% block content %}
-<!--[if !IE]>start section<![endif]-->	
-<div class="section table_section">
-	<!--[if !IE]>start title wrapper<![endif]-->
-	<div class="title_wrapper">
-		<h2>{{ "Status chart" | trans }}</h2>
-		<!--[if !IE]>start section menu<![endif]-->
-                {{ render(controller("AriiJIDBundle:Default:submenu")) }}
-		<!--[if !IE]>end section menu<![endif]-->
-		
-		<span class="title_wrapper_left"></span>
-		<span class="title_wrapper_right"></span>
-	</div>
-	<!--[if !IE]>end title wrapper<![endif]-->
-<!--[if !IE]>start section content<![endif]-->
-	<div class="section_content">
-		<!--[if !IE]>start section content top<![endif]-->
-		<div class="sct">
-			<div class="sct_left">
-				<div class="sct_right">
-					<div class="sct_left">
-                                                <div class="sct_right">
-    <div id="mygrid" style="height:776px;background-color:white;position:relative;overflow:hidden;"></div>
-                                                </div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<!--[if !IE]>end section content top<![endif]-->
-		<!--[if !IE]>start section content bottom<![endif]-->
-		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
-		<!--[if !IE]>end section content bottom<![endif]-->
-		
-	</div>
-	<!--[if !IE]>end section content<![endif]-->
-</div>
+{% block body %}
 <div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100%;'>
 <div class="dhx_cal_navline">
 <div class="dhx_cal_prev_button">&nbsp;</div>
 <div class="dhx_cal_next_button">&nbsp;</div>
 <div class="dhx_cal_today_button"></div>
 <div class="dhx_cal_date"></div>
-<div class="dhx_cal_tab" name="day_tab" 
-
-style="right:215px;"></div>
-<div class="dhx_cal_tab" name="timeline_tab" 
-
-style="right:280px;"></div>
+<div class="dhx_cal_tab" name="day_tab" style="right:205px;"></div>
+<div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div>
+<div class="dhx_cal_tab" name="month_tab" style="right:75px;"></div>
+<div class="dhx_cal_tab" name="agenda_tab" style="right:10px;"></div>
 </div>
 <div class="dhx_cal_header">
 </div>
 <div class="dhx_cal_data">
 </div>	
 </div>
-<!--[if !IE]>end section<![endif]-->
-<script>
-dhtmlx.skin = "dhx_skyblue";
-var dhxLayout = new dhtmlXLayoutObject("mygrid","3U");
-var toolbar = dhxLayout.attachToolbar();
-toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-toolbar.loadStruct("{{ url('arii_JID_toolbar') }}");
-toolbar.attachEvent( "onClick", function(id, value) {
-    switch (id) {
-        case "refresh":
-            GlobalRefresh();
-        break;
-        default:
-            alert(id);
-    }
-});
-dhxLayout.cells("a").setText("{{ 'Jobs status' | trans }}");
-dhxLayout.cells("a").setWidth(300);
-dhxLayout.cells("a").setHeight(300);
+<body>
+<script type="text/javascript">
+var max_history = 0; // pas d'historique
+{% if  app.request.get('ordered')=='true' %}
+var ordered = true;
+{% else %}
+var ordered = false; // que des standalone
+{% endif %}
+{% if  app.request.get('stopped')>0 %}
+var stopped = true;
+{% else %}
+var stopped = false; // que des standalone
+{% endif %}
+var myGridToolbar;
 
-donutChart =  dhxLayout.cells("a").attachChart({
-        view:"donut",
-        container:"pie_chart_container",
-        value:"#JOBS#",
-        label:"",
-        tooltip: "#STATUS#",
-        color: "#COLOR#",
-        gradient:true,
-        border:false,
-        pieInnerText: "#JOBS#",
-        shadow: 0,
-        legend:{
-	      width: 0,
-              template: "#STATUS#"
+dhtmlxEvent(window,"load",function(){ 
+    autorefresh = setInterval( "GlobalRefresh()",30000);
+    
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
+    globalLayout.cells("a").setWidth(330); 
+    globalLayout.cells("a").hideHeader(); 
+    globalLayout.cells("b").hideHeader(); 
+    globalLayout.cells("c").setHeight(260); 
+
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+
+    myAccordion = globalLayout.cells("a").attachAccordion();
+    myAccordion.addItem("a1", "{{ "Status" | trans }}");
+    myAccordion.addItem("a2", "{{ "Folders" | trans }}");
+    myAccordion.addItem("a3", "{{ "Per hour" | trans }}");
+
+    var myMainTabbar = globalLayout.cells("b").attachTabbar();
+    myMainTabbar.addTab("a","{{ "List" | trans }}","200px", null, true);
+    myMainTabbar.addTab("b","{{ "Schedule" | trans }}","200px");
+    
+    myDonut =  myAccordion.cells("a1").attachChart({
+            view:"donut",
+            container:"pie_chart_container",
+            value:"#JOBS#",
+            label:"",
+            tooltip: "#STATUS#",
+            color: "#COLOR#",
+            border:false,
+            pieInnerText: "#JOBS#",
+            shadow: 0,
+            legend:{
+                  width: 0,
+                  template: "#STATUS#",
+                valign:"top",
+                align:"left"
+            } 
+    });
+    myDonut.load( "{{ url('xml_JID_jobs_pie') }}?ordered="+ordered+"&stopped="+stopped );
+    
+    myTree = myAccordion.cells("a2").attachTree();
+//    myTree = globalLayout.cells("a").attachTree();
+    myTree.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    myTree.attachEvent("onDblClick", function(id){
+        globalLayout.cells("a").progressOn();
+        GlobalRefresh();
+    });
+    
+    myGridMenu = new dhtmlXMenuObject(null);
+    myGridMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
+    myGridMenu.renderAsContextMenu();
+    myGridMenu.loadStruct("{{ url('xml_JID_jobs_grid_menu') }}");
+          
+    myGrid = myMainTabbar.cells("a").attachGrid();
+    myGrid.selMultiRows = true;
+    myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myGrid.setHeader("{{ "Spooler" | trans }},{{ "Folder" | trans }},{{ "Job" | trans }},{{ "Status" | trans }},#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Exit Code" | trans }},{{ "Timeline" | trans }},{{ "PID" | trans }},&nbsp;");
+    myGrid.attachHeader("#select_filter,#text_filter,#text_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter,#text_filter,<img width='480' src='{{app.request.baseurl}}/public/gantt'/>,#text_filter,#rspan");
+    myGrid.setInitWidths("100,*,*,90,40,150,150,110,60,495,60,35");
+    myGrid.setColAlign("left,left,left,center,center,right,right,right,right,right,right,center");
+    myGrid.setColTypes("ro,ro,ro,ro,img,ro,ro,ro,ro,ro,ro,img");
+    myGrid.setColSorting("str,str,str,str,str,date,date,str,str,str,int,str");
+    myGrid.enableContextMenu(myGridMenu);
+    myGrid.attachEvent("onBeforeContextMenu", onShowMenu );
+    myGrid.init();
+    myGrid.setColumnHidden(9,true); 
+    myGrid.setColumnHidden(7,true); 
+    myGrid.setColumnHidden(10,true); 
+//    myGrid.loadXML( "{{ url('xml_JID_jobs_grid') }}");
+    myGrid.attachEvent("onRowDblClicked",JobDetail );
+
+    myDonut.attachEvent("onItemClick",function(id, value){
+        myGrid.filterBy(4, id);  
+    });
+    myTree.attachEvent("onClick",function(id, value){
+        var Path = id.split('/');
+        Path.shift();
+        var spooler = Path.shift();
+        var folder = Path.join('/');
+        myGrid.filterBy(0, spooler);
+        myGrid.filterBy(1, folder);  
+    });
+
+    myRibbon.attachEvent("onStateChange",function(itemid,state){
+        switch(itemid) {
+             case 'ordered':
+                ordered = state;
+                globalLayout.progressOn();
+                break;
+             case 'stopped':
+                stopped = state;
+                globalLayout.progressOn();
+                break;
+            default:
+                alert(itemid);
         }
-});
-donutChart.load( "{{ url('xml_JID_history_pie') }}" );
-donutChart.attachEvent("onItemClick",function(id, value){
+        GlobalRefresh();
+    });
+    myRibbon.attachEvent("onClick",function(itemid,state){
+        switch(itemid) {
+             case 'ordered':
+                ordered = state;
+                break;
+             case 'stopped':
+                stopped = state;
+                break;
+        case 'never':
+            clearInterval( autorefresh );
+            break;
+        case '5':
+        case '30':
+        case '60':
+        case '300':
+        case '900':
+        case '1800':
+        case '3600':
+            clearInterval( autorefresh );
+            dhx4.ajax.get( "{{ url('arii_session_update') }}?refresh="+itemid, GlobalRefresh() );
+            autorefresh = setInterval( "GlobalRefresh()", itemid*1000 );
+            break;
+        default:
+                alert(itemid);
+        }
+        GlobalRefresh();
+    });
+
+    myGridToolbar = myMainTabbar.cells("a").attachToolbar();
+    myGridToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myGridToolbar.loadStruct( "{{ url('xml_JID_jobs_grid_toolbar') }}");
+    myGridToolbar.attachEvent("onClick",function(itemid){
+         switch (itemid) {
+            case 'refresh':
+                globalLayout.cells("b").progressOn();
+                GlobalRefresh();
+                break;
+            case "print":
+                myGrid.printView();
+                break;
+            case "rss":
+                document.location.href = "{{ url('rss_JID_history_job') }}";
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+    });
+    myGridToolbar.attachEvent("onStateChange",function(itemid, state){
+         switch (itemid) {
+            case 'gantt':
+                myGrid.setColumnHidden(5,state);      
+                myGrid.setColumnHidden(6,state);      
+                myGrid.setColumnHidden(7,state);  
+                myGrid.setColumnHidden(8,state);   
+                myGrid.setColumnHidden(9,!state);  
+                break;
+            case 'duration':
+                myGrid.setColumnHidden(7,!state);  
+                break;
+            case 'pid':
+                myGrid.setColumnHidden(10,!state);  
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+    });
+    
+    myGridMenu.attachEvent("onClick", function (menuitemId, type) {
+        var data = myGrid.contextID.split("_");
+        var rId = data[0];
+        var cInd = data[1];
+        spooler = myGrid.cells(rId,0).getValue();
+        switch (menuitemId) {
+           case "spooler_go":
+                window.open('/js/'+spooler+'/', spooler);
+                break;
+           case "show_info":
+                JobInfo( rId );
+            break;
+            case "doc":
+                window.open('{{ url('arii_JID_job_doc') }}?id='+rId,'arii_doc');
+                break;
+           case "job_history":
+                document.location.href = "{{ url('arii_JID_history_job') }}?id="+rId;
+            break;
+           case "order_history":
+                document.location.href = "{{ url('arii_JID_order_history') }}?id="+rId;
+            break;
+            case "show_why":
+                ShowWhy( rId);
+                break;
+            case "pause_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=pause_spooler&spooler_id",spooler);
+                break;
+            case "continue_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=continue_spooler&spooler_id",spooler);
+                break;
+            case "check_spooler":
+                // Spooler("{{ url('arii_JID_spooler_update') }}?id",spooler);
+                CheckSpooler(spooler);
+                break;
+            case "terminate_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=restart_spooler&spooler_id",spooler);
+                break;
+            case "abort_spooler":
+                Spooler("{{ url('arii_XML_Command') }}?command=abort_spooler&spooler_id",spooler);
+                break;
+            case "purge_job":
+                PurgeJob( rId );
+            break;
+            case "job_detail":
+                JobDetail( rId );
+            break;
+            case "order_detail":
+                OrderDetail( rId );
+            break;
+            case "stop_chain":
+                Chain(rId,menuitemId,"{{ "Stop chain" | trans }}",null);
+                break;
+            case "unstop_chain":
+                Chain(rId,menuitemId,"{{ "Unstop chain" | trans }}",null);
+                break;
+            case "stop_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Stop node" | trans }}",null);
+                break;
+            case "unstop_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Unstop node" | trans }}",null);
+                break;
+            case "skip_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Skip node" | trans }}",null);
+                break;
+            case "unskip_node":
+                nId = mygrid.getUserData(rId,'TASK_ID');
+                Node(rId,nId,menuitemId,"{{ "Unskip node" | trans }}",null);
+                break;            
+            case "suspend_order":
+            case "resume_order":
+                    alert(menuitemId);
+                break;
+            case "reset_order":
+                XMLCommand(rId,menuitemId);
+                break;
+            default:
+                alert("inconnu ! "+menuitemId);    
+        }
+        return true;
+    });
+
+    var myTabbar = globalLayout.cells("c").attachTabbar();
+    myTabbar.addTab("b1","{{ "Job" | trans }}","100px", null, true);
+    myTabbar.addTab("b2","{{ "Log" | trans }}","100px");
+    myTabbar.addTab("b3","{{ "History" | trans }}","100px");
+
+    myDetailLayout = myTabbar.cells("b1").attachLayout("2U");
+    myDetailLayout.cells("a").hideHeader(); 
+    myDetailLayout.cells("b").hideHeader(); 
+    myDetailLayout.cells("a").setWidth(600); 
+    
+    myForm = myDetailLayout.cells("a").attachForm();
+    myForm.loadStruct("{{ url('json_JID_jobs_form') }}");
+
+    myDetailToolbar = myDetailLayout.cells("a").attachToolbar();
+    myDetailToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myDetailToolbar.loadStruct( "{{ url('xml_JID_jobs_form_toolbar') }}" , function(){
+        GBCalendar = new dhtmlXCalendarObject(myDetailToolbar.getInput('ref_date'));
+        GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
+        GBCalendar.setWeekStartDay(1);
+    });
+    
+    var myParametersToolbar = myDetailLayout.cells("b").attachToolbar();
+    myParametersToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myParametersToolbar.loadStruct("{{ url('xml_JID_job_params_toolbar') }}");
+
+    myParameters = myDetailLayout.cells("b").attachGrid();
+    myParameters.selMultiRows = true;
+    myParameters.setHeader("{{ "Parameter" | trans }},{{ "Value" | trans }}");
+    myParameters.setColTypes("ed,ed");
+    myParameters.setInitWidths("*,*");
+    myParameters.init();
+    
+    myLog = myTabbar.cells("b2").attachGrid();
+    myLog.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+    myLog.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+    myLog.setInitWidths("160,40,*,60");
+    myLog.setColAlign("right,left,left,right");
+    myLog.setColTypes("ro,ro,ro,ro");
+    myLog.setColSorting("date,str,str,int");
+    myLog.init();
+
+    myHistory = myTabbar.cells("b3").attachGrid();
+    myHistory.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit" | trans }},{{ "Message" | trans }}");
+    myHistory.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    myHistory.setInitWidths("140,140,110,70,70,*");
+    myHistory.setColAlign("right,right,right,right,right,left");
+    myHistory.setColTypes("ro,ro,ro,ro,ro,ro");
+    myHistory.setColSorting("date,date,str,int,int,str");
+    myHistory.init();
+    myHistory.enableAlterCss("even_row","odd_row");
+    
+    myDetailToolbar.attachEvent("onClick",function(itemid){
+        Text = '';
+        var id = myForm.getItemValue('ID');
+        switch(itemid) {
+            case "start_job":
+                Text = "{{ "Start job" | trans }}";
+                break;
+            case "stop_job":
+                Text = "{{ "Stop job" | trans }}";
+                break;
+            case "unstop_job":
+                Text = "{{ "Unstop job" | trans }}";
+                break;
+            case "delete_task":
+            case "kill_task":
+                Text = "{{ "Kill task" | trans }}";
+                break;
+        }
+        switch(itemid) {
+            case "start_job":
+            case "stop_job":
+            case "unstop_job":
+            case "delete_task":
+            case "kill_task":
+                var params = new Array();
+                myParameters.forEachRow(function(id){
+                    var param = myParameters.cells(id,0).getValue() + "=" + encodeURIComponent(myParameters.cells(id,1).getValue());
+                    params.push(param);
+                });
+                var paramsStr = params.join(",");
+                var start_time = '';
+                start_time = myDetailToolbar.getValue("ref_date");
+                // alert("{{ url('arii_XML_Command') }}?command="+Command+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id); 
+                dhtmlx.message({
+                type: "Notice",
+                text: Text });
+                globalLayout.cells("b").progressOn();
+                dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id,function(loader,response){
+                    dhtmlx.message({
+                    type: "Notice",
+                    expire: 10000,
+                    width: "500px",
+                    text: loader.xmlDoc.responseText });
+                    GlobalRefresh();
+                    globalLayout.cells("b").progressOff();        
+                });
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+        return true;
+    });
+    
+    myParametersToolbar.attachEvent("onClick",function(itemid){
+        switch(itemid) {
+            case "new":
+                myParameters.addRow(myParameters.getRowsNum()+1,"");
+                break;
+            default:
+                break;
+        }
+        return true;
+    });
+
+    myBar =  myAccordion.cells("a3").attachChart ({
+            view:"stackedBarH",
+            container:"bar_container",
+            value:"#SUCCESS#",
+            label: "#SUCCESS#",
+            tooltip: "#SUCCESS#",
+            fill:true,
+            gradient:true,
+            color:"#749400",
+            alpha: 0.8,
+            yAxis:{
+                    title:"{{ "Hour" | trans }}",
+                    lines: false,
+                    template:"#HOUR#",
+            },
+            xAxis:{
+                    title:"{{ "Jobs" | trans }}",
+                    lines: false                
+            },
+        legend:{
+                values:[{text:"SUCCESS",color:"#749400"},{text:"FAILURE",color:"red"},{text:"RUNNING",color:"orange"}],
+                valign:"top",
+                align:"left",
+                width:90,
+                layout:"x"
+        }     
+    //        disableItems:true
+    });
+    myBar.addSeries({
+                    value:"#FAILURE#",
+                    label: function (obj) {
+                        if (obj.FAILURE>0) {
+                            return "<span style='background-color: red;color: yellow;'>"+obj.FAILURE+"</span>" 
+                        }
+                        else {
+                            return '' 
+                        }
+                    },
+                    tooltip: "#FAILURE#",
+                    gradient:false,
+                    color:"red",
+                    line:{
+                        color:"red",
+                        width:1
+                    }
+    });
+    myBar.addSeries({
+                    value:"#RUNNING#",
+                    label: function (obj) {
+                        if (obj.RUNNING>0) {
+                            return "<span style='background-color: orange;color: black;'>"+obj.RUNNING+"</span>" 
+                        }
+                        else {
+                            return '' 
+                        }
+                    },
+                    tooltip: "#RUNNING#",
+                    gradient:false,
+                    color:"black",
+                    line:{
+                        color:"orange",
+                        width:1
+                    }
+    });
+//    myBar.load( "{{ url('xml_JID_jobs_bar') }}" );
+
+    scheduler.config.details_on_create=false;
+    scheduler.config.details_on_dblclick=false;
+    scheduler.config.server_utc = true; 
+    scheduler.config.xml_date="%Y-%m-%d %H:%i";
+
+    scheduler.config.first_hour = 0;
+    scheduler.config.last_hour = 24;
+
+    scheduler.locale.labels.agenda_tab = "{{ "Agenda" | trans }}";
+
 /*
-    dhtmlxAjax.get( "{{ url('arii_session_update') }}?"+id+'=true' , function(loader){
-        window.location = "{{ url("arii_JID_history") }}"; 
+ARII_PRO
+
+    scheduler.createTimelineView({
+        name: "timeline",
+        x_unit: "minute",
+        x_date: "%H:%i",
+        x_step: {{ Timeline.step }},
+        x_size: 24,
+        x_start: {{ Timeline.start }},
+        x_length: 48,
+        y_unit:	[ {% for spooler in Timeline.spoolers %}
+                      { key: "{{ spooler }}", label: "{{ spooler }}" },
+                      {% endfor %} 
+                   ],
+    y_property:	"section_id",
+    render:  "bar"
     });
 */
-//   alert("{{ url("arii_JID_history") }}?status="+id);
-    window.location = "{{ url("arii_JID_history") }}?status="+id; 
+    scheduler.config.lightbox.sections=[	
+        { name:"description", height:130, map_to:"text", type:"textarea" , focus:true},
+        {name:"time", height:72, type:"time", map_to:"auto"}
+     ];
+
+    scheduler.templates.event_class=function(start,end,event){
+     return event.color;
+    }
+
+    scheduler.config.readonly = true;
+    scheduler.init('scheduler_here');	
+
+    timeline  = myMainTabbar.cells("b").attachScheduler( null , "day", 'scheduler_here');
+    scheduler.attachEvent("onClick",function(id, value){
+        JobDetail(id)
+    });
+
+    // Premier chargement avant le smart rendering
+    myTree.loadXML("{{ url('xml_JID_jobs_tree') }}");
+    GlobalRefresh();
 });
-
-dhxLayout.cells("b").setText("{{ 'Jobs per hour' | trans }}");
-bar =  dhxLayout.cells("b").attachChart ({
-        view:"stackedBar",
-        container:"bar_container",
-        value:"#SUCCESS#",
-        label:"#SUCCESS#",
-        tooltip: "#SUCCESS#",
-        fill:true,
-        gradient:true,
-        color:"#749400",
-        yAxis:{
-                title:"{{ "Jobs" | trans }}",
-                lines: true
-        },
-        xAxis:{
-                title:"{{ "Hour" | trans }}",
-                template:"#HOUR#",
-                lines: false                
-        }
-//        disableItems:true
-});
-bar.addSeries({
-	        value:"#FAILURE#",
-	        label:"<span style='background-color: red;color: yellow;'>#FAILURE#</span>",
-                tooltip: "#FAILURE#",
-                gradient:false,
-                color:"red",
-	        line:{
-		    color:"red",
-		    width:1
-	        }
-});
-bar.addSeries({
-	        value:"#RUNNING#",
-	        label:"<span style='background-color: orange;color: black;'>#RUNNING#</span>",
-                tooltip: "#RUNNING#",
-                gradient:false,
-                color:"black",
-	        line:{
-		    color:"orange",
-		    width:1
-	        }
-});
-bar.load( "{{ url('xml_JID_history_bar') }}" );
-
-scheduler.locale.labels.timeline_tab = "Timeline";
-//scheduler.locale.labels.section_custom="Section";
-scheduler.config.details_on_create=false;
-scheduler.config.details_on_dblclick=false;
-scheduler.config.xml_date="%Y-%m-%d %H:%i";
-
-scheduler.config.first_hour = 0;
-scheduler.config.last_hour = 24;
-
-scheduler.locale.labels.day_tab = "{{ "Day" | trans }}";
-scheduler.locale.labels.timeline_tab = "{{ "Timeline" | trans }}";
-
-//===============
-//Configuration
-//===============
-scheduler.createTimelineView({
-    name: "timeline",
-    x_unit: "minute",
-    x_date: "%H:%i",
-    x_step: {{ Timeline.step }},
-    x_size: 24,
-    x_start: {{ Timeline.start }},
-    x_length: 48,
-    y_unit:	[ {% for spooler in Timeline.spoolers %}
-                  { key: "{{ spooler }}", label: "{{ spooler }}" },
-                  {% endfor %} 
-               ],
-y_property:	"section_id",
-render:"bar"
-});
-//===============
-//Data loading
-//===============
-scheduler.config.lightbox.sections=[	
-    { name:"description", height:130, map_to:"text", type:"textarea" , focus:true},
-    {name:"time", height:72, type:"time", map_to:"auto"}
- ];
-
-scheduler.templates.event_class=function(start,end,event){
- return event.color;
-}
-
-scheduler.init('scheduler_here',new Date( {{ Timeline.js_date }} ),"timeline");	
-
-scheduler.load( "{{ url('xml_JID_history_timeline') }}" );
-timeline  = dhxLayout.cells("c").attachScheduler( new Date( {{ Timeline.js_date }} ) , "timeline", 'scheduler_here', scheduler);
-dhxLayout.cells("c").hideHeader();
 
 function GlobalRefresh() {
-    donutChart.load( "{{ url('xml_JID_history_pie') }}", function() {
-        toolbar.setItemText( "refresh", "{{ 'Pie chart refreshed.' | trans}}" );
-        bar.load( "{{ url('xml_JID_history_bar') }}", function() {
-            bar.refresh();
-            toolbar.setItemText( "refresh", "{{ 'Bar chart refreshed.' | trans}}" );
-            scheduler.load( "{{ url('xml_JID_history_timeline') }}", function() {
-                var currentTime = new Date();
-                var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
-                toolbar.setItemText( "refresh", FormatTime(nextTime));
-            });
-        } );
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+    if (minutes < 10){
+    minutes = "0" + minutes;
+    }
+    if (seconds < 10){
+    seconds = "0" + seconds;
+    }
+    myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+{% if arii_pro %}
+    myGrid.refreshFilters();
+    var page_number = myGrid.currentPage;
+{% endif %}
+    myGrid.loadXML("{{ url('xml_JID_jobs_grid') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered+"&stopped="+stopped, function(){    
+        globalLayout.cells("b").progressOff();
+        myGrid.refreshFilters();
+        myGrid.filterByAll();
+        myDonut.load( "{{ url('xml_JID_jobs_pie') }}?ordered="+ordered+"&stopped="+stopped, function () {
+            dhx4.ajax.get( "{{ url('xml_JID_jobs_timeline') }}?ordered="+ordered+"&stopped="+stopped, function(loader1){
+                scheduler.clearAll();
+                scheduler.parse(loader1.xmlDoc.responseText);
+                myBar.load( "{{ url('xml_JID_jobs_bar') }}?ordered="+ordered+"&stopped="+stopped, function () {
+                    myTree.smartRefreshBranch(0,"{{ url('xml_JID_jobs_tree') }}?ordered="+ordered+"&stopped="+stopped);
+                    globalLayout.progressOff();                    
+                });
+            });            
+        });
+{% if arii_pro %}
+        myGrid.showRow(currentrow); 
+        myGrid.changePage(page_number);
+{% endif %}
+    });    
+}
+
+function JobDetail(id) {
+    globalLayout.cells("c").progressOn();
+    myForm.load("{{ url('xml_JID_job_form') }}?id="+id);
+    // mise a jour de la toolbar
+    var status = myGrid.cells(id, 3 ).getValue();
+    myDetailToolbar.showItem('unstop_job');
+    myDetailToolbar.showItem('stop_job');
+    myDetailToolbar.showItem('kill_task');
+    if (status== 'STOPPED') {
+        myDetailToolbar.hideItem('stop_job');
+    }
+    else {
+        myDetailToolbar.hideItem('unstop_job');
+    }
+    if (status!= 'RUNNING') {
+        myDetailToolbar.hideItem('kill_task');      
+    }
+    myParameters.loadXML("{{ url('xml_JID_job_params') }}?id="+id );
+    myHistory.clearAll();
+    myHistory.loadXML("{{ url('xml_JID_job_history') }}?id="+id );  
+    myLog.clearAll();
+    myLog.loadXML("{{ url('xml_JID_job_log') }}?id="+id, function (id) {
+        globalLayout.cells("c").progressOff();    
     });
 }
+
+function onShowMenu(rowId, celInd, grid) {
+
+    var status = grid.cells(rowId, 3 ).getValue();
+
+    // si on est operator 
+    {% if is_granted('ROLE_OPERATOR') %}
+    if (status !=='RUNNING') {
+        myGridMenu.hideItem('kill_task');    
+    }
+    else {
+        myGridMenu.showItem('kill_task');    
+    }
+    if (status !=='QUEUED')  {
+        myGridMenu.hideItem('delete_task');    
+    }
+    else {
+        myGridMenu.showItem('delete_task');    
+    }
+    // job stoppé
+    if ((grid.cells(rowId, 3).getValue()== 'STOPPED') 
+         || (grid.cells(rowId, 3).getValue()== 'STOPPING') ){    
+        myGridMenu.hideItem("stop_job");
+        myGridMenu.showItem("unstop_job");
+    }
+    else {
+        myGridMenu.hideItem("unstop_job");
+        myGridMenu.showItem("stop_job");
+    }
+    {% else %}
+        myGridMenu.hideItem('start_job');
+        myGridMenu.hideItem('kill_task');
+        myGridMenu.hideItem('stop_job');
+        myGridMenu.hideItem('unstop_job');
+        myGridMenu.hideItem('pause_spooler');    
+        myGridMenu.hideItem('continue_spooler');    
+    {% endif %} 
+ return true;
+}
+
+// Fonctions
+function CheckSpooler(rid) 
+{
+    dhx4.ajax.get("{{ url('arii_JID_spooler_update') }}?id="+rid,function(loader,response){
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+    });
+return true;
+}
+
+function Spooler(url,rid)
+{
+    dhx4.ajax.get.get(url+"="+rid,function(loader,response){
+        dhtmlx.message({
+            type: "Notice",
+            expire: 10000,
+            width: "500px",
+            text: loader.xmlDoc.responseText
+        });
+        CheckSpooler(rid);
+    });
+    return true;
+}
+
 </script>
+</body>
 {% endblock %}

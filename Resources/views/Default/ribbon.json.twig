@@ -1,0 +1,56 @@
+{
+   "items":
+   [
+      {   "type":"block", 
+          text:"{{ "Jid" | trans }}", 
+          "text_pos": "top", 
+          "list":
+          [
+             {   "type": "buttonSelect", 
+                 text:"{{ "Monitor" | trans }}", 
+                 "isbig": true, 
+                 "img": "48/jid.png", 
+                 items:
+                 [ 
+                    { id:"menu_job", text: "{{ "Jobs" | trans }}", img: "job.png" },
+                    { id:"menu_order", text: "{{ "Orders" | trans }}", img: "job_chain.png" },
+                    { id:"menu_order", text: "{{ "Processus" | trans }}", img: "process.png" },
+                    { id:"menu_spooler", text: "{{ "Spoolers" | trans }}", img: "spooler.png" },
+                    { id:"menu_ha", text: "{{ "Clusters" | trans }}", img: "ha.png" },
+                    { id:"menu_message", text: "{{ "Messages" | trans }}", img: "messages.png" },
+                    { id:"menu_events", text: "{{ "Events" | trans }}", img: "events.png" }
+                 ]
+              },
+          ]
+      },      
+      {   "type":"block", 
+          text:"{{ "History" | trans }}", 
+          "text_pos": "bottom", 
+          "list":
+          [
+
+                   {   id : "group_2", 
+                  type : "group", 
+                  list : 
+                  [   {id:"ordered","type":"buttonTwoState",text:"","img":"ordered.png"},
+                      {id:"stopped","type":"buttonTwoState",text:"","img":"stopped.png"}
+                  ]
+              },              { id: "slider", type : 'slider', text : '', size : 100, "img":"ordered.png" },
+              {   id: "refresh", 
+                  "type":"buttonSelect", 
+                  text:"--:--:--", 
+                  "img": "refresh.png",
+                  "items": 
+                  [ 
+                     { id: "5", text: "5 {{ "seconds" | trans }}" },
+                     { id: "30", text: "30 {{ "seconds" | trans }}" },
+                     { id: "60", text: "1 {{ "minute" | trans }}" },
+                     { id: "300", text: "5 {{ "minutes" | trans }}" },
+                     { id: "1800", text: "15 {{ "minutes" | trans }}" },
+                     { id: "3600", text: "1 {{ "hour" | trans }}" }
+                  ]
+              }
+          ]
+      }
+   ]
+}

@@ -35,25 +35,188 @@ class OrdersController extends Controller
           $this->images = $request->getUriForPath('/../bundles/ariicore/images/wa');          
     }
 
-    // Index des traitements
-    // Si GPL -> Suivi
-    // Si PRO -> Liste 
     public function indexAction()
     {
-      $arii_pro = $this->container->getParameter('arii_pro');
-      if ($arii_pro === true) 
-        return $this->render('AriiJIDBundle:Orders:treegrid.html.twig' );
-      return $this->render('AriiJIDBundle:Orders:grid.html.twig' );
+      return $this->render('AriiJIDBundle:Orders:index.html.twig' );
     }
 
-    public function index_gridAction()
+    public function folder_toolbarAction()
     {
-      return $this->render('AriiJIDBundle:Orders:grid.html.twig' );
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Orders:folder_toolbar.xml.twig',array(), $response );
+    }
+
+    public function grid_toolbarAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Orders:grid_toolbar.xml.twig',array(), $response );
+    }
+
+    public function formAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        return $this->render('AriiJIDBundle:Orders:form.json.twig',array(), $response );
+    }
+
+    public function form2Action()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Orders:form.xml.twig',array(), $response );
+    }
+
+    public function form_toolbarAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Orders:form_toolbar.xml.twig',array(), $response );
+    }
+
+    public function grid_menuAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Orders:grid_menu.xml.twig',array(), $response );
+    }
+
+    public function treeAction() {
+        // en attendant le cache
+        $request = Request::createFromGlobals();
+        $stopped = $request->get('stopped');
+        
+        $folder = 'live';
+        // $this->syncAction($folder);
+        $dhtmlx = $this->container->get('arii_core.dhtmlx');
+        $data = $dhtmlx->Connector('data');
+   /* On prend l'historique */
+        $Fields = array (
+           '{spooler}'    => 'sh.SPOOLER_ID', 
+            '{job_chain}'   => 'sh.JOB_CHAIN',
+            '{order}'   => 'sh.ORDER_IRD',
+            '{start_time}' => 'sh.START_TIME' );
+
+        $sql = $this->container->get('arii_core.sql');
+        $tools = $this->container->get('arii_core.tools');
+
+        $qry = $sql->Select(array('sh.HISTORY_ID','sh.SPOOLER_ID','sh.JOB_CHAIN','sh.START_TIME','sh.END_TIME','sh.STATE' ))
+                .$sql->From(array('SCHEDULER_ORDER_HISTORY sh'))
+                .$sql->Where($Fields)
+                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_CHAIN','sh.START_TIME desc'));  
+        
+        $res = $data->sql->query( $qry );
+        $Info = array();
+        
+        while ( $line = $data->sql->get_next($res) ) {
+            $id  =  $line['ID'];
+            $dir = "/".$line['SPOOLER_ID'].'/'.dirname($line['JOB_CHAIN']);
+            if (substr($line['STATE'],0,1)=='!') {
+                if (isset($Info[$dir]['errors'])) 
+                    $Info[$dir]['errors']++;
+                else 
+                    $Info[$dir]['errors']=1;
+            }
+            // On ccompte les erreurs
+            $key_files[$dir] = $dir;
+        }
+        
+        // Prend on en compte les suspended ?
+            $Fields = array (
+                '{spooler}'    => 'sh.SPOOLER_ID', 
+                '{job_chain}'   => 'sh.JOB_CHAIN',
+                '{order}'   => 'sh.ID' );
+            $qry = $sql->Select(array('sh.SPOOLER_ID','sh.JOB_CHAIN','sh.ORDER' ))
+                    .$sql->From(array('SCHEDULER_ORDERS sh'))
+                    .$sql->Where($Fields);  
+
+              $res = $data->sql->query( $qry );
+              while ( $line = $data->sql->get_next($res) ) {
+                $dir = '/'.$line['SPOOLER_ID'].'/'.dirname($line['JOB_CHAIN']);
+                if (isset($Info[$dir]['sus'])) 
+                    $Info[$dir]['stopped']++;
+                else 
+                    $Info[$dir]['stopped']=1;
+                
+                // On ccompte les erreurs
+                if ($stopped=='true') {
+                    $key_files[$dir] = $dir;
+                }            
+            }
+        
+        // print_r($Info);
+        # On remonte les erreurs
+        foreach (array_keys($Info) as $dir) {
+            // On calcule le nombre
+            $n = 0;
+            if (isset($Info[$dir]['errors']))
+                $n += $Info[$dir]['errors'];
+            if (isset($Info[$dir]['stopped']))
+                $n += $Info[$dir]['stopped'];
+            // print "(($n))";
+            // si c'est superieur a 0, on le remonte
+            if ($n>0) {
+                $Path = explode('/',$dir);
+                array_shift($Path);
+                $dir = '';
+                foreach ($Path as $p) {
+                    $dir .= '/'.$p;
+                    if (isset($Info[$dir]['total']))
+                        $Info[$dir]['total'] += $n;
+                    else 
+                        $Info[$dir]['total'] = $n;
+                }
+            }            
+        }
+        ksort($Info);
+        /*
+         *     print_r($Info);
+            exit();
+         */
+        
+        $tools = $this->container->get('arii_core.tools');
+        $tree = $tools->explodeTree($key_files, "/");
+        
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        $list = '<?xml version="1.0" encoding="UTF-8"?>';
+        $list .= "<tree id='0'>\n";
+        
+        $list .= $this->Folder2XML( $tree, '', $Info );
+        $list .= "</tree>\n";
+        $response->setContent( $list );
+        return $response;
     }
  
-    public function index_treegridAction()
-    {
-      return $this->render('AriiJIDBundle:Orders:treegrid.html.twig' );
+   function Folder2XML( $leaf, $id = '', $Info ) {
+            $return = '';
+            if (is_array($leaf)) {
+                    foreach (array_keys($leaf) as $k) {
+                            $Ids = explode('/',$k);
+                            $here = array_pop($Ids);
+                            $i  = "$id/$k";
+                            # On ne prend que l'historique
+                            if (isset($Info[$i]['stopped']) and (isset($Info[$i]['errors']))) {
+                                $return .= '<item style="background-color: red;" id="'.$i.'" text="'.basename($i).' ['.($Info[$i]['errors']+$Info[$i]['stopped']).']" im0="folderOpen.gif">';
+                            }
+                            elseif (isset($Info[$i]['errors'])) {
+                                $return .= '<item style="background-color: #fbb4ae;" id="'.$i.'" text="'.basename($i).' ['.$Info[$i]['errors'].']" im0="folderOpen.gif">';
+                            }
+                            elseif (isset($Info[$i]['stopped'])) {
+                                $return .= '<item style="background-color: red;" id="'.$i.'" text="'.basename($i).' ['.$Info[$i]['stopped'].']" im0="folderOpen.gif">';
+                            }
+                            elseif (isset($Info[$i]['total'])) {
+                                $return .= '<item id="'.$i.'" text="'.basename($i).' ['.$Info[$i]['total'].']" im0="folderOpen.gif"  open="1">';
+                            }
+                            else {
+                                $return .=  '<item style="background-color: #ccebc5;" id="'.$i.'" text="'.basename($i).'" im0="folderClosed.gif">';
+                            }
+                           $return .= $this->Folder2XML( $leaf[$k], $id.'/'.$k, $Info);
+                           $return .= '</item>';
+                    }
+            }
+            return $return;
     }
 
     public function toolbarAction()
@@ -432,6 +595,244 @@ $qry = $sql->Select(array('soh.START_TIME','sosh.ERROR'))
     }
 
     public function gridAction($history=0)
+    {
+        $dhtmlx = $this->container->get('arii_core.dhtmlx');
+        $data = $dhtmlx->Connector('data');
+        $tools = $this->container->get('arii_core.tools');   
+        
+        $date = $this->container->get('arii_core.date');
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        $list = '<?xml version="1.0" encoding="UTF-8"?>';
+        $list .= "<rows>\n";
+        $list .=  '<head>
+            <afterInit>
+                <call command="clearAll"/>
+            </afterInit>
+        </head>';
+        $Infos = array();
+        
+        $sql = $this->container->get('arii_core.sql');
+        
+        // On regarde les chaines stoppés
+        // On complete avec les ordres stockés
+        $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID',
+            '{job_chain}'  => 'JOB_CHAIN',
+            'STOPPED'  => 1 );
+        
+        $qry = $sql->Select( array('SPOOLER_ID','PATH as JOB_CHAIN') )
+                .$sql->From( array('SCHEDULER_JOB_CHAINS') )
+                .$sql->Where( $Fields );
+        $res = $data->sql->query( $qry );
+        $nb = 0;
+        $StopChain = array();
+        while ($line = $data->sql->get_next($res)) {
+            $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
+            $StopChain[$cn]=1;
+        }
+
+        // On regarde les nodes
+        // On complete avec les ordres stockés
+        $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID',
+            '{job_chain}'  => 'JOB_CHAIN',
+            'action'  => '(!null)' );
+        $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ORDER_STATE','ACTION') )
+                .$sql->From( array('SCHEDULER_JOB_CHAIN_NODES') )
+                .$sql->Where( $Fields );
+        $res = $data->sql->query( $qry );
+        $nb = 0;
+        $StopNode = $SkipNode = array();
+        while ($line = $data->sql->get_next($res)) {
+            $sn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'].'/'.$line['ORDER_STATE'];
+            if ($line['ACTION'] == 'next_state') $SkipNode[$sn]=1;
+            if ($line['ACTION'] == 'stop') $StopNode[$sn]=1;
+        }
+
+        // Historique des ordres
+        $Fields = array (
+            '{spooler}'    => 'soh.SPOOLER_ID',
+            '{job_chain}'   => 'soh.JOB_CHAIN',
+            '{start_time}' => 'soh.START_TIME' );
+
+        $qry = $sql->Select(array('soh.HISTORY_ID','soh.TITLE','soh.START_TIME','soh.END_TIME','soh.SPOOLER_ID','soh.ORDER_ID','soh.JOB_CHAIN','soh.STATE','soh.STATE_TEXT'))  
+                  .$sql->From(array('SCHEDULER_ORDER_HISTORY soh'))
+                  .$sql->Where($Fields)
+                  .$sql->OrderBy(array('soh.START_TIME desc','soh.END_TIME desc'));
+
+        $res = $data->sql->query( $qry );
+        while ($line = $data->sql->get_next($res)) {
+            $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
+//            $jn = $line['SPOOLER_ID'].'/'.$line['JOB'];
+            $sn = $cn.'/'.$line['STATE'];
+            $id = $cn.'/'.$line['ORDER_ID'];
+            if (isset($Nb[$id])) {
+                $Nb[$id]++;
+            }
+            else {
+                $Nb[$id]=0;
+            }
+            // Chain stoppée
+            if (isset($StopChain[$cn])) {
+                $status = 'CHAIN STOP.';
+            }
+/*            elseif (isset($StopJob[$jn])) {
+                $status = 'JOB STOP.';
+            }
+*/          elseif (isset($StopNode[$sn])) {
+                $status = 'NODE STOP.';
+            }
+            elseif (isset($SkipNode[$sn])) {
+                $status = 'NODE SKIP.';
+            }
+            elseif ($line['END_TIME']!='') {
+                if (substr($line['STATE'],0,1)=='!') {
+                    $status = 'ERROR';
+                }
+                else {
+                    $status = 'SUCCESS';  
+                }
+            }
+            else {
+                $status = 'RUNNING';
+            }
+            
+            if ($Nb[$id]>$history) continue;
+                        
+            $line['DBID'] = $line['HISTORY_ID']; 
+            $line['status'] = $status;
+            $Infos[$id] = $line;
+        }
+        
+        // On complete avec les ordres stockés
+        $Fields = array (
+            '{spooler}'    => 'SPOOLER_ID',
+            '{job_chain}'  => 'JOB_CHAIN',
+            '{order_id}'  => 'ID',
+/*          'created_time' => 'CREATED_TIME',
+*/          '{start_time}' => 'MOD_TIME'
+                );
+        
+        $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ID as ORDER_ID','PRIORITY','STATE as ORDER_STATE','STATE_TEXT','TITLE','CREATED_TIME','MOD_TIME','ORDERING','INITIAL_STATE','ORDER_XML' ) )
+                .$sql->From( array('SCHEDULER_ORDERS') )
+                .$sql->Where( $Fields )
+                .$sql->OrderBy( array('ORDERING desc') );
+        //when we want to store the planned orders, we also need to store the job chains which the planned orders belong.
+        $res = $data->sql->query( $qry );
+        $nb = 0;
+        while ($line = $data->sql->get_next($res)) {
+            $CI = explode('/',$line['JOB_CHAIN']);
+            $chain = array_pop($CI);
+            $dir = implode('/',$CI);
+            
+            $on = $line['SPOOLER_ID'].'/'.$dir.'/'.$line['ORDER_ID'];
+            $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
+            
+            $id = $cn.'/'.$line['ORDER_ID'];
+            
+            // on pense a proteger les ORDER_ID
+            $jn = $cn.'/'.str_replace('/','£',$line['ORDER_ID']);
+
+            $order_status = 'ACTIVATED';
+            if ($line['ORDER_XML']!=null)
+            {
+                if (gettype($line['ORDER_XML'])=='object') {
+                    $order_xml = $tools->xml2array($line['ORDER_XML']->load());
+                }
+                else {
+                    $order_xml = $tools->xml2array($line['ORDER_XML']);
+                }
+                $setback = 0; $setback_time = '';
+                if (isset($order_xml['order_attr']['suspended']) && $order_xml['order_attr']['suspended'] == "yes")
+                {
+                    $order_status = "SUSPENDED";
+                }
+                elseif (isset($order_xml['order_attr']['setback_count']))
+                {
+                    $order_status = "SETBACK";
+                    $setback = $order_xml['order_attr']['setback_count'];
+                    $setback_time = $order_xml['order_attr']['setback'];
+                }
+                $next_time = '';
+                if (isset($order_xml['order_attr']['start_time'])) {
+                    $next_time = $order_xml['order_attr']['start_time'];
+                }
+                $at = '';
+                if (isset($order_xml['order_attr']['at'])) {
+                    $at = $date->Date2Local($order_xml['order_attr']['at'],$line['SPOOLER_ID']);
+                }
+                $hid = 0;
+                if (isset($order_xml['order_attr']['history_id'])) {
+                    $hid = $order_xml['order_attr']['history_id'];
+                }
+            }
+            
+            $line['DBID'] = 'O:'.$jn;
+
+            if ($at==''){
+                if (isset($Infos[$id]['START_TIME']))
+                   $at = $Infos[$id]['START_TIME']; 
+            }
+            $line['START_TIME'] = $at;
+            if (isset($Infos[$id]['END_TIME']))
+                $line['END_TIME'] = $Infos[$id]['END_TIME'];
+            else
+                $line['END_TIME'] = '';
+                
+            $line['STEP'] = '';
+            $line['status'] = $order_status;
+            $line['information'] = $line['STATE_TEXT'];
+            
+            // Si c'est pas déja traité et statut <> ACTIVATED
+            if (!isset($Nb[$id]) or ($order_status!='ACTIVATED'))          
+                $Infos[$id] = $line;
+        }
+
+        $Keys = array_keys($Infos);
+        sort($Keys);
+        
+        foreach ($Keys as $k) {
+            $line = $Infos[$k];
+            list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );
+            
+            $spooler = $line['SPOOLER_ID'];            
+            $status = $line['status'];
+            
+            if (isset($this->ColorStatus[$status])) $color=$this->ColorStatus[$status];
+                else $color='yellow';
+            $list .=  '<row id="'.$line['DBID'].'"  style="background-color: '.$color.';">';
+            if (isset($line['TASK_ID']))
+                $list .=  '<userdata name="TASK_ID">'.$line['TASK_ID'].'</userdata>';
+            
+            # Cell color pour identifier le point de blocage
+            $cellcolor='';
+            $list .=  '<cell'.$cellcolor.'>'.$line['SPOOLER_ID'].'</cell>';
+            $cellcolor='';
+            if ($status == 'CHAIN STOP.') $cellcolor=' style="background-color: red;"';
+            $list .=  '<cell'.$cellcolor.'>'.$line['JOB_CHAIN'].'</cell>';
+            $cellcolor='';
+            $list .=  '<cell>'.$line['ORDER_ID'].'</cell>';
+            $cellcolor='';
+            if ($status == 'NODE STOP.') $cellcolor=' style="background-color: red;"';
+            if ($status == 'NODE SKIP.') $cellcolor=' style="background-color: orange;"';
+            if (isset($line['ORDER_STATE']))
+                $list .=  '<cell'.$cellcolor.'>'.$line['ORDER_STATE'].'</cell>';
+            else 
+                $list .=  '<cell/>';
+            $list .=  '<cell>'.$status.'</cell>';
+            $list .=  '<cell>'.$start.'</cell>';
+            $list .=  '<cell>'.$end.'</cell>';
+            $list .=  '<cell>'.$line['STATE_TEXT'].'</cell>';
+            $list .=  '</row>';
+        }
+        
+        $list .=  "</rows>\n";
+        $response->setContent( $list );
+        return $response;        
+    }
+
+    public function gridFullAction($history=0)
     {
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');

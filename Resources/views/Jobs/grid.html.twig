@@ -126,7 +126,7 @@ mygrid.loadXML( "{{ url('xml_JID_jobs_grid') }}?ordered="+ordered+"&history="+ma
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadXML( "{{ url('xml_JID_jobs_grid') }}?history="+max_history);
+mygrid.load( "{{ url('xml_JID_jobs_grid') }}?history="+max_history);
 {% endif %}
 
 mygrid.enableLightMouseNavigation( true );

@@ -1,119 +1,74 @@
 {# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
 {% extends "AriiJIDBundle::layout.html.twig" %}
-{% block content %}
-<!--[if !IE]>start section<![endif]-->	
-<div class="section table_section">
-	<!--[if !IE]>start title wrapper<![endif]-->
-	<div class="title_wrapper">
-		<h2>{{ "Job history" | trans }}</h2>
-<!-- 
-<ul  class="section_menu">
-      <li><a href="{{ url('arii_JID_history') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/job.png') }}"/>&nbsp;{{ "Jobs" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_orders') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/order.png') }}"/>&nbsp;{{ "Orders" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_planned') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/calendar.png') }}"/>&nbsp;{{ "Plan" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_spoolers') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/spooler.png') }}"/>&nbsp;{{ "Spoolers" | trans }}</span></span></a></li>
-      <li><a href="{{ url('arii_JID_messages') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/error.png') }}"/>&nbsp;{{ "Messages" | trans }}</span></span></a></li> 
-      <li><a href="{{ url('arii_JID_events') }}" class=""><span><span><img src="{{ asset('bundles/ariicore/images/wa/event.png') }}"/>&nbsp;{{ "Events" | trans }}</span></span></a></li>
-</ul>
--->
-<span class="title_wrapper_left"></span>
-		<span class="title_wrapper_right"></span>
-	</div>
-	<!--[if !IE]>end title wrapper<![endif]-->
-<!--[if !IE]>start section content<![endif]-->
-	<div class="section_content">
-		<!--[if !IE]>start section content top<![endif]-->
-		<div class="sct">
-			<div class="sct_left">
-				<div class="sct_right">
-					<div class="sct_left">
-                                                <div class="sct_right">
-    <!--div id="mygrid" style="height:326px;background-color:white;width:100%"></div> -->
-    <div id="mygrid" style="height:776px;background-color:white;position:relative;overflow:hidden;"></div>
-		
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!--[if !IE]>end section content top<![endif]-->
-		<!--[if !IE]>start section content bottom<![endif]-->
-		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
-		<!--[if !IE]>end section content bottom<![endif]-->
-		
-	</div>
-	<!--[if !IE]>end section content<![endif]-->
-</div>
-<!--[if !IE]>end section<![endif]-->
+{% block body %}
+<body>
 <script language="javascript">
-dhtmlx.skin = "dhx_skyblue";
+dhtmlxEvent(window,"load",function(){ 
+    var dhxLayout = new dhtmlXLayoutObject(document.body,"3T");
+    dhxLayout.cells("a").setText( "[{{spooler}}] {{ job }}" );
 
-var dhxLayout = new dhtmlXLayoutObject("mygrid","3T");
-dhxLayout.cells("a").setText( "[{{spooler}}] {{ job }}" );
+    HistoryGrid = dhxLayout.cells("a").attachGrid();
+    HistoryGrid.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit" | trans }},{{ "Message" | trans }}");
+    HistoryGrid.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    HistoryGrid.setInitWidths("130,130,100,60,70,*");
+    HistoryGrid.setColAlign("right,right,right,right,right,left");
+    HistoryGrid.setColTypes("ro,ro,ro,ro,ro,ro");
+    HistoryGrid.setColSorting("date,date,str,int,int,str");
+    HistoryGrid.loadXML( "{{ url('arii_JID_grid_history_job') }}?id={{ id }}" );
+    HistoryGrid.enableAlterCss("even_row","odd_row");
+    HistoryGrid.init();
+    HistoryGrid.attachEvent("onRowDblClicked", function(id){
+        dhxLayout.cells("c").progressOn();
+        JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
+            dhxLayout.cells("c").progressOff();
+        });
 
-HistoryGrid = dhxLayout.cells("a").attachGrid();
-HistoryGrid.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit code" | trans }},{{ "Message" | trans }}");
-HistoryGrid.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
-HistoryGrid.setInitWidths("130,130,100,60,70,*");
-HistoryGrid.setColAlign("right,right,right,right,right,left");
-HistoryGrid.setColTypes("ro,ro,ro,ro,ro,ro");
-HistoryGrid.setColSorting("date,date,str,int,int,str");
-HistoryGrid.setSkin('dhx_skyblue');
-HistoryGrid.loadXML( "{{ url('arii_JID_grid_history_job') }}?id={{ id }}" );
-HistoryGrid.enableAlterCss("even_row","odd_row");
-HistoryGrid.init();
-HistoryGrid.attachEvent("onRowDblClicked", function(id){
-    dhxLayout.cells("c").progressOn();
-    JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
-        dhxLayout.cells("c").progressOff();
     });
 
-});
-
-dhxLayout.cells("b").setText( "{{"Graph" | trans }}" );
-var BarChart = dhxLayout.cells("b").attachChart( {
-    view: "scatter",
-    xValue: "#START#",
-    yValue: "#DURATION#",
-    color: "#COLOR#",
-    item:{
-        label: "",
-        borderColor: "#COLOR#" ,
+    dhxLayout.cells("b").setText( "{{"Graph" | trans }}" );
+    var BarChart = dhxLayout.cells("b").attachChart( {
+        view: "scatter",
+        xValue: "#START#",
+        yValue: "#DURATION#",
         color: "#COLOR#",
-        type: 'r'
-    },
-    yAxis:{
-        title: "{{ "Duration" | trans }} (s)"
-    },
-    xAxis:{
-        title: "{{ "Start time" | trans }}",
-        template: ""
-    }
-   });
+        item:{
+            label: "",
+            borderColor: "#COLOR#" ,
+            color: "#COLOR#",
+            type: 'r'
+        },
+        yAxis:{
+            title: "{{ "Duration" | trans }} (s)"
+        },
+        xAxis:{
+            title: "{{ "Start time" | trans }}",
+            template: ""
+        }
+       });
 
-BarChart.attachEvent("onItemClick", function(id){
-    HistoryGrid.selectRowById(id);
-    dhxLayout.cells("c").progressOn();
-    JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
-        dhxLayout.cells("c").progressOff();
+    BarChart.attachEvent("onItemClick", function(id){
+        HistoryGrid.selectRowById(id);
+        dhxLayout.cells("c").progressOn();
+        JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
+            dhxLayout.cells("c").progressOff();
+        });
+
     });
+    BarChart.load( "{{ url('arii_JID_chart_history_job') }}?spooler={{ spooler }}&job={{ job }}", "xml" );
 
+    dhxLayout.cells("c").setText( "{{"Log" | trans }}" );
+    dhxLayout.cells("c").hideHeader();
+    JobLogGrid = dhxLayout.cells("c").attachGrid();
+    JobLogGrid.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+    JobLogGrid.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+    JobLogGrid.setInitWidths("160,40,*,60");
+    JobLogGrid.setColAlign("right,left,left,right");
+    JobLogGrid.setColTypes("ro,ro,ro,ro");
+    JobLogGrid.setColSorting("date,str,str,int");
+    JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id={{ id }}" );
+    JobLogGrid.enableAlterCss("even_row","odd_row");
+    JobLogGrid.init();
 });
-BarChart.load( "{{ url('arii_JID_chart_history_job') }}?spooler={{ spooler }}&job={{ job }}", "xml" );
-
-dhxLayout.cells("c").setText( "{{"Log" | trans }}" );
-dhxLayout.cells("c").hideHeader();
-JobLogGrid = dhxLayout.cells("c").attachGrid();
-JobLogGrid.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
-JobLogGrid.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
-JobLogGrid.setInitWidths("160,40,*,60");
-JobLogGrid.setColAlign("right,left,left,right");
-JobLogGrid.setColTypes("ro,ro,ro,ro");
-JobLogGrid.setColSorting("date,str,str,int");
-JobLogGrid.setSkin('dhx_skyblue');
-JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id={{ id }}" );
-JobLogGrid.enableAlterCss("even_row","odd_row");
-JobLogGrid.init();
 </script>
-
+</body>
 {% endblock %}
