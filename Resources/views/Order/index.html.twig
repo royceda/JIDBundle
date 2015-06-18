@@ -1,0 +1,72 @@
+{# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block body %}
+<body>
+<script language="javascript">
+var max_history = 0; // pas d'historique
+var chained = 0; // que des standalone
+var only_warning = 0; // que les problemes
+
+dhtmlxEvent(window,"load",function(){ 
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
+    globalLayout.cells("a").setWidth(430); 
+    globalLayout.cells("a").hideHeader(); 
+
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
+
+    globalLayout.cells("b").setText( "[{{spooler}}] {{ order }} > {{ chain }}" );
+    globalLayout.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id={{ id }}");
+
+    globalLayout.cells("b").hideHeader();
+    myToolbar = globalLayout.cells("b").attachToolbar(); 
+    myToolbar.setIconsPath( "{{ asset('/bundles/ariicore/images/toolbar/') }}" )
+    myToolbar.addButton('spooler', 1, "{{ spooler }}", "spooler.png");
+    myToolbar.addButton('chain', 2, "{{ chain }}", "job_chain.png");
+    myToolbar.addButton('order', 3, "{{ order }}", "order.png");
+
+    mySteps = globalLayout.cells("a").attachGrid();
+    mySteps.setHeader("{{ "Step" | trans }},{{ "State" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
+    mySteps.attachHeader("#numeric_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    mySteps.setInitWidths("80,*,160,160,60,60,200");
+    mySteps.setColAlign("right,left,right,right,right,right,left");
+    mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro");
+    mySteps.setColSorting("int,str,date,date,int,str,str");
+    mySteps.setColumnHidden(3,true);
+    mySteps.setColumnHidden(4,true);
+    mySteps.setColumnHidden(5,true);
+    mySteps.setColumnHidden(6,true);
+    mySteps.enableAlterCss("","");
+    mySteps.init();
+    mySteps.loadXML("{{ url('xml_JID_order_steps') }}?id={{ id }}");
+    mySteps.attachEvent("onRowDblClicked", JobDetail );
+
+    globalLayout.cells("c").setText( "{{"Log" | trans }}" );
+    globalLayout.cells("c").hideHeader();
+    myLog = globalLayout.cells("c").attachGrid();
+    myLog.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+    myLog.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+    myLog.setInitWidths("180,60,*,60");
+    myLog.setColAlign("right,left,left,right");
+    myLog.setColTypes("ro,ro,ro,ro");
+    myLog.setColSorting("date,str,str,int");
+    myLog.enableAlterCss("","");
+    myLog.init();
+});
+
+function JobDetail(id) {
+    globalLayout.cells("c").progressOn();
+    myLog.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
+        globalLayout.cells("c").progressOff();
+    });
+}
+</script>
+</body>
+{% endblock %}

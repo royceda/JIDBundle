@@ -1,0 +1,90 @@
+{# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block body %}
+<body>
+<script language="javascript">
+var max_history = 0; // pas d'historique
+var chained = 0; // que des standalone
+var only_warning = 0; // que les problemes
+
+dhtmlxEvent(window,"load",function(){ 
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
+    globalLayout.cells("a").setWidth(430); 
+    globalLayout.cells("a").hideHeader(); 
+
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
+    
+    globalLayout.cells("b").setText( "[{{spooler}}] {{ order }} > {{ chain }}" );
+
+    HistoryGrid = globalLayout.cells("b").attachGrid();
+    HistoryGrid.setHeader("{{ "Start" | trans }},{{ "End" | trans }},{{ "State" | trans }},!,{{ "Message" | trans }}");
+    HistoryGrid.attachHeader("#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    HistoryGrid.setInitWidths("160,160,150,40,*");
+    HistoryGrid.setColAlign("right,right,right,center,left");
+    HistoryGrid.setColTypes("ro,ro,ro,ro,ro");
+    HistoryGrid.setColSorting("date,date,str,str,str");
+    HistoryGrid.loadXML( "{{ url('xml_JID_order_history') }}?id={{ id }}" );
+    HistoryGrid.enableAlterCss("","");
+    HistoryGrid.init();
+    HistoryGrid.attachEvent("onRowDblClicked", function(id){
+        globalLayout.cells("c").progressOn();
+        OrderLogGrid.loadXML( "{{ url('xml_JID_order_log') }}?id="+id, function () {
+            globalLayout.cells("c").progressOff();
+        });
+
+    });
+
+    globalLayout.cells("a").setText( "{{"Graph" | trans }}" );
+    var BarChart = globalLayout.cells("a").attachChart( {
+        view: "scatter",
+        xValue: "#START#",
+        yValue: "#DURATION#",
+        color: "#COLOR#",
+        item:{
+            label: "",
+            borderColor: "#COLOR#" ,
+            color: "#COLOR#",
+            type: 'r'
+        },
+        yAxis:{
+            title: "{{ "Duration" | trans }} (s)"
+        },
+        xAxis:{
+            title: "{{ "Start time" | trans }}",
+            template: ""
+        }
+       });
+
+    BarChart.attachEvent("onItemClick", function(id){
+        HistoryGrid.selectRowById(id);
+        globalLayout.cells("c").progressOn();
+        OrderLogGrid.loadXML( "{{ url('xml_JID_order_log') }}?id="+id, function () {
+            globalLayout.cells("c").progressOff();
+        });
+    });
+    BarChart.load( "{{ url('xml_JID_order_chart') }}?id={{ id }}", "xml" );
+
+    globalLayout.cells("c").setText( "{{"Log" | trans }}" );
+    globalLayout.cells("c").hideHeader();
+    OrderLogGrid = globalLayout.cells("c").attachGrid();
+    OrderLogGrid.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+    OrderLogGrid.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+    OrderLogGrid.setInitWidths("160,80,*,60");
+    OrderLogGrid.setColAlign("right,left,left,right");
+    OrderLogGrid.setColTypes("ro,ro,ro,ro");
+    OrderLogGrid.setColSorting("date,str,str,int");
+    OrderLogGrid.loadXML( "{{ url('xml_JID_order_log') }}?id={{ id }}" );
+    OrderLogGrid.enableAlterCss("","");
+    OrderLogGrid.init();
+});
+</script>
+</body>
+{% endblock %}

@@ -1,0 +1,30 @@
+[
+    {   type:"input",    
+            name: "LOG", 
+            label:"{{ "Log" | trans}}", 
+            rows: 6,
+            inputWidth:"600"  
+    },
+    {type:"settings",
+        position: "label-left", 
+        labelAlign:"right", 
+        labelWidth:"80",
+        inputWidth:"100" },
+    {   type:"input",    
+            name: "JOB_CHAIN", 
+            label:"{{ "Chain" | trans}}",
+            inputWidth:"600" 
+    },
+    {type:"newcolumn"},
+    {type:"settings",
+        position: "label-left", 
+        labelAlign:"right", 
+        labelWidth:"80",
+        inputWidth:"250" },    
+    {type:"input",    name: "SCHEDULER_ID", label:"{{ "Spooler" | trans}}"},
+    {type:"input",    name: "LOGTIME", label:"{{ "Status" | trans}}"},
+    {type:"input",    name: "SEVERITY", label:"{{ "Severity" | trans}}"},
+    {   type:"input", name: "ORDER_ID", label:"{{ "Order" | trans}}" },
+    {   type:"input", name: "JOB_NAME", label:"{{ "Job" | trans}}" },  
+    {type:"hidden",    name: "MESSAGE_ID" }
+]

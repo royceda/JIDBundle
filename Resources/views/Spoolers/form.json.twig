@@ -1,0 +1,59 @@
+[
+    {   type:"hidden", name: "ID" }, 
+    {type:"settings",
+        position: "label-left", 
+        labelAlign:"right", 
+        labelWidth:"80",
+        inputWidth:"140" },
+    {type:"input", name: "SCHEDULER_ID", label:"{{ "Spooler" | trans}}" },
+    {type:"input", name: "START_TIME", label:"{{ "Start" | trans}}"},
+    {type:"input", name: "STOP_TIME", label:"{{ "Stop" | trans}}"},
+    {type:"newcolumn"},
+    {   type:"input",    
+            name: "HOSTNAME", 
+            label:"{{ "Hostname" | trans}}",
+            inputWidth:"200"  
+    },
+    {   type:"input",    
+            name: "TCP_PORT", 
+            label:"{{ "TCP port" | trans}}",
+            inputWidth:"100" 
+    },
+    {   type:"input",    
+            name: "UDP_PORT", 
+            label:"{{ "UDP port" | trans}}", 
+            inputWidth:"100"  
+    },
+    {type:"newcolumn"},
+    {   type:"input",    
+            name: "SUPERVISOR_HOSTNAME", 
+            label:"{{ "Supervisor" | trans}}",
+            inputWidth:"200"  
+    },
+    {   type:"input",    
+            name: "SUPERVISOR_TCP_PORT", 
+            label:"{{ "TCP port" | trans}}",
+            inputWidth:"100" 
+    },
+    {type:"newcolumn"},
+    {   type:"checkbox",    
+            name: "IS_SERVICE", 
+            label:"{{ "Service" | trans}}"
+    },
+    {   type:"checkbox",    
+            name: "IS_PAUSED", 
+            label:"{{ "Paused" | trans}}"
+    },
+    {   type:"checkbox",    
+            name: "IS_RUNNING", 
+            label:"{{ "Running" | trans}}"
+    },
+    {   type:"checkbox",    
+            name: "IS_CLUSTER", 
+            label:"{{ "Cluster" | trans}}"
+    },
+    {   type:"checkbox",    
+            name: "IS_AGENT", 
+            label:"{{ "Agent" | trans}}"
+    }
+]

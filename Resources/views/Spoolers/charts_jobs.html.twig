@@ -1,0 +1,215 @@
+{# src/Arii/JIDBundle/Resources/views/Default/planned.html.twig #}
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block body %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Spoolers chart" | trans }}</h2>
+		<!--[if !IE]>start section menu<![endif]-->
+                {{ render(controller("AriiJIDBundle:Spoolers:submenu")) }}
+		<!--[if !IE]>end section menu<![endif]-->
+		
+		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+                                                <div class="sct_right">
+   test  <div id="mygrid" style="height:500px;background-color:white;position:relative;overflow:hidden;"></div>
+                                                </div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100%;'>
+<div class="dhx_cal_navline">
+<div class="dhx_cal_prev_button">&nbsp;</div>
+<div class="dhx_cal_next_button">&nbsp;</div>
+<div class="dhx_cal_today_button"></div>
+<div class="dhx_cal_date"></div>
+<div class="dhx_cal_tab" name="day_tab" 
+
+style="right:215px;"></div>
+<div class="dhx_cal_tab" name="timeline_tab" 
+
+style="right:280px;"></div>
+</div>
+<div class="dhx_cal_header">
+</div>
+<div class="dhx_cal_data">
+</div>	
+</div>
+<!--[if !IE]>end section<![endif]-->
+<script>
+dhtmlx.skin = "dhx_skyblue";
+var dhxLayout = new dhtmlXLayoutObject("mygrid","3U");
+var toolbar = dhxLayout.attachToolbar();
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_JID_toolbar') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+        case "refresh":
+            GlobalRefresh();
+        break;
+        default:
+            alert(id);
+    }
+});
+dhxLayout.cells("a").setText("{{ 'Spooler use' | trans }}");
+dhxLayout.cells("a").setWidth(300);
+dhxLayout.cells("a").setHeight(300);
+
+donutChart =  dhxLayout.cells("a").attachChart({
+        view:"donut",
+        container: "spoolers",
+        value: "#NB#",
+        label: "",
+        tooltip: "#SPOOLER#",
+        gradient:true,
+        border:false,
+        pieInnerText: "#NB#",
+        shadow: 0,
+        legend:{
+	             width: 0,
+                     template: "#SPOOLER#"
+        }
+});
+donutChart.load( "{{ url('xml_JID_spoolers_pie') }}" );
+donutChart.attachEvent("onItemClick",function(id, value){
+    dhtmlxAjax.get( "{{ url('arii_session_update') }}?"+id+'=true' , function(loader){
+        window.location = "{{ url("arii_JID_planned") }}"; 
+    });
+});
+
+dhxLayout.cells("b").setText("{{ 'Jobs per spooler' | trans }}");
+bar =  dhxLayout.cells("b").attachChart ({
+        view:"stackedBarH",
+        container:"bar_container",
+        value:"#SUCCESS#",
+        label:"#SUCCESS#",
+        tooltip: "#SUCCESS#",
+        fill:true,
+        gradient:true,
+        color:"#749400",
+        padding:{
+            left: 150
+        },
+        yAxis:{
+                title:"{{ "Spoolers" | trans }}",
+                lines: true,
+                template: "#SPOOLER#"
+        },
+        xAxis:{
+/* 
+                title:"{{ "Hour" | trans }}",
+                template:"#SPOOLER#",
+                lines: false                
+*/
+        }
+//        disableItems:true
+});
+bar.addSeries({
+	        value:"#FAILURE#",
+	        label:"<span style='background-color: red;color: yellow;'>#FAILURE#</span>",
+                tooltip: "#FAILURE#",
+                gradient:false,
+                color:"red",
+	        line:{
+		    color:"red",
+		    width:1
+	        }
+});
+bar.addSeries({
+	        value:"#RUNNING#",
+	        label:"<span style='background-color: orange;color: black;'>#RUNNING#</span>",
+                tooltip: "#RUNNING#",
+                gradient:false,
+                color:"black",
+	        line:{
+		    color:"orange",
+		    width:1
+	        }
+});
+bar.load( "{{ url('xml_JID_spoolers_bar') }}" );
+
+scheduler.locale.labels.timeline_tab = "Timeline";
+//scheduler.locale.labels.section_custom="Section";
+scheduler.config.details_on_create=false;
+scheduler.config.details_on_dblclick=false;
+scheduler.config.xml_date="%Y-%m-%d %H:%i";
+
+scheduler.config.first_hour = 0;
+scheduler.config.last_hour = 24;
+
+scheduler.locale.labels.day_tab = "{{ "Day" | trans }}";
+scheduler.locale.labels.timeline_tab = "{{ "Timeline" | trans }}";
+
+//===============
+//Configuration
+//===============
+scheduler.createTimelineView({
+    name: "timeline",
+    x_unit: "minute",
+    x_date: "%H:%i",
+    x_step: {{ Timeline.step }},
+    x_size: 24,
+    x_start: {{ Timeline.start }},
+    x_length: 48,
+    y_unit:	[ {% for spooler in Timeline.spoolers %}
+                  { key: "{{ spooler }}", label: "{{ spooler }}" },
+                  {% endfor %} 
+               ],
+y_property:	"section_id",
+render:"cell"
+});
+//===============
+//Data loading
+//===============
+scheduler.config.lightbox.sections=[	
+    { name:"description", height:130, map_to:"text", type:"textarea" , focus:true},
+    {name:"time", height:72, type:"time", map_to:"auto"}
+ ];
+
+scheduler.templates.event_class=function(start,end,event){
+ return event.color;
+};
+
+
+scheduler.init('scheduler_here',new Date( {{ Timeline.js_date }} ),"timeline");	
+
+scheduler.load( "{{ url('xml_JID_spoolers_timeline') }}" );
+timeline  = dhxLayout.cells("c").attachScheduler( new Date( {{ Timeline.js_date }} ) , "timeline", 'scheduler_here', scheduler);
+dhxLayout.cells("c").hideHeader();
+
+function GlobalRefresh() {
+    donutChart.load( "{{ url('xml_JID_spoolers_pie') }}", function() {
+        toolbar.setItemText( "refresh", "{{ 'Pie chart refreshed.' | trans}}" );
+        bar.load( "{{ url('xml_JID_spoolers_bar') }}", function() {
+            bar.refresh();
+            toolbar.setItemText( "refresh", "{{ 'Bar chart refreshed.' | trans}}" );
+            scheduler.load( "{{ url('xml_JID_spoolers_timeline') }}", function() {
+                var currentTime = new Date();
+                var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
+                toolbar.setItemText( "refresh", FormatTime(nextTime));
+            });
+        } );
+    });
+}
+</script>
+{% endblock %}
