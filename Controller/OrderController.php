@@ -38,9 +38,7 @@ class OrderController extends Controller {
         $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('h.SPOOLER_ID','h.JOB_CHAIN','h.ORDER_ID')) 
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY h'))
-                .$sql->Where(array('h.HISTORY_ID'=>$id))
-                .$sql->OrderBy(array('h.HISTORY_ID desc'))
-                .$sql->Limit(array(50));
+                .$sql->Where(array('h.HISTORY_ID'=>$id));
         $res = $data->sql->query( $qry );
         $Infos = $data->sql->get_next($res);
         
