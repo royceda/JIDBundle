@@ -5,6 +5,11 @@
         labelWidth:"80",
         inputWidth:"100" },
     {   type:"input",    
+            name: "FOLDER", 
+            label:"{{ "Dossier" | trans}}",
+            inputWidth:"300" 
+    },
+    {   type:"input",    
             name: "NAME", 
             label:"{{ "Job" | trans}}",
             inputWidth:"300" 
@@ -15,14 +20,17 @@
             rows: 3,
             inputWidth:"300"  
     },
-    {   type:"input",    
-            name: "CAUSE", 
-            label:"{{ "Cause" | trans}}",
-            inputWidth:"300"  
-    },
     {type:"newcolumn"},
+    {type:"settings",
+        position: "label-left", 
+        labelAlign:"right", 
+        labelWidth:"80",
+        inputWidth:"100" },    
+    {type:"input",    name: "SPOOLER_ID", label:"{{ "Spooler" | trans}}"},
     {type:"input",    name: "STATUS", label:"{{ "Status" | trans}}"},
     {type:"input",    name: "EXIT_CODE", label:"{{ "Exit" | trans}}"},
     {type:"input",    name: "STEPS", label:"{{ "Steps" | trans}}"},
+    {type:"input", name: "CAUSE", label:"{{ "Cause" | trans}}"
+    },
     {type:"hidden",    name: "ID" }
 ]

@@ -4,24 +4,29 @@
 <body>
 <script type="text/javascript">
 var max_history = 0; // pas d'historique
-{% if  app.request.get('ordered')=='true' %}
-var ordered = true;
-{% else %}
-var ordered = false; // que des standalone
-{% endif %}
-{% if  app.request.get('stopped')>0 %}
-var stopped = 1;
-{% else %}
-var stopped = 0; // que des standalone
-{% endif %}
-    
+var chained = 0; // que des chaines normales
+var only_warning = 0;
+var update = 30;
+var autorefresh;
+var status;
+var sort="last";
+
 dhtmlxEvent(window,"load",function(){ 
-    autorefresh = setInterval( "GlobalRefresh()",30000);
-    
     globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
-    globalLayout.cells("a").setWidth(250); 
+    globalLayout.cells("a").setWidth(345); 
     globalLayout.cells("a").hideHeader(); 
     globalLayout.cells("b").hideHeader(); 
+    globalLayout.cells("c").hideHeader(); 
+    
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
 
     myGridMenu = new dhtmlXMenuObject(null);
     myGridMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
@@ -29,48 +34,58 @@ dhtmlxEvent(window,"load",function(){
     myGridMenu.loadStruct("{{ url('xml_JID_orders_grid_menu') }}");
           
     myAccordion = globalLayout.cells("a").attachAccordion();
-    myAccordion.addItem("a1", "Main Page");
-    
-    myTree = myAccordion.cells("a1").attachTree();
+    myAccordion.addItem("a1", "{{ "Status" | trans }}");
+//    myAccordion.addItem("a2", "{{ "Folders" | trans }}");
+
+    myDonut =  myAccordion.cells("a1").attachChart({
+            view:"donut",
+            container:"pie_chart_container",
+            value:"#JOBS#",
+            label:"",
+            tooltip: "#STATUS#",
+            color: "#COLOR#",
+            border:false,
+            pieInnerText: "#JOBS#",
+            shadow: 0,
+            legend:{
+                  width: 0,
+                  template: "#STATUS#",
+                valign:"top",
+                align:"left"
+            } 
+    });
+    myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning );
+    myDonut.attachEvent("onItemClick",function(id, value){
+        status = id;
+        myGrid.filterBy(5, status);  
+    });
+/*             
+    myTree = myAccordion.cells("a2").attachTree();
+//    myTree = globalLayout.cells("a").attachTree();
     myTree.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
-    myTree.loadXML("{{ url('xml_JID_orders_tree') }}");
     myTree.attachEvent("onDblClick", function(id){
         globalLayout.cells("a").progressOn();
-        GridRefresh();
+        GlobalRefresh();
     });
-    
+*/    
     myGrid = globalLayout.cells("b").attachGrid();
     myGrid.selMultiRows = true;
     myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
-    myGrid.setHeader("{{ "Spooler" | trans }},{{ "Chain" | trans }},{{ "Order" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Information" | trans }}");
-    myGrid.attachHeader("#select_filter,#text_filter,#text_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter");
-    myGrid.setInitWidths("100,*,140,150,100,150,150,*");
-    myGrid.setColAlign("left,left,left,left,center,right,right,left");
-    myGrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro");
-    myGrid.setColSorting("str,str,str,str,str,date,date,str");
+    myGrid.setHeader("{{ "Spooler" | trans }},{{ "Folder" | trans }},{{ "Chain" | trans }},{{ "Order" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Next" | trans }},{{ "Information" | trans }}");
+    myGrid.attachHeader("#select_filter,#text_filter,#text_filter,#text_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter");
+    myGrid.setInitWidths("120,*,180,160,160,150,160,160,160,*");
+    myGrid.setColAlign("left,left,left,left,left,center,right,right,right,left");
+    myGrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");
+    myGrid.setColSorting("str,str,str,str,str,str,date,date,date,str");
     myGrid.enableContextMenu(myGridMenu);
     myGrid.attachEvent("onBeforeContextMenu", onShowMenu );
     myGrid.init();
-    myGrid.loadXML( "{{ url('xml_JID_orders_grid') }}");
-    myGrid.attachEvent("onRowDblClicked",JobDetail );
-
-    myFolderToolbar = globalLayout.cells("a").attachToolbar();
-    myFolderToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    myFolderToolbar.loadStruct( "{{ url('xml_JID_orders_folder_toolbar') }}");
-    myFolderToolbar.attachEvent("onClick",function(itemid){
-        FolderRefresh();
-    });
-    myFolderToolbar.attachEvent("onStateChange",function(itemid){
-        switch(itemid) {
-             case 'ordered':
-                ordered = myFolderToolbar.getItemState(itemid);
-                break;
-             case 'stopped':
-                stopped = myFolderToolbar.getItemState(itemid);
-                break;
-        }
-        FolderRefresh();
-    });
+    myGrid.setColumnHidden(0,true); 
+    myGrid.setColumnHidden(7,true); 
+    myGrid.setColumnHidden(8,true); 
+    myGrid.enableSmartRendering(true,50);
+    myGrid.loadXML( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
+    myGrid.attachEvent("onRowDblClicked",OrderDetail );
 
     myGridToolbar = globalLayout.cells("b").attachToolbar();
     myGridToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
@@ -79,21 +94,35 @@ dhtmlxEvent(window,"load",function(){
          switch (itemid) {
             case 'refresh':
                 globalLayout.cells("b").progressOn();
-                GridRefresh();
+                GlobalRefresh();
                 break;
             case "print":
                 myGrid.printView();
                 break;
             case "rss":
-                document.location.href = "{{ url('rss_JID_history_job') }}";
+                document.location.href = "{{ url('rss_JID_history_orders') }}";
                 break;
             default:
-                alert(itemid);
+                if (itemid.substr(0,5)==='sort_') {
+                    sort = itemid.substr(5);
+                    globalLayout.cells("b").progressOn();
+                    GlobalRefresh();
+                }
+                else {
+                    alert(itemid);
+                }
                 break;
         }
     });
     myGridToolbar.attachEvent("onStateChange",function(itemid, state){
          switch (itemid) {
+            case 'show_spooler':
+                myGrid.setColumnHidden(0,!state);
+                break;
+            case 'show_time':
+                myGrid.setColumnHidden(7,!state);      
+                myGrid.setColumnHidden(8,!state);
+                break;
             case 'gantt':
                 myGrid.setColumnHidden(5,state);      
                 myGrid.setColumnHidden(6,state);      
@@ -101,7 +130,7 @@ dhtmlxEvent(window,"load",function(){
                 myGrid.setColumnHidden(8,state);   
                 myGrid.setColumnHidden(9,!state);  
                 break;
-            default:
+            default:       
                 alert(itemid);
                 break;
         }
@@ -124,6 +153,9 @@ dhtmlxEvent(window,"load",function(){
                 break;
            case "job_history":
                 document.location.href = "{{ url('arii_JID_history_job') }}?id="+rId;
+            break;
+           case "order_view":
+                document.location.href = "{{ url('arii_JID_order') }}?id="+rId;
             break;
            case "order_history":
                 document.location.href = "{{ url('arii_JID_order_history') }}?id="+rId;
@@ -150,18 +182,9 @@ dhtmlxEvent(window,"load",function(){
             case "purge_job":
                 PurgeJob( rId );
             break;
-            case "job_detail":
-                JobDetail( rId );
-            break;
             case "order_detail":
                 OrderDetail( rId );
             break;
-            case "stop_chain":
-                Chain(rId,menuitemId,"{{ "Stop chain" | trans }}",null);
-                break;
-            case "unstop_chain":
-                Chain(rId,menuitemId,"{{ "Unstop chain" | trans }}",null);
-                break;
             case "stop_node":
                 nId = mygrid.getUserData(rId,'TASK_ID');
                 Node(rId,nId,menuitemId,"{{ "Stop node" | trans }}",null);
@@ -177,7 +200,7 @@ dhtmlxEvent(window,"load",function(){
             case "unskip_node":
                 nId = mygrid.getUserData(rId,'TASK_ID');
                 Node(rId,nId,menuitemId,"{{ "Unskip node" | trans }}",null);
-                break;            
+                break;
             case "suspend_order":
             case "resume_order":
                     alert(menuitemId);
@@ -191,12 +214,14 @@ dhtmlxEvent(window,"load",function(){
         return true;
     });
 
+    globalLayout.cells("c").setHeight(280); 
     var myTabbar = globalLayout.cells("c").attachTabbar();
-    myTabbar.addTab("b1","{{ "Job" | trans }}","100px", null, true);
-    myTabbar.addTab("b2","{{ "Log" | trans }}","100px");
-    myTabbar.addTab("b3","{{ "History" | trans }}","100px");
+    myTabbar.addTab("order","{{ "Order" | trans }}","100px", null, true);
+    myTabbar.addTab("chain","{{ "Chain" | trans }}","100px" );
+    myTabbar.addTab("log","{{ "Log" | trans }}","100px");
+    myTabbar.addTab("history","{{ "History" | trans }}","100px");
 
-    myDetailLayout = myTabbar.cells("b1").attachLayout("2U");
+    myDetailLayout = myTabbar.cells("order").attachLayout("2U");
     myDetailLayout.cells("a").hideHeader(); 
     myDetailLayout.cells("b").hideHeader(); 
     
@@ -204,11 +229,67 @@ dhtmlxEvent(window,"load",function(){
     myForm.loadStruct("{{ url('json_JID_orders_form') }}");
 
     myDetailToolbar = myDetailLayout.cells("a").attachToolbar();
+    myDetailLayout.cells("a").setWidth(650); 
     myDetailToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     myDetailToolbar.loadStruct( "{{ url('xml_JID_orders_form_toolbar') }}" , function(){
         GBCalendar = new dhtmlXCalendarObject(myDetailToolbar.getInput('ref_date'));
         GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
-        GBCalendar.setWeekStartDay(1);
+        GBCalendar.setWeekStartDay(1);        
+        this.hideItem('resume_order');
+        this.hideItem('remove_setback');
+    });
+    
+    myDetailToolbar.attachEvent("onClick",function(itemid){
+        Text = '';
+        var id = myForm.getItemValue('HISTORY_ID');
+        switch(itemid) {
+           case "order_view":
+                document.location.href = "{{ url('arii_JID_order') }}?id="+rId;
+                return true;
+                break;
+            case "modify_order":
+                Text = "{{ "Restart order" | trans }}";
+                break;
+            case "suspend_order":
+                Text = "{{ "Suspend order" | trans }}";
+                break;
+            case "resume_order":
+                Text = "{{ "Resume order" | trans }}";
+                break;
+        }
+        switch(itemid) {
+            case "start_order":
+            case "modify_order":
+            case "suspend_order":
+            case "resume_order":
+                var params = new Array();
+                myParameters.forEachRow(function(id){
+                    var param = myParameters.cells(id,0).getValue() + "=" + encodeURIComponent(myParameters.cells(id,1).getValue());
+                    params.push(param);
+                });
+                var paramsStr = params.join(",");
+                var start_time = '';
+                start_time = myDetailToolbar.getValue("ref_date");
+                // alert("{{ url('arii_XML_Command') }}?command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&order_id="+id); 
+                dhtmlx.message({
+                type: "Notice",
+                text: Text });
+                globalLayout.cells("a").progressOn();        
+                globalLayout.cells("b").progressOn();
+                dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&order_id="+id,function(loader,response){
+                    dhtmlx.message({
+                    type: "Notice",
+                    expire: 10000,
+                    width: "500px",
+                    text: loader.xmlDoc.responseText });
+                    GlobalRefresh();
+                });
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+        return true;
     });
     
     var myParametersToolbar = myDetailLayout.cells("b").attachToolbar();
@@ -221,25 +302,91 @@ dhtmlxEvent(window,"load",function(){
     myParameters.setColTypes("ed,ed");
     myParameters.setInitWidths("*,*");
     myParameters.init();
+
+    myChainDetail =  myTabbar.cells("chain").attachLayout("2U");
+    // myChainDetail.cells("a").setText("{{ "Steps" | trans }}");
+    myChainDetail.cells("a").hideHeader();
+    // myChainDetail.cells("b").setText("{{ "Graph" | trans }}");
+    myChainDetail.cells("b").hideHeader();
+
+    myChainToolbar = myChainDetail.cells("a").attachToolbar();
+    myChainToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myChainToolbar.loadStruct( "{{ url('xml_JID_orders_chain_toolbar') }}" );
+
+    myChainToolbar.attachEvent("onClick",function(itemid){
+        var id = myForm.getItemValue('HISTORY_ID');
+        switch (itemid) {
+            case "refresh":
+                break;
+            case "stop_chain":
+                Text = "{{ "Stop chain" | trans }}";
+                break;
+            case "unstop_chain":
+                Text = "{{ "Unstop chain" | trans }}";
+                break;
+        }
+        switch (itemid) {
+            case "stop_chain":
+            case "unstop_chain":
+                dhtmlx.message({
+                type: "Notice",
+                text: Text });
+//                alert("{{ url('arii_XML_Command') }}?command="+itemid+"&order_id="+id);
+                dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&order_id="+id,function(loader,response){
+                    dhtmlx.message({
+                    type: "Notice",
+                    expire: 10000,
+                    width: "500px",
+                    text: loader.xmlDoc.responseText });
+                    globalLayout.progressOn();   
+                    GlobalRefresh();
+                    if (itemid=='stop_chain') {
+                        myChainToolbar.hideItem('stop_chain');
+                        myChainToolbar.showItem('unstop_chain');
+                    }
+                    else {
+                        myChainToolbar.hideItem('stop_chain');
+                        myChainToolbar.showItem('unstop_chain');
+                    }
+                });
+                break;
+        }
+    });
     
-    myLog = myTabbar.cells("b2").attachGrid();
+    mySteps = myChainDetail.cells("a").attachGrid();
+    mySteps.setHeader("{{ "Step" | trans }},{{ "State" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
+    mySteps.attachHeader("#numeric_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    mySteps.setInitWidths("80,*,160,160,60,60,200");
+    mySteps.setColAlign("right,left,right,right,right,right,left");
+    mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro");
+    mySteps.setColSorting("int,str,date,date,int,str,str");
+    mySteps.setColumnHidden(3,true);  
+    mySteps.setColumnHidden(4,true);  
+    mySteps.setColumnHidden(5,true);  
+    mySteps.setColumnHidden(6,true);  
+    mySteps.enableAlterCss("","");
+    mySteps.init();
+    
+    myLog = myTabbar.cells("log").attachGrid();
     myLog.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
     myLog.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
-    myLog.setInitWidths("160,40,*,60");
+    myLog.setInitWidths("160,200,*,60");
     myLog.setColAlign("right,left,left,right");
     myLog.setColTypes("ro,ro,ro,ro");
     myLog.setColSorting("date,str,str,int");
     myLog.init();
+    myLog.enableSmartRendering(true,50);
 
-    myHistory = myTabbar.cells("b3").attachGrid();
-    myHistory.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit" | trans }},{{ "Message" | trans }}");
-    myHistory.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
-    myHistory.setInitWidths("140,140,110,70,70,*");
-    myHistory.setColAlign("right,right,right,right,right,left");
-    myHistory.setColTypes("ro,ro,ro,ro,ro,ro");
-    myHistory.setColSorting("date,date,str,int,int,str");
+    myHistory = myTabbar.cells("history").attachGrid();
+    myHistory.setHeader("{{ "Start" | trans }},{{ "End" | trans }},{{ "State" | trans }},!,{{ "Message" | trans }}");
+    myHistory.attachHeader("#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    myHistory.setInitWidths("160,160,150,40,*");
+    myHistory.setColAlign("right,right,right,center,left");
+    myHistory.setColTypes("ro,ro,ro,ro,ro");
+    myHistory.setColSorting("date,date,str,str,str");
     myHistory.init();
-    myHistory.enableAlterCss("even_row","odd_row");
+    myHistory.enableSmartRendering(true,50);
+    myHistory.enableAlterCss("","");
     
     myDetailToolbar.attachEvent("onClick",function(itemid){
         Text = '';
@@ -284,7 +431,7 @@ dhtmlxEvent(window,"load",function(){
                     expire: 10000,
                     width: "500px",
                     text: loader.xmlDoc.responseText });
-                    GridRefresh();
+                    GlobalRefresh();
                     globalLayout.cells("b").progressOff();        
                 });
                 break;
@@ -306,22 +453,18 @@ dhtmlxEvent(window,"load",function(){
         return true;
     });
 
+//    autorefresh = setInterval( "GridRefresh()", update*1000 );
+    GridRefresh();
 });
 
 function GlobalRefresh() {
+    clearInterval( autorefresh );
     GridRefresh();
-    FolderRefresh();
 }
 
-function FolderRefresh() {
-    myTree.deleteChildItems(0);
-    myTree.loadXML("{{ url('xml_JID_orders_tree') }}?ordered="+ordered+"&stopped="+stopped, function() {
-        globalLayout.cells("a").progressOff();
-        GridRefresh();
-    });
-}
-
-function GridRefresh() {
+function GridRefresh(detail) {
+    clearInterval( autorefresh );    
+    detail = typeof detail !== 'undefined' ? detail : 0;
     var currentTime = new Date();
     var hours = currentTime.getHours();
     var minutes = currentTime.getMinutes();
@@ -332,46 +475,57 @@ function GridRefresh() {
     if (seconds < 10){
     seconds = "0" + seconds;
     }
-    myGridToolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-{% if arii_pro %}
-    myGrid.refreshFilters();
-    var page_number = myGrid.currentPage;
-{% endif %}
-    myGrid.loadXML("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&ordered="+ordered+"&stopped="+stopped, function(){
+    myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+    myGrid.loadXML("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function(){
         globalLayout.cells("b").progressOff();
-{% if arii_pro %}
-        myGrid.showRow(currentrow); 
-        myGrid.changePage(page_number);
-        myGrid.refreshFilters();
-{% endif %}
+        myGrid.filterBy(5, status);  
+        if (detail>0) OrderDetail(id);
+        myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning,
+            function () {
+                myDonut.refresh();                
+            });
+            globalLayout.progressOff();
+//            myTree.deleteChildItems(0);
+//            myTree.loadXML("{{ url('xml_JID_orders_tree') }}?chained="+chained+"&only_warning="+only_warning, function() {
+                globalLayout.cells("a").progressOff();
+//            });
         myGrid.filterByAll();
+        autorefresh = setInterval( "GridRefresh()", update*1000 );
     });    
 }
 
-function JobDetail(id) {
+function OrderDetail(id) {
+    clearInterval( autorefresh );
     globalLayout.cells("c").progressOn();
-    myForm.load("{{ url('xml_JID_job_form') }}?id="+id);
+    myForm.load("{{ url('xml_JID_order_form') }}?id="+id);
     // mise a jour de la toolbar
-    var status = myGrid.cells(id, 3 ).getValue();
-    myDetailToolbar.showItem('unstop_job');
-    myDetailToolbar.showItem('stop_job');
-    myDetailToolbar.showItem('kill_task');
-    if (status== 'STOPPED') {
-        myDetailToolbar.hideItem('stop_job');
+    var status = myGrid.cells(id, 5 ).getValue();
+    myDetailToolbar.showItem('add_order');
+    myDetailToolbar.showItem('suspend_order');
+    myDetailToolbar.showItem('resume_order');
+    myChainToolbar.showItem('stop_chain');
+    myChainToolbar.showItem('unstop_chain');
+    if (status== 'SUSPENDED') {
+        myDetailToolbar.hideItem('suspend_order');
+    }
+    else if (status== 'CHAIN STOP.') {
+        myChainToolbar.hideItem('stop_chain');
     }
     else {
-        myDetailToolbar.hideItem('unstop_job');
+        myChainToolbar.hideItem('unstop_chain');
+        myDetailToolbar.hideItem('resume_order');
     }
-    if (status!= 'RUNNING') {
-        myDetailToolbar.hideItem('kill_task');      
-    }
-    myParameters.loadXML("{{ url('xml_JID_job_params') }}?id="+id );
-    myHistory.clearAll();
-    myHistory.loadXML("{{ url('xml_JID_job_history') }}?id="+id );  
-    myLog.clearAll();
-    myLog.loadXML("{{ url('xml_JID_job_log') }}?id="+id, function (id) {
-        globalLayout.cells("c").progressOff();    
-    });
+    myParameters.loadXML("{{ url('xml_JID_order_params') }}?id="+id, function() {
+        mySteps.clearAndLoad("{{ url('xml_JID_order_steps') }}?id="+id, function() {
+            myLog.clearAndLoad("{{ url('xml_JID_order_log') }}?id="+id, function () {
+                myHistory.clearAndLoad("{{ url('xml_JID_order_history') }}?id="+id, function() {                   
+                    myChainDetail.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id="+id);
+                    globalLayout.cells("c").progressOff(); 
+                    autorefresh = setInterval( "GridRefresh()", update*1000 );
+                });  
+            });                           
+        });
+  });
 }
 
 function onShowMenu(rowId, celInd, grid) {

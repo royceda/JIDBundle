@@ -1,9 +1,11 @@
 <toolbar>    
-    <item type="button" id="start_job" text="{{ "Start" | trans }}" img="start_task.png"/>
-    <item id="date_select" type="button" img="date.png" text="" />
+    <item type="button" id="modify_order" text="{{ "Start" | trans }}" img="start_task.png"/>
+    <item id="date_select" type="button" img="date.png" />
     <item id="ref_date" type="buttonInput" value="now" width="140" title="{{ "date.reference" | trans }}"/>
     <item id="sep3" type="separator"/>
-    <item type="button" id="stop_job" text="{{ "Stop" | trans }}" img="stop.png"/>
-    <item type="button" id="unstop_job" text="{{ "Unstop" | trans }}" img="unstop.png"/>
-    <item type="button" id="kill_task" text="{{ "Kill" | trans }}" img="kill.png"/>
+    <item type="button" id="suspend_order" text="{{ "Suspend" | trans }}" img="stop.png"/>
+    <item type="button" id="resume_order" text="{{ "Resume" | trans }}" img="unstop.png"/>
+    <item type="button" id="remove_setback" text="{{ "Setback" | trans }}" img="unstop.png"/>
+    <item id="sep4" type="separator"/>
+    <item type="button" id="order_view" img="view.png"/>
 </toolbar>

@@ -15,4 +15,8 @@ services:
     arii_jid.sos:
         class: Arii\JIDBundle\Service\AriiSOS
         arguments: ["@arii_core.dhtmlx", "@arii_core.sql"]
+
+    arii_jid.history:
+        class: Arii\JIDBundle\Service\AriiHistory
+        arguments: ["@arii_core.dhtmlx", "@arii_core.sql", "@arii_core.date", "@arii_core.tools"]
         

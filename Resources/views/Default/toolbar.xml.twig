@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <toolbar>
-<item type="buttonSelect" id="menu" text="" img="jid.png">
+<item type="buttonSelect" id="menu" img="jid.png">
     <item type="button" id="menu_history" text="{{ "Jobs" | trans }}" img="job.png"/>
     <item type="button" id="menu_orders" text="{{ "Orders" | trans }}" img="order.png"/>
     <item type="button" id="menu_chains" text="{{ "Chains" | trans }}" img="job_chain.png"/>
@@ -33,7 +33,7 @@
     </item>
     {% endif %}
     <item id="sep1" type="separator"/>
-    <item id="date_select" type="button" img="date.png" text="" />
+    <item id="date_select" type="button" img="date.png" />
     <item id="ref_date" type="buttonInput" value="{{ app.session.get('ref_date') }}" width="140" title="{{ "date.reference" | trans }}"/>
     {% if (app.session.get('UserFilters')|length) >0 %}
     {% set filter = app.session.get('user_filter') %}     

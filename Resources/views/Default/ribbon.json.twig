@@ -2,41 +2,89 @@
    "items":
    [
       {   "type":"block", 
-          text:"{{ "Jid" | trans }}", 
+          text:"{{ "module.JID" | trans }}", 
           "text_pos": "top", 
           "list":
           [
              {   "type": "buttonSelect", 
-                 text:"{{ "Monitor" | trans }}", 
+                 text:"", 
                  "isbig": true, 
                  "img": "48/jid.png", 
                  items:
                  [ 
+                    { id:"menu_order", text: "{{ "Orders" | trans }}", img: "order.png" },
                     { id:"menu_job", text: "{{ "Jobs" | trans }}", img: "job.png" },
-                    { id:"menu_order", text: "{{ "Orders" | trans }}", img: "job_chain.png" },
-                    { id:"menu_order", text: "{{ "Processus" | trans }}", img: "process.png" },
                     { id:"menu_spooler", text: "{{ "Spoolers" | trans }}", img: "spooler.png" },
+                    { id:"menu_messages", text: "{{ "Messages" | trans }}", img: "warning.png" }
+                    
+/*                    ,
+                    { id:"menu_order", text: "{{ "Processus" | trans }}", img: "job_chain.png" },
                     { id:"menu_ha", text: "{{ "Clusters" | trans }}", img: "ha.png" },
-                    { id:"menu_message", text: "{{ "Messages" | trans }}", img: "messages.png" },
+                    { id:"menu_message", text: "{{ "Messages" | trans }}", img: "message.png" },
                     { id:"menu_events", text: "{{ "Events" | trans }}", img: "events.png" }
-                 ]
+*/                 ]
               },
           ]
       },      
+     {   "type":"block", 
+          "id": "current_filter",
+          {% if (app.session.get('user_filter')|length) >0 %}
+          {% set filter = app.session.get('user_filter') %}
+          text:"{{ filter.name }}",
+          {% else %}
+          text:"{{ "Filter" | trans }}", 
+          {% endif %}
+          "text_pos": "bottom", 
+          "list":
+          [
+             {   "type": "buttonSelect", 
+                 text:"",
+                 "id": "Filters",
+                 "isbig": true, 
+                 "img": "48/search.png", 
+                 items:
+                 [ 
+     {% if (app.session.get('UserFilters')|length) >0 %}
+    {% set filter = app.session.get('user_filter') %}     
+       {% set filters = app.session.get('UserFilters') %}     
+        {% for k,filter in filters %}
+            { id:"filter_{{ filter.id }}", text: "{{ filter.name }}" },
+        {% endfor %}
+    {% endif %}
+                  ]
+              },
+              {id:"filter_edit","type":"button",text:"","img":"edit.png","tooltip": "{{ "Edit filter" | trans }}" },
+              {id:"filter_all","type":"button",text:"","img":"zoom_out.png"},
+          ]
+      },
       {   "type":"block", 
           text:"{{ "History" | trans }}", 
           "text_pos": "bottom", 
           "list":
           [
-
-                   {   id : "group_2", 
-                  type : "group", 
-                  list : 
-                  [   {id:"ordered","type":"buttonTwoState",text:"","img":"ordered.png"},
-                      {id:"stopped","type":"buttonTwoState",text:"","img":"stopped.png"}
+              {   id: "ref_past", 
+                  "type":"buttonSelect", 
+                  text:"{{ app.session.get('past') | slice (0,10) }}", 
+                  "img": "timeline.png",
+                  "items": 
+                  [ 
+                     { id: "-1", text: "1 {{ "day" | trans }}" },
+                     { id: "-2", text: "2 {{ "days" | trans }}" },
+                     { id: "-3", text: "3 {{ "days" | trans }}" },
+                     { id: "-4", text: "4 {{ "days" | trans }}" },
+                     { id: "-5", text: "5 {{ "days" | trans }}" },
+                     { id: "-6", text: "6 {{ "days" | trans }}" },
+                     { id: "-7", text: "1 {{ "week" | trans }}" },
+                     { id: "-14", text: "2 {{ "weeks" | trans }}" },
+                     { id: "-21", text: "3 {{ "weeks" | trans }}" },
+                     { id: "-30", text: "1 {{ "month" | trans }}" },
+                     { id: "-60", text: "2 {{ "months" | trans }}" },
+                     { id: "-90", text: "3 {{ "months" | trans }}" },
+                     { id: "-180", text: "6 {{ "months" | trans }}" },
+                     { id: "-365", text: "1 {{ "year" | trans }}" }
                   ]
-              },              { id: "slider", type : 'slider', text : '', size : 100, "img":"ordered.png" },
-              {   id: "refresh", 
+              },
+             {   id: "refresh", 
                   "type":"buttonSelect", 
                   text:"--:--:--", 
                   "img": "refresh.png",
@@ -49,6 +97,12 @@
                      { id: "1800", text: "15 {{ "minutes" | trans }}" },
                      { id: "3600", text: "1 {{ "hour" | trans }}" }
                   ]
+              },
+              {   id : "group_2", 
+                  type : "group", 
+                  list : 
+                  [   {id:"chained","type":"buttonTwoState",text:"","img":"ordered.png"},
+                      {id:"only_warning","type":"buttonTwoState",text:"","img":"warning.png" /*, state: true*/ }                  ]
               }
           ]
       }

@@ -1,115 +1,152 @@
 {# src/Arii/JIDBundle/Resources/views/index.html.twig #}
-
 {% extends "AriiJIDBundle::layout.html.twig" %}
-{% block content %}
-<!--[if !IE]>start section<![endif]-->	
-<div class="section table_section">
-	<!--[if !IE]>start title wrapper<![endif]-->
-	<div class="title_wrapper">
-		<h2>{{ "Messages" | trans }}</h2>
-<ul  class="section_menu">                
-      <li><a href="{{ url('arii_JID_messages') }}" class="active"><span><span><img src="{{ asset('bundles/ariicore/images/wa/list.png') }}"/>&nbsp;{{ "List" | trans }}</span></span></a></li>
-</ul>
-                <span class="title_wrapper_left"></span>
-		<span class="title_wrapper_right"></span>
-	</div>
-	<!--[if !IE]>end title wrapper<![endif]-->
-<!--[if !IE]>start section content<![endif]-->
-	<div class="section_content">
-		<!--[if !IE]>start section content top<![endif]-->
-		<div class="sct">
-			<div class="sct_left">
-				<div class="sct_right">
-					<div class="sct_left">
-                                                <div class="sct_right">
-<div id="mygrid" style="height:576px;background-color:white;position:relative;overflow:hidden;"></div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+{% block body %}
 <script language="javascript">
-dhtmlx.skin = "dhx_skyblue";
+dhtmlxEvent(window,"load",function(){     
+    var globalLayout = new dhtmlXLayoutObject(document.body,"3L");
+    globalLayout.cells("a").setWidth(430); 
+    globalLayout.cells("a").hideHeader(); 
+    globalLayout.cells("b").hideHeader(); 
+    globalLayout.cells("c").setHeight(200); 
 
-var dhxLayout = new dhtmlXLayoutObject("mygrid","2E");
-dhxLayout.cells("a").hideHeader();
-dhxLayout.cells("a").setHeight(315);
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}");
 
-var toolbar = dhxLayout.cells("a").attachToolbar();
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
 
+    myAccordion = globalLayout.cells("a").attachAccordion();
+    myAccordion.addItem("a1", "{{ "Log time" | trans }}");
+    myAccordion.addItem("a2", "{{ "Spoolers" | trans }}");
 
-toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-toolbar.loadStruct("{{ url('arii_JID_toolbar_refresh') }}");
-toolbar.attachEvent( "onClick", function(id, value) {
-    switch (id) {
-        case "refresh":
-            GlobalRefresh();
-        break;
-        default:
-            alert(id);
-    }
-});
+    myBar =  myAccordion.cells("a1").attachChart ({
+            view:"stackedBar",
+            container:"bar_container",
+            value:"#WARN#",
+            label:"#WARN#",
+            tooltip: "#WARN#",
+            fill:true,
+            color:"#ffffcc",
+            yAxis:{
+                    title:"{{ "Messages" | trans }}",
+                    lines: true
+            },
+            xAxis:{
+                    title:"{{ "Hour" | trans }}",
+                    template:"#HOUR#",
+                    lines: false                
+            }
+    //        disableItems:true
+    });
+    myBar.addSeries({
+                    value:"#ERROR#",
+                    label:"<span style='background-color: red;color: yellow;'>#ERROR#</span>",
+                    tooltip: "#ERROR#",
+                    color:"#fbb4ae",
+                    line:{
+                        color:"red",
+                        width:1
+                    }
+    });
+    myBar.load( "{{ url('xml_JID_messages_bar') }}" );
 
-var mygrid = dhxLayout.cells("a").attachGrid();
-mygrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
-mygrid.setHeader("{{ "Log time" | trans }},{{ "Spooler" | trans }},{{ "Severity" | trans }},{{ "Error" | trans }},{{ "Message" | trans }},{{ "Objects" | trans }},{{ "Count" | trans }}");
-mygrid.attachHeader("#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter");
-mygrid.setInitWidths("130,150,80,50,*,250,60,0");
-mygrid.setColAlign("left,left,left,right,left,left,right");
-mygrid.setColTypes("ro,ro,ro,ro,ro,ro,ro");
-mygrid.setColSorting("date,str,str,int,str,str,int");
+    myBar2 =  myAccordion.cells("a2").attachChart ({
+            view:"stackedBarH",
+            container:"bar_container",
+            value:"#WARN#",
+            label:"#WARN#",
+            tooltip: "#WARN#",
+            fill:true,
+            color:"#ffffcc",
+            xAxis:{
+                    title:"{{ "Messages" | trans }}",
+                    lines: true
+            },
+            yAxis:{
+                    template:"#SPOOLER#",
+                    lines: false                
+            },
+            padding:{
+                  left:100
+            } 
+    //        disableItems:true
+    });
+    myBar2.addSeries({
+                    value:"#ERROR#",
+                    label:"<span style='background-color: red;color: yellow;'>#ERROR#</span>",
+                    tooltip: "#ERROR#",
+                    color:"#fbb4ae",
+                    line:{
+                        color:"red",
+                        width:1
+                    }
+    });
+    myBar2.load( "{{ url('xml_JID_messages_spooler') }}" );
 
-var sb = dhxLayout.cells("a").attachStatusBar();
-dhxLayout.cells("a").vs[dhxLayout.cells("a").av].sbHeight = 30;
-sb.setText('<div id="recinfoArea"></div>');
-mygrid.enablePaging(true, 10, 5, "recinfoArea");
-mygrid.setPagingSkin("toolbar","dhx_skyblue");
-mygrid.setPagingWTMode(true,true,true,[ 5, 10, 20, 50, 100, 200, 400, 800]);
-mygrid.init();
-mygrid.setSkin('dhx_skyblue');
-mygrid.enableAlterCss("even_row","odd_row");
-mygrid.i18n.paging={
-      results: "{{ "Results" | trans }}",
-      records: "{{ "From" | trans }} ",
-      to: " {{ "to" | trans }} ",
-      page:"{{ "Page" | trans }} ",
-      perpage: "{{ "rows per page" | trans }}",
-      first: "{{ "To first Page" | trans }}",
-      previous:"{{ "Previous Page" | trans }}",
-      found:"{{ "Found records" | trans }}",
-      next:"{{ "Next Page" | trans }}",
-      last:"{{ "To last Page" | trans }}",
-      of:" {{ "of" | trans }} ",
-      notfound:"{{ "No Records Found" | trans }}" };
-mygrid.loadXML( "{{ url('xml_JID_messages') }}" );
-mygrid.enableLightMouseNavigation( true );
-mygrid.attachEvent("onXLE",function(){
-    //will be called after each xml loading
-    mygrid.refreshFilters();
-    mygrid.filterByAll();
-    var currentTime = new Date()
-    toolbar.setItemText( "refresh", FormatTime(currentTime));
-});
+    var myToolbar = globalLayout.cells("b").attachToolbar();
 
-dhxLayout.cells("b").hideHeader();
-dhxLayout.cells("b").attachURL("{{ url('xml_JID_message') }}",true);
-mygrid.attachEvent("onRowDblClicked",function(id, value){
-    dhxLayout.cells("b").attachURL("{{ url('xml_JID_message') }}?id="+id,true);
+    myToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myToolbar.loadStruct("{{ url('xml_JID_messages_toolbar') }}");
+    myToolbar.attachEvent( "onClick", function(id, value) {
+        switch (id) {
+            case "refresh":
+                GlobalRefresh();
+            break;
+            default:
+                alert(id);
+        }
+    });
+
+    var myGrid = globalLayout.cells("b").attachGrid();
+    myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myGrid.setHeader("{{ "Time" | trans }},{{ "Spooler" | trans }},{{ "Severity" | trans }},{{ "Error" | trans }},{{ "Message" | trans }},{{ "Job" | trans }},{{ "Job chain" | trans }},{{ "Order" | trans }},{{ "Count" | trans }}");
+    myGrid.attachHeader("#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter,#numeric_filter");
+    myGrid.setInitWidths("130,150,80,80,*,200,200,200,60,0");
+    myGrid.setColAlign("left,left,left,right,left,left,left,left,right");
+    myGrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro");
+    myGrid.setColSorting("date,str,str,int,str,str,str,str,int");
+    myGrid.init();
+    myGrid.enableAlterCss("","");
+    myGrid.loadXML( "{{ url('xml_JID_messages_grid') }}" );
+    myGrid.setColumnHidden(5,true);
+    myGrid.setColumnHidden(6,true);
+    myGrid.setColumnHidden(7,true);
+
+    globalLayout.cells("c").hideHeader();
+    myForm = globalLayout.cells("c").attachForm();
+    myForm.loadStruct("{{ url('json_JID_messages_form') }}");
+    
+    myGrid.attachEvent("onRowDblClicked",function(id, value){
+        myForm.load("{{ url('xml_JID_message') }}?id="+id,true);
+    });
+    
+    myToolbar.attachEvent("onStateChange",function(itemid, state){
+         switch (itemid) {
+            case 'job':
+                myGrid.setColumnHidden(5,!state);      
+                break;
+            case 'job_chain':
+                myGrid.setColumnHidden(6,!state);  
+                break;
+            case 'order':
+                myGrid.setColumnHidden(7,!state);  
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+    });
+
 });
 // Autorefresh
 function GlobalRefresh() {
-    toolbar.setItemText( "refresh", "{{ 'Refreshing...' | trans}}" );
-    //mygrid.clearAll();
-    mygrid.loadXML( "{{ url('xml_JID_messages') }}" );
+    myGrid.loadXML( "{{ url('xml_JID_messages_grid') }}" );
+    myBar.load( "{{ url('xml_JID_messages_bar') }}" );
+    myBar2.load( "{{ url('xml_JID_messages_spooler') }}" );
 }
 </script>
-		<!--[if !IE]>end section content top<![endif]-->
-		<!--[if !IE]>start section content bottom<![endif]-->
-		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
-		<!--[if !IE]>end section content bottom<![endif]-->
-		
-	</div>
-	<!--[if !IE]>end section content<![endif]-->
-</div>
-<!--[if !IE]>end section<![endif]-->
 {% endblock %}

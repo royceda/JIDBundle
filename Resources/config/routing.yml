@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------
 arii_JID_index:
     pattern:  /
-    defaults: { _controller: AriiJIDBundle:Jobs:index }
+    defaults: { _controller: AriiJIDBundle:Orders:index }
 
 xml_JID_toolbar:
     pattern:  /toolbar.xml
@@ -20,6 +20,10 @@ xml_JID_menu:
 # --------------------------------------------------------------------------
 # Jobs
 # --------------------------------------------------------------------------
+arii_JID_jobs:
+    pattern:  /jobs
+    defaults: { _controller: AriiJIDBundle:Jobs:index }
+
 arii_JID_jobs_index:
     pattern:  /jobs
     defaults: { _controller: AriiJIDBundle:Jobs:index }
@@ -147,6 +151,10 @@ xml_JID_orders_form_toolbar:
     pattern:  /orders/form_toolbar.xml
     defaults: { _controller: AriiJIDBundle:Orders:form_toolbar }
 
+xml_JID_orders_chain_toolbar:
+    pattern:  /orders/chain_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Orders:chain_toolbar }
+
 arii_JID_toolbar_purge_job:
     pattern:  /toolbar/purge_job
     defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_purge_job }
@@ -167,13 +175,27 @@ xml_JID_orders_toolbar:
     pattern:  /orders/toolbar.xml
     defaults: { _controller: AriiJIDBundle:Orders:toolbar }
 
-
-
 # --------------------------------------------------------------------------
 # Order
 # --------------------------------------------------------------------------
-json_JID_order_form:
-    pattern:  /order/form.json
+arii_JID_order:
+    pattern:  /order
+    defaults: { _controller: AriiJIDBundle:Order:index }
+
+svg_JID_process_steps:
+    pattern:  /order/steps.svg
+    defaults: { _controller: AriiJIDBundle:Order:graphviz }
+
+arii_JID_order_history:
+    pattern:  /order/history
+    defaults: { _controller: AriiJIDBundle:Order:historyPage }
+
+xml_JID_order_chart:
+    pattern:  /order/chart.xml
+    defaults: { _controller: AriiJIDBundle:Order:chart }
+
+xml_JID_order_form:
+    pattern:  /order/form.xml
     defaults: { _controller: AriiJIDBundle:Order:form }
 
 xml_JID_order_toolbar_params:
@@ -183,7 +205,19 @@ xml_JID_order_toolbar_params:
 xml_JID_order_params:
     pattern:  /order/params.xml
     defaults: { _controller: AriiJIDBundle:Order:params}
+
+xml_JID_order_steps:
+    pattern:  /order/steps.xml
+    defaults: { _controller: AriiJIDBundle:Order:steps}
+
+xml_JID_order_history:
+    pattern:  /order/history.xml
+    defaults: { _controller: AriiJIDBundle:Order:history }    
     
+xml_JID_order_log:
+    pattern:  /order/log.xml
+    defaults: { _controller: AriiJIDBundle:Order:log }    
+
 arii_JID_orders_timeline:
     pattern:  /orders/timeline
     defaults: { _controller: AriiJIDBundle:Orders:timeline }
@@ -192,10 +226,6 @@ arii_JID_orders_last:
     pattern:  /orders/activities
     defaults: { _controller: AriiJIDBundle:Orders:activities }
 
-arii_JID_order_history:
-    pattern:  /order/history
-    defaults: { _controller: AriiJIDBundle:Orders:history }
-    
 arii_JID_orders_charts:
     pattern:  /orders/charts
     defaults: { _controller: AriiJIDBundle:Orders:charts }
@@ -308,6 +338,42 @@ arii_JID_history_timeline_toolbar:
     pattern:  /history/timeline/toolbar.xml
     defaults: { _controller: AriiJIDBundle:History:toolbar_timeline }
 
+
+# --------------------------------------------------------------------------
+# Spoolers
+# --------------------------------------------------------------------------
+json_JID_spoolers_form:
+    pattern:  /spoolers/form.json
+    defaults: { _controller: AriiJIDBundle:Spoolers:form }
+
+xml_JID_spooler_form:
+    pattern:  /spooler/form.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:form }
+
+xml_JID_spooler_form_toolbar:
+    pattern:  /spooler/form_toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:form_toolbar }
+
+xml_JID_spooler_tasks:
+    pattern:  /spooler/tasks.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:tasks }
+
+xml_JID_spooler_task_params:
+    pattern:  /spooler/task_params.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:task_params }
+
+xml_JID_spooler_jobs:
+    pattern:  /spooler/jobs.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:jobs }
+    
+xml_JID_spooler_orders:
+    pattern:  /spooler/orders.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:orders }
+    
+arii_JID_spooler_delete:
+    pattern:  /spooler/delete
+    defaults: { _controller: AriiJIDBundle:Spooler:delete }
+    
 # --------------------------------------------------------------------------
 # Activities
 # --------------------------------------------------------------------------
@@ -526,12 +592,13 @@ xml_JID_timeline_planned:
 ical_JID_planned:
     pattern:  /planned/arii.ical
     defaults: { _controller: AriiJIDBundle:Planned:ical }
+    
 # --------------------------------------------------------------------------
 # Spoolers
 # --------------------------------------------------------------------------
 arii_JID_spoolers:
     pattern:  /spoolers
-    defaults: { _controller: AriiJIDBundle:Spoolers:list }
+    defaults: { _controller: AriiJIDBundle:Spoolers:index }
 
 arii_JID_spoolers_list:
     pattern:  /spoolers/list
@@ -638,16 +705,32 @@ arii_JID_messages_index:
     pattern:  /messages
     defaults: { _controller: AriiJIDBundle:Messages:index }
 
+xml_JID_messages_toolbar:
+    pattern:  /messages/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Messages:toolbar }
+
 xml_JID_messages_pie:
     pattern:  /messages/pie.xml
     defaults: { _controller: AriiJIDBundle:Messages:pie }
 
-xml_JID_messages:
-    pattern:  /messages/messages.xml
+xml_JID_messages_bar:
+    pattern:  /messages/bar.xml
+    defaults: { _controller: AriiJIDBundle:Messages:bar }
+
+json_JID_messages_form:
+    pattern:  /messages/form.json
+    defaults: { _controller: AriiJIDBundle:Messages:form }
+
+xml_JID_messages_spooler:
+    pattern:  /messages/spooler.xml
+    defaults: { _controller: AriiJIDBundle:Messages:spooler }
+    
+xml_JID_messages_grid:
+    pattern:  /messages/grid.xml
     defaults: { _controller: AriiJIDBundle:Messages:messages }
     
 xml_JID_message:
-    pattern:  /message
+    pattern:  /message.xml
     defaults: { _controller: AriiJIDBundle:Messages:message }
 
 # --------------------------------------------------------------------------
@@ -686,10 +769,6 @@ arii_JID_job_log_upload:
 arii_JID_start_job:
     pattern:  /job/start
     defaults: { _controller: AriiJIDBundle:Cmd:startjob }
-
-xml_JID_job_log:
-    pattern:  /job/log.xml
-    defaults: { _controller: AriiJIDBundle:Detail:job_log_xml }
 
 # --------------------------------------------------------------------------
 # Internes
@@ -754,10 +833,6 @@ arii_JID_grid_history_order:
 arii_JID_chart_history_job:
     pattern:  /dhtmlx/chart_history
     defaults: { _controller: AriiJIDBundle:Detail:chart_history }
-
-arii_JID_chart_history_order:
-    pattern:  /dhtmlx/chart_order_history
-    defaults: { _controller: AriiJIDBundle:Detail:chart_order_history }
 
 arii_JID_timeline_history:
     pattern:  /timeline/history

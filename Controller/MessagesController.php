@@ -18,10 +18,21 @@ class MessagesController extends Controller
 
     public function indexAction()
     {
-      $arii_pro = $this->container->getParameter('arii_pro');
-      if ($arii_pro === true) 
-        return $this->render('AriiJIDBundle:Messages:treegrid.html.twig' );
-      return $this->render('AriiJIDBundle:Messages:grid.html.twig' );
+      return $this->render('AriiJIDBundle:Messages:index.html.twig' );
+    }
+    
+    public function toolbarAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Messages:toolbar.xml.twig',array(), $response );
+    }
+
+    public function formAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        return $this->render('AriiJIDBundle:Messages:form.json.twig',array(), $response );
     }
     
     public function pieAction()
@@ -91,49 +102,86 @@ $qry = 'SELECT SEVERITY,count(MESSAGE_ID) as NB
         
         $sql = $this->container->get('arii_core.sql');
         $Fields = array (
-            'spooler'    => 'sh1.SPOOLER_ID',
-            'start_time' => 'sh1.START_TIME',
-            'end_time'   => 'sh1.END_TIME' );
+            '{spooler}'    => 'SCHEDULER_ID',
+            '{start_time}' => 'LOGTIME');
 
-$qry = 'SELECT sh1.ID,sh1.START_TIME,sh1.END_TIME,sh1.ERROR
- FROM SCHEDULER_HISTORY sh1
- where '.$sql->History($Fields).' 
- order by sh1.END_TIME';
+        $qry = $sql->Select(array('LOGTIME','SEVERITY','count(MESSAGE_ID) as NB'))
+                .$sql->From(array('SCHEDULER_MESSAGES'))
+                .$sql->Where($Fields)
+                .$sql->GroupBy(array('LOGTIME','SEVERITY'))
+                .$sql->OrderBy(array('LOGTIME'));
 
         $res = $data->sql->query( $qry );
-        // Par jour 
-        
         while ($line = $data->sql->get_next($res)) {
             # On recupere les heures
-            $day = substr($line['START_TIME'],8,5);
+            $nb = $line['NB'];
+            $day = substr($line['LOGTIME'],8,5);
             $Days[$day]=1;
-            if ($line['END_TIME']='') {
-                if (isset($HR[$day])) 
-                    $HR[$day]++;
-                else $HR[$day]=1;
+            if ($line['SEVERITY']=='WARN') {
+                if (isset($HW[$day])) 
+                    $HW[$day]+=$nb;
+                else $HW[$day]=$nb;
             }
             else {
-                if ($line['ERROR']==0) {
-                    if (isset($HS[$day])) 
-                        $HS[$day]++;
-                    else $HS[$day]=1;
-                }
-                else {
-                    if (isset($HF[$day])) 
-                        $HF[$day]++;
-                    else $HF[$day]=1;
-                }
-            }
+                    if (isset($HE[$day])) 
+                        $HE[$day]+=$nb;
+                    else $HE[$day]=$nb;
+           }
         }
         $bar = "<?xml version='1.0' encoding='utf-8' ?>";
         $bar .= '<data>';
-        if (isset($Days)) {
-            foreach($Days as $i=>$v) {
-                if (!isset($HS[$i])) $HS[$i]=0;
-                if (!isset($HF[$i])) $HF[$i]=0;
-                if (!isset($HR[$i])) $HR[$i]=0;
-                $bar .= '<item id="'.$i.'"><HOUR>'.substr($i,-2).'</HOUR><SUCCESS>'.$HS[$i].'</SUCCESS><FAILURE>'.$HF[$i].'</FAILURE><RUNNING>'.$HR[$i].'</RUNNING></item>';
+        foreach($Days as $i=>$v) {
+            if (!isset($HW[$i])) $HW[$i]=0;
+            if (!isset($HE[$i])) $HE[$i]=0;
+            $bar .= '<item id="'.$i.'"><HOUR>'.substr($i,-2).'</HOUR><ERROR>'.$HE[$i].'</ERROR><WARN>'.$HW[$i].'</WARN></item>';
+        }
+
+        $bar .= '</data>';
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        $response->setContent( $bar );
+        return $response;
+    }
+
+    public function spoolerAction()
+    {
+        $dhtmlx = $this->container->get('arii_core.dhtmlx');
+        $data = $dhtmlx->Connector('data');
+        
+        $sql = $this->container->get('arii_core.sql');
+        $Fields = array (
+            '{spooler}'    => 'SCHEDULER_ID',
+            '{start_time}' => 'LOGTIME');
+
+        $qry = $sql->Select(array('SCHEDULER_ID','SEVERITY','count(MESSAGE_ID) as NB'))
+                .$sql->From(array('SCHEDULER_MESSAGES'))
+                .$sql->Where($Fields)
+                .$sql->GroupBy(array('SCHEDULER_ID','SEVERITY'))
+                .$sql->OrderBy(array('SCHEDULER_ID'));
+
+        $res = $data->sql->query( $qry );
+        while ($line = $data->sql->get_next($res)) {
+            # On recupere les heures
+            $id = $line['SCHEDULER_ID'];
+            $nb = $line['NB'];
+            $Spoolers[$id]=1;
+            if ($line['SEVERITY']=='WARN') {
+                if (isset($HW[$id])) 
+                    $HW[$id] += $nb;
+                else $HW[$id]=$nb;
             }
+            else {
+                    if (isset($HE[$id])) 
+                        $HE[$id] += $nb;
+                    else $HE[$id]=$nb;
+           }
+        }
+        $bar = "<?xml version='1.0' encoding='utf-8' ?>";
+        $bar .= '<data>';
+        foreach($Spoolers as $i=>$v) {
+            if (!isset($HW[$i])) $HW[$i]=0;
+            if (!isset($HE[$i])) $HE[$i]=0;
+            $bar .= '<item id="'.$i.'"><SPOOLER>'.$i.'</SPOOLER><ERROR>'.$HE[$i].'</ERROR><WARN>'.$HW[$i].'</WARN></item>';
         }
         $bar .= '</data>';
         $response = new Response();
@@ -150,9 +198,7 @@ $qry = 'SELECT sh1.ID,sh1.START_TIME,sh1.END_TIME,sh1.ERROR
         $sql = $this->container->get('arii_core.sql');
         $Fields = array (
             '{spooler}'    => 'SCHEDULER_ID',
-            '{job_chain}'  => 'JOB_CHAIN',
-            '{start_time}' => 'LOGTIME',
-            '{end_time}'   => 'LOGTIME' );
+            '{start_time}' => 'LOGTIME');
             
         $qry = $sql->Select(array('MESSAGE_ID as INFO','MESSAGE_ID as ERROR','MESSAGE_ID','SCHEDULER_ID','SEVERITY',
     'LOGTIME','JOB_CHAIN','ORDER_ID','JOB_NAME','TASK','LOG','REFERENCE_MESSAGE_ID','STATUS','CREATION_DATE','CNT')) 
@@ -161,7 +207,7 @@ $qry = 'SELECT sh1.ID,sh1.START_TIME,sh1.END_TIME,sh1.ERROR
         .$sql->OrderBy(array('LOGTIME desc'));
 
         $data->event->attach("beforeRender", array( $this, "color_messages") );
-        $data->render_sql($qry,"MESSAGE_ID","LOGTIME,SCHEDULER_ID,SEVERITY,ERROR,LOG,INFO,CNT,TASK");
+        $data->render_sql($qry,"MESSAGE_ID","LOGTIME,SCHEDULER_ID,SEVERITY,ERROR,LOG,JOB_NAME,JOB_CHAIN,ORDER_ID,CNT,TASK");
     }
     
     function color_messages($row){
@@ -186,22 +232,21 @@ $qry = 'SELECT sh1.ID,sh1.START_TIME,sh1.END_TIME,sh1.ERROR
         }
         $row->set_value("LOG", str_replace(array('<','>'),array('&lt;','&gt;'),$message ));        
         
-        foreach (array('JOB_CHAIN','ORDER_ID','JOB_NAME') as $nil ) {
-            if ($row->get_value($nil)!='nil') {
-                array_push($info,'<img src="'.$this->images.'/'.strtolower($nil).'.png"/>'.$row->get_value($nil));
-            }
-        }
-        $row->set_value("INFO",implode(' ',$info));
-        
+        if ($row->get_value("JOB_NAME")=='nil')
+            $row->set_value("JOB_NAME",'');
+        if ($row->get_value("JOB_CHAIN")=='nil')
+            $row->set_value("JOB_CHAIN",'');
+        if ($row->get_value("ORDER_ID")=='nil')
+            $row->set_value("ORDER_ID",'');
         if ($row->get_value("SEVERITY")=='ERROR') {
-            $row->set_row_attribute("class","backgroundfailure");
+            $row->set_row_color("#fbb4ae");
         }
-        else {
-            $row->set_row_attribute("class","backgroundrunning");
+        elseif ($row->get_value("SEVERITY")=='WARN') {
+            $row->set_row_color("#ffffcc");
         }
-    }
+     }
 
-    public function messageAction()
+    public function message2Action()
     {
         $request = Request::createFromGlobals();
         $id = $request->query->get( 'id' );
@@ -227,4 +272,29 @@ $qry = 'SELECT sh1.ID,sh1.START_TIME,sh1.END_TIME,sh1.ERROR
         exit();
         // if (isset($Infos['LOG'])) $Infos['LOG'] = substr($Infos['LOG'],50); 
      }
+     
+    public function messageAction()
+    {
+        $request = Request::createFromGlobals();
+        $id = $request->get('id');
+        $sql = $this->container->get('arii_core.sql');                  
+        $qry = $sql->Select(array('MESSAGE_ID','SCHEDULER_ID','SEVERITY','LOGTIME','JOB_CHAIN','ORDER_ID','JOB_NAME','TASK','LOG','REFERENCE_MESSAGE_ID','STATUS','CREATION_DATE','CNT'))
+                .$sql->From(array('SCHEDULER_MESSAGES'))
+                .$sql->Where(array('MESSAGE_ID' => $id));
+        
+        $dhtmlx = $this->container->get('arii_core.dhtmlx');
+        $data = $dhtmlx->Connector('form');
+        $data->event->attach("beforeRender", array( $this, "render_message") );
+        $data->render_sql($qry,'MESSAGE_ID','MESSAGE_ID,SCHEDULER_ID,SEVERITY,LOGTIME,JOB_CHAIN,ORDER_ID,JOB_NAME,TASK,LOG,REFERENCE_MESSAGE_ID,STATUS,CREATION_DATE,CNT');
+    }
+    
+    function render_message($row){
+        if ($row->get_value("JOB_NAME")=='nil')
+            $row->set_value("JOB_NAME",'');
+        if ($row->get_value("JOB_CHAIN")=='nil')
+            $row->set_value("JOB_CHAIN",'');
+        if ($row->get_value("ORDER_ID")=='nil')
+            $row->set_value("ORDER_ID",'');
+     }
+
 }

@@ -8,7 +8,25 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SpoolersController extends Controller
 {
-    
+    public function indexAction()   
+    {
+        return $this->render('AriiJIDBundle:Spoolers:index.html.twig' );
+    }
+
+    public function toolbarAction()   
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Spoolers:toolbar.xml.twig',array(), $response );
+    }
+
+    public function formAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        return $this->render('AriiJIDBundle:Spoolers:form.json.twig',array(), $response );
+    }
+
     public function chartsAction()   
     {
         $session = $this->container->get('arii_core.session');
@@ -74,14 +92,11 @@ class SpoolersController extends Controller
         return $this->render('AriiJIDBundle:Spoolers:list.html.twig' );
     }
 
-    public function toolbarAction()   
-    {
-        return $this->render('AriiJIDBundle:Spoolers:toolbar.xml.twig' );
-    }
-
     public function menuAction()   
     {
-        return $this->render('AriiJIDBundle:Spoolers:menu.xml.twig' );
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        return $this->render('AriiJIDBundle:Spoolers:menu.xml.twig',array(), $response );
     }
 
     public function submenuAction()
@@ -166,7 +181,7 @@ $qry = $sql->Select(array('SPOOLER_ID as SPOOLER','count(ID) as NB'))
         
         $sql = $this->container->get('arii_core.sql');
         $Fields = array (
-            '{spooler]}'    => 'sh1.SPOOLER_ID',
+            '{spooler}'    => 'sh1.SPOOLER_ID',
             '{start_time}' => 'sh1.START_TIME',
             '{end_time}'   => 'sh1.END_TIME' );
 
@@ -250,12 +265,12 @@ $qry = $sql->Select(array('sh1.SPOOLER_ID','sh1.ERROR','isnull(END_TIME) as END'
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('grid');
         $sql = $this->container->get('arii_core.sql');
-        $qry = $sql->Select(array('SCHEDULER_ID','HOSTNAME','START_TIME','TCP_PORT','IS_RUNNING','IS_PAUSED'))
+        $qry = $sql->Select(array('ID','SCHEDULER_ID','HOSTNAME','START_TIME','TCP_PORT','IS_RUNNING','IS_PAUSED'))
                .$sql->From(array('SCHEDULER_INSTANCES s'))
                .$sql->OrderBy(array('SCHEDULER_ID'));
         
         $data->event->attach("beforeRender", array( $this, "render_spoolers") );
-        $data->render_sql($qry,"SCHEDULER_ID","SCHEDULER_ID,STATUS,START_TIME,HOSTNAME,TCP_PORT,IS_RUNNING,IS_PAUSED");
+        $data->render_sql($qry,"ID","SCHEDULER_ID,STATUS,START_TIME,HOSTNAME,TCP_PORT,IS_RUNNING,IS_PAUSED");
     }
     
     function render_spoolers($row) {

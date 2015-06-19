@@ -3,11 +3,28 @@
 {% block body %}
 <body>
 <script language="javascript">
-dhtmlxEvent(window,"load",function(){ 
-    var dhxLayout = new dhtmlXLayoutObject(document.body,"3T");
-    dhxLayout.cells("a").setText( "[{{spooler}}] {{ job }}" );
+var max_history = 0; // pas d'historique
+var chained = 0; // que des standalone
+var only_warning = 0; // que les problemes
 
-    HistoryGrid = dhxLayout.cells("a").attachGrid();
+dhtmlxEvent(window,"load",function(){ 
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
+    globalLayout.cells("a").setWidth(430); 
+    globalLayout.cells("a").hideHeader(); 
+
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
+    
+    globalLayout.cells("b").setText( "[{{spooler}}] {{ job }}" );
+
+    HistoryGrid = globalLayout.cells("b").attachGrid();
     HistoryGrid.setHeader("{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Error" | trans }},{{ "Exit" | trans }},{{ "Message" | trans }}");
     HistoryGrid.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
     HistoryGrid.setInitWidths("130,130,100,60,70,*");
@@ -18,15 +35,15 @@ dhtmlxEvent(window,"load",function(){
     HistoryGrid.enableAlterCss("even_row","odd_row");
     HistoryGrid.init();
     HistoryGrid.attachEvent("onRowDblClicked", function(id){
-        dhxLayout.cells("c").progressOn();
+        globalLayout.cells("c").progressOn();
         JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
-            dhxLayout.cells("c").progressOff();
+            globalLayout.cells("c").progressOff();
         });
 
     });
 
-    dhxLayout.cells("b").setText( "{{"Graph" | trans }}" );
-    var BarChart = dhxLayout.cells("b").attachChart( {
+    globalLayout.cells("a").setText( "{{"Graph" | trans }}" );
+    var BarChart = globalLayout.cells("a").attachChart( {
         view: "scatter",
         xValue: "#START#",
         yValue: "#DURATION#",
@@ -48,17 +65,16 @@ dhtmlxEvent(window,"load",function(){
 
     BarChart.attachEvent("onItemClick", function(id){
         HistoryGrid.selectRowById(id);
-        dhxLayout.cells("c").progressOn();
+        globalLayout.cells("c").progressOn();
         JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
-            dhxLayout.cells("c").progressOff();
+            globalLayout.cells("c").progressOff();
         });
-
     });
     BarChart.load( "{{ url('arii_JID_chart_history_job') }}?spooler={{ spooler }}&job={{ job }}", "xml" );
 
-    dhxLayout.cells("c").setText( "{{"Log" | trans }}" );
-    dhxLayout.cells("c").hideHeader();
-    JobLogGrid = dhxLayout.cells("c").attachGrid();
+    globalLayout.cells("c").setText( "{{"Log" | trans }}" );
+    globalLayout.cells("c").hideHeader();
+    JobLogGrid = globalLayout.cells("c").attachGrid();
     JobLogGrid.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
     JobLogGrid.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
     JobLogGrid.setInitWidths("160,40,*,60");

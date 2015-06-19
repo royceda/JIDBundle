@@ -3,26 +3,38 @@
         position: "label-left", 
         labelAlign:"right", 
         labelWidth:"80",
-        inputWidth:"100" },
-    {   type:"input",    
-            name: "NAME", 
-            label:"{{ "Job" | trans}}",
+        inputWidth:"140" },
+    {type:"input", name: "SPOOLER_ID", label:"{{ "Spooler" | trans}}" },
+    {type:"input",    name: "START_TIME", label:"{{ "Start" | trans}}"},
+    {type:"input",    name: "END_TIME", label:"{{ "End" | trans}}"},
+    {type:"input",    name: "STATE", label:"{{ "State" | trans}}"},
+    {type:"input",    name: "ERROR", label:"{{ "Error" | trans}}"},
+    {type:"hidden",    name: "HISTORY_ID" },
+    {type:"newcolumn"},
+  {   type:"input",    
+            name: "JOB_CHAIN", 
+            label:"{{ "Chain" | trans}}",
             inputWidth:"300" 
     },
     {   type:"input",    
-            name: "ERROR_TEXT", 
-            label:"{{ "Error" | trans}}", 
-            rows: 3,
+            name: "ORDER_ID", 
+            label:"{{ "Order" | trans}}", 
             inputWidth:"300"  
     },
     {   type:"input",    
-            name: "CAUSE", 
-            label:"{{ "Cause" | trans}}",
+            name: "TITLE", 
+            label:"{{ "Title" | trans}}",
             inputWidth:"300"  
     },
-    {type:"newcolumn"},
-    {type:"input",    name: "STATUS", label:"{{ "Status" | trans}}"},
-    {type:"input",    name: "EXIT_CODE", label:"{{ "Exit" | trans}}"},
-    {type:"input",    name: "STEPS", label:"{{ "Steps" | trans}}"},
-    {type:"hidden",    name: "ID" }
+    {   type:"input",    
+            name: "STATE_TEXT", 
+            label:"{{ "Output" | trans}}", 
+            inputWidth:"300"  
+    }
+    ,
+    {   type:"input",    
+            name: "ERROR_TEXT", 
+            label:"{{ "Message" | trans}}", 
+            inputWidth:"300"  
+    }
 ]

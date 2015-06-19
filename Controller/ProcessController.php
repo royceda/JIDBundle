@@ -25,7 +25,8 @@ class ProcessController extends Controller
     {
         return $this->render('AriiJIDBundle:Process:toolbar.xml.twig' );
     }
-    
+
+
     public function graphvizAction()
     {
         $request = Request::createFromGlobals();
@@ -76,11 +77,9 @@ class ProcessController extends Controller
         $sql = $this->container->get('arii_core.sql');
 
         $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
-            'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT',
-            'sh.JOB_NAME','sh.PARAMETERS'))
+            'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT'))
         .$sql->From(array('SCHEDULER_ORDER_HISTORY soh')) 
         .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
-        .$sql->LeftJoin('SCHEDULER_HISTORY sh',array('sosh.TASK_ID','sh.ID'))
         .$sql->Where(array('soh.HISTORY_ID' => $id ))
 //                . ' where soh.HISTORY_ID in (select max(HISTORY_ID) from SCHEDULER_ORDER_HISTORY)'
         .$sql->OrderBy(array('sosh.STEP desc'));
@@ -92,10 +91,9 @@ class ProcessController extends Controller
         while ($line = $data->sql->get_next($res)) {
             $s = $line['STATE'];
             $States[$s]['NAME'] = $s;
-            foreach (array('TASK_ID','STEP','START_TIME','END_TIME','ERROR','ERROR_TEXT','JOB_NAME') as $i) {
+            foreach (array('TASK_ID','STEP','START_TIME','END_TIME','ERROR','ERROR_TEXT') as $i) {
                 $States[$s][$i] = $line[$i];            
             }
-            $States[$s]['PARAMETERS'] = $SOS->xml2array($line['PARAMETERS'], 1, 'value');
             if (!isset($order)) {
                 $scheduler = $line['SPOOLER_ID'];
                 $order = $line['ORDER_ID'];

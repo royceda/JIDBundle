@@ -15,20 +15,20 @@ class JobController extends Controller
           $request = Request::createFromGlobals();
           $this->images = $request->getUriForPath('/../bundles/ariicore/images/wa');          
     }
-    
+
     public function formAction()
     {
         $request = Request::createFromGlobals();
         $id = $request->get('id');
         $sql = $this->container->get('arii_core.sql');                  
-        $qry = $sql->Select(array('ID','JOB_NAME','STEPS','CAUSE','ERROR','ERROR_TEXT','EXIT_CODE','END_TIME','PID'))
+        $qry = $sql->Select(array('ID','SPOOLER_ID','JOB_NAME','STEPS','CAUSE','ERROR','ERROR_TEXT','EXIT_CODE','END_TIME','PID'))
                 .$sql->From(array('SCHEDULER_HISTORY'))
                 .$sql->Where(array('ID' => $id));
         
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('form');
         $data->event->attach("beforeRender",array($this,"form_render"));
-        $data->render_sql($qry,'ID','ID,FOLDER,NAME,STATUS,JOB_NAME,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,PID');
+        $data->render_sql($qry,'ID','SPOOLER_ID,ID,FOLDER,NAME,STATUS,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,END_TIME,PID');
     }
     
     function form_render ($data){
@@ -129,6 +129,7 @@ class JobController extends Controller
         $logs = array();
         while ($Infos = $data->sql->get_next($res))
         {
+            $spooler = $Infos['SPOOLER_ID'];
             if ($Infos['END_TIME'] == '')
             {
                 print "JOB RUNNING";
@@ -178,6 +179,7 @@ class JobController extends Controller
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<rows><head><afterInit><call command="clearAll"/></afterInit></head>';
         sort($Infos['LOG']);
+        // $svcdate = $this->container->get('arii_core.date');
         foreach ($Infos['LOG'] as $l) {
            if ($l=='') continue;
            $date = substr($l,0,23);
@@ -221,7 +223,9 @@ class JobController extends Controller
            elseif (substr($msg,0,5)=='INFO ') {
                $bgcolor = ' style="background-color: lightblue;"';
                $msg = substr($msg,5);
-           }           
+           }
+ 
+           // $logtime = $svcdate->ShortDate( $svcdate->Date2Local( $date, $spooler ));
            $xml .= "<row$bgcolor><cell>$date</cell>";
            $xml .= "<cell>$type</cell>";
            $xml .= "<cell><![CDATA[".utf8_encode($msg)."]]></cell>";

@@ -9,6 +9,15 @@ use Symfony\Component\HttpFoundation\Request;
 class JobsController extends Controller
 {
     protected $images;
+    protected $ColorStatus = array (
+            'SUCCESS' => '#ccebc5',
+            'RUNNING' => '#ffffcc',
+            'FAILURE' => '#fbb4ae',
+            'STOPPED' => '#FF0000',
+            'QUEUED' => '#AAA',
+            'STOPPING' => '#ffffcc',
+            'UNKNOW' => '#BBB'
+        );
     
     public function __construct( )
     {
@@ -156,7 +165,7 @@ class JobsController extends Controller
         
         $res = $data->sql->query( $qry );
         $Info = array();
-        
+        $key_files = array();
         while ( $line = $data->sql->get_next($res) ) {
             $id  =  $line['ID'];
             $dir = "/".$line['SPOOLER_ID'].'/'.dirname($line['JOB_NAME']);
@@ -268,7 +277,62 @@ class JobsController extends Controller
             return $return;
     }
             
-    public function gridAction($history_max=0,$ordered = 'false',$stopped='false') {
+    public function gridAction($history_max=0,$ordered = 0,$stopped=1) {
+
+        $request = Request::createFromGlobals();
+        if ($request->get('history')>0) {
+            $history_max = $request->get('history');
+        }
+        $ordered = $request->get('chained');
+        $stopped = $request->get('only_warning');
+
+        $history = $this->container->get('arii_jid.history');
+        $Jobs = $history->Jobs(0, $ordered, $stopped, false);
+        
+        $tools = $this->container->get('arii_core.tools');
+        
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        $list = '<?xml version="1.0" encoding="UTF-8"?>';
+        $list .= "<rows>\n";
+        $list .= '<head>
+            <afterInit>
+                <call command="clearAll"/>
+            </afterInit>
+        </head>';
+        ksort($Jobs);
+        foreach ($Jobs as $k=>$job) {
+            if (isset($job['runs'])) {
+                $status = $job['runs'][0]['status'];
+            }
+            else {
+                $status = 'UNKNOW';
+            } 
+            $list .='<row id="'.$job['runs'][0]['dbid'].'" style="background-color: '.$this->ColorStatus[$status].'">';
+
+            $list .='<cell>'.$job['spooler'].'</cell>';              
+            $list .='<cell>'.$job['folder'].'</cell>'; 
+            $list .='<cell>'.$job['name'].'</cell>';           
+            $list .='<cell>'.$status.'</cell>'; 
+            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>'; 
+            if (isset($job['runs'])) {
+                $list .='<cell>'.$job['runs'][0]['start'].'</cell>'; 
+                $list .='<cell>'.$job['runs'][0]['end'].'</cell>'; 
+                $list .='<cell>'.$job['runs'][0]['duration'].'</cell>';
+                $list .='<cell>'.$job['runs'][0]['exit'].'</cell>';
+                $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($job['runs'][0]['start'],$job['runs'][0]['end'],$status).'"/>]]></cell>'; 
+                $list .='<cell>'.$job['runs'][0]['pid'].'</cell>';
+                $list .='<cell>'.$this->images.'/'.strtolower($job['runs'][0]['cause']).'.png</cell>'; 
+            }
+            $list .='</row>';
+        }
+        
+        $list .= "</rows>\n";
+        $response->setContent( $list );
+        return $response;
+    }
+
+    public function grid2Action($history_max=0,$ordered = 'false',$stopped='false') {
         $color = array (
             'SUCCESS' => '#ccebc5',
             'RUNNING' => '#ffffcc',
@@ -452,6 +516,60 @@ class JobsController extends Controller
         $response->setContent( $list );
         return $response;
     }
+    
+    public function pieAction($history_max=0,$ordered = 0,$only_warning=1) {        
+        $color = array (
+            'SUCCESS' => '#ccebc5',
+            'RUNNING' => '#ffffcc',
+            'FAILURE' => '#fbb4ae',
+            'STOPPED' => '#FF0000',
+            'QUEUED' => '#AAA',
+            'STOPPING' => '#ffffcc'
+        );
+
+        $request = Request::createFromGlobals();
+        if ($request->get('history')>0) {
+            $history_max = $request->get('history');
+        }
+        $ordered = $request->get('chained');
+        $only_warning = $request->get('only_warning');
+
+        $history = $this->container->get('arii_jid.history');
+        $Jobs = $history->Jobs(0, $ordered, $only_warning, false);
+
+        $stopped=$success=$failure=$running=0;
+        foreach ($Jobs as $k=>$job) {
+            if (isset($job['stopped'])) {
+                $stopped += 1; 
+            }
+            if (isset($job['runs'][0]['status'])) {
+                $status = $job['runs'][0]['status'];
+                switch ($status) {
+                    case 'SUCCESS':
+                        $success += 1;
+                        break;
+                    case 'FAILURE':
+                        if (!$stopped)
+                            $failure += 1;
+                        break;
+                    case 'RUNNING':
+                        $running += 1;
+                        break;
+                }
+            }
+        }
+        
+        $pie = '<data>';
+        $pie .= '<item id="SUCCESS"><STATUS>SUCCESS</STATUS><JOBS>'.$success.'</JOBS><COLOR>#ccebc5</COLOR></item>';
+        $pie .= '<item id="FAILURE"><STATUS>FAILURE</STATUS><JOBS>'.$failure.'</JOBS><COLOR>#fbb4ae</COLOR></item>';
+        $pie .= '<item id="STOPPED"><STATUS>STOPPED</STATUS><JOBS>'.$stopped.'</JOBS><COLOR>red</COLOR></item>';
+        $pie .= '<item id="RUNNING"><STATUS>RUNNING</STATUS><JOBS>'.$running.'</JOBS><COLOR>#ffffcc</COLOR></item>';
+        $pie .= '</data>';
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        $response->setContent( $pie );
+        return $response;
+    }
 
     public function barAction()
     {
@@ -539,7 +657,8 @@ class JobsController extends Controller
         return $response;
     }
 
-    public function pieAction($ordered=0)
+    
+    public function pieFullAction($ordered=0)
     {
         $request = Request::createFromGlobals();
         if ($request->get('ordered')=='true') {
@@ -580,6 +699,7 @@ class JobsController extends Controller
         $pie = '<data>';
         $pie .= '<item id="SUCCESS"><STATUS>SUCCESS</STATUS><JOBS>'.$success.'</JOBS><COLOR>#ccebc5</COLOR></item>';
         $pie .= '<item id="FAILURE"><STATUS>FAILURE</STATUS><JOBS>'.$failure.'</JOBS><COLOR>#fbb4ae</COLOR></item>';
+        $pie .= '<item id="STOPPED"><STATUS>FAILURE</STATUS><JOBS>'.$stopped.'</JOBS><COLOR>red</COLOR></item>';
         $pie .= '<item id="RUNNING"><STATUS>RUNNING</STATUS><JOBS>'.$running.'</JOBS><COLOR>#ffffcc</COLOR></item>';
         $pie .= '</data>';
         $response = new Response();
