@@ -27,7 +27,7 @@ class OrdersController extends Controller
         "FALSE" => "#fbb4ae",
         "ENDED" => "lightblue",
         "ON REQUEST" => "lightblue",
-        "FATAL" => 'red'
+        "FATAL" => '#fbb4ae'
         );
 
     protected $images;

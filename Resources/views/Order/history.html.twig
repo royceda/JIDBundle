@@ -22,7 +22,12 @@ dhtmlxEvent(window,"load",function(){
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
     
-    globalLayout.cells("b").setText( "[{{spooler}}] {{ order }} > {{ chain }}" );
+    globalLayout.cells("b").hideHeader();
+    myToolbar = globalLayout.cells("b").attachToolbar(); 
+    myToolbar.setIconsPath( "{{ asset('/bundles/ariicore/images/toolbar/') }}" )
+    myToolbar.addButton('spooler', 1, "{{ spooler }}", "spooler.png");
+    myToolbar.addButton('chain', 2, "{{ chain }}", "job_chain.png");
+    myToolbar.addButton('order', 3, "{{ order }}", "order.png");
 
     HistoryGrid = globalLayout.cells("b").attachGrid();
     HistoryGrid.setHeader("{{ "Start" | trans }},{{ "End" | trans }},{{ "State" | trans }},!,{{ "Message" | trans }}");

@@ -403,7 +403,6 @@ class OrderController extends Controller {
         .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
         .$sql->Where(array('soh.HISTORY_ID' => $id ))
         .$sql->OrderBy(array('sosh.STEP'));
-
         $svg = "digraph arii {\n";
         $svg .= "fontname=arial\n";
         $svg .= "fontsize=12\n";
@@ -459,6 +458,8 @@ class OrderController extends Controller {
         // current states ?
         // est ce que le noeud de l'ordre est un noeud ?
         // si non, end node
+        if (!isset($OrderInfo['STATE'])) exit();
+        
         $current = $OrderInfo['STATE'];
         if (!isset($Done[$current])) {       
             $svg .= "\"$current\" [shape=record,color=$color,style=filled,fillcolor=\"".$this->ColorNode($current,$OrderInfo['ERROR'],$OrderInfo['END_TIME'])."\"]\n";    
