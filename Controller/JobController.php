@@ -32,10 +32,10 @@ class JobController extends Controller
         // Attention, bug avec le 'form'
         $session = $this->container->get('arii_core.session');     
         $db = $session->getDatabase();
-        if ($db['driver']=='postgres')
+        if (($db['driver']=='postgres') or ($db['driver']=='postgre') or ($db['driver']=='pdo_pgsql'))
             $data->render_sql($qry,'"ID"','SPOOLER_ID,ID,FOLDER,NAME,STATUS,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,END_TIME,PID');
         else 
-            $data->render_sql($qry,'"ID"','SPOOLER_ID,ID,FOLDER,NAME,STATUS,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,END_TIME,PID');
+            $data->render_sql($qry,'ID','SPOOLER_ID,ID,FOLDER,NAME,STATUS,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,END_TIME,PID');
     }
     
     function form_render ($data){
