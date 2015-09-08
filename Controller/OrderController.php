@@ -143,13 +143,20 @@ class OrderController extends Controller {
         $sql = $this->container->get('arii_core.sql');                  
         $qry = $sql->Select(array('HISTORY_ID','JOB_CHAIN','ORDER_ID','SPOOLER_ID','TITLE','STATE','STATE_TEXT','START_TIME','END_TIME'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY'))
-                .$sql->Where(array('HISTORY_ID' => $id));
+               .$sql->Where(array('HISTORY_ID' => $id));
 
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('form');
         $data->event->attach("beforeRender",array($this,"form_render"));
-        $data->render_sql($qry,'HISTORY_ID','FOLDER,HISTORY_ID,STATUS,JOB_CHAIN,ORDER_ID,SPOOLER_ID,TITLE,STATE,STATE_TEXT,START_TIME,END_TIME');
-    }
+        
+        // Attention, bug avec le 'form'
+        $session = $this->container->get('arii_core.session');     
+        $db = $session->getDatabase();
+        if ($db['driver']=='postgres')
+            $data->render_sql($qry,'"HISTORY_ID"','FOLDER,HISTORY_ID,STATUS,JOB_CHAIN,ORDER_ID,SPOOLER_ID,TITLE,STATE,STATE_TEXT,START_TIME,END_TIME');
+        else
+            $data->render_sql($qry,'HISTORY_ID','FOLDER,HISTORY_ID,STATUS,JOB_CHAIN,ORDER_ID,SPOOLER_ID,TITLE,STATE,STATE_TEXT,START_TIME,END_TIME');
+      }
 
     function form_render ($data){
         $data->set_value('FOLDER',dirname($data->get_value('JOB_CHAIN'))); 
@@ -239,6 +246,9 @@ class OrderController extends Controller {
             else{
                if (gettype($Infos['LOG'])=='object') {
                      $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG']->load(), 10, -8) ));
+               }
+               elseif ((strpos(' '.$Infos['LOG'],'\\')>0) and (function_exists('pg_unescape_bytea'))) {
+                    $Res = explode("\n",gzinflate (substr(pg_unescape_bytea( $Infos['LOG']), 10, -8) ));
                }
                else {
                      $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG'], 10, -8) ));

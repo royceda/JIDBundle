@@ -28,7 +28,14 @@ class JobController extends Controller
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('form');
         $data->event->attach("beforeRender",array($this,"form_render"));
-        $data->render_sql($qry,'ID','SPOOLER_ID,ID,FOLDER,NAME,STATUS,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,END_TIME,PID');
+
+        // Attention, bug avec le 'form'
+        $session = $this->container->get('arii_core.session');     
+        $db = $session->getDatabase();
+        if ($db['driver']=='postgres')
+            $data->render_sql($qry,'"ID"','SPOOLER_ID,ID,FOLDER,NAME,STATUS,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,END_TIME,PID');
+        else 
+            $data->render_sql($qry,'"ID"','SPOOLER_ID,ID,FOLDER,NAME,STATUS,STEPS,CAUSE,ERROR,ERROR_TEXT,EXIT_CODE,END_TIME,PID');
     }
     
     function form_render ($data){
@@ -168,8 +175,12 @@ class JobController extends Controller
                   $Infos['LOG'] = "http://".$Infos['HOSTNAME'].':'.$Infos['TCP_PORT'].'/show_log?task='.$Infos['ID'];
               }
            } else {
-               if (gettype($Infos['LOG'])=='object') {
-                     $Infos['LOG'] = explode("\n",gzinflate ( substr($Infos['LOG']->load(), 10, -8) ));
+               $type = gettype($Infos['LOG']);
+               if ($type=='object') {
+                    $Infos['LOG'] = explode("\n",gzinflate ( substr($Infos['LOG']->load(), 10, -8) ));
+               }
+               elseif ((strpos(' '.$Infos['LOG'],'\\')>0)  and (function_exists('pg_unescape_bytea'))) {
+                    $Infos['LOG'] = explode("\n",gzinflate (substr(pg_unescape_bytea( $Infos['LOG']), 10, -8) ));
                }
                else {
                      $Infos['LOG'] = explode("\n",gzinflate ( substr($Infos['LOG'], 10, -8) ));

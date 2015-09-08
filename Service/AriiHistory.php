@@ -151,6 +151,7 @@ class AriiHistory
         $qry = $sql->Select( array('SPOOLER_ID','PATH as JOB_CHAIN') )
                 .$sql->From( array('SCHEDULER_JOB_CHAINS') )
                 .$sql->Where( $Fields );
+
         $res = $data->sql->query( $qry );
         $nb = 0;
         $StopChain = array();
@@ -164,10 +165,11 @@ class AriiHistory
         $Fields = array (
             '{spooler}'    => 'SPOOLER_ID',
             '{job_chain}'  => 'JOB_CHAIN',
-            'action'  => '(!null)' );
+            'ACTION'  => '(!null)' );
         $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ORDER_STATE','ACTION') )
                 .$sql->From( array('SCHEDULER_JOB_CHAIN_NODES') )
                 .$sql->Where( $Fields );
+
         $res = $data->sql->query( $qry );
         $nb = 0;
         $StopNode = $SkipNode = array();

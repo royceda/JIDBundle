@@ -14,7 +14,7 @@ dhtmlxEvent(window,"load",function(){
 
     globalMenu = globalLayout.cells("a").attachMenu();
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
-    globalMenu.loadStruct("{{ url('xml_menu') }}");
+    globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
 
     myRibbon = globalLayout.cells("a").attachRibbon(); 
     myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );

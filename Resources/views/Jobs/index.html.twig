@@ -21,7 +21,7 @@ dhtmlxEvent(window,"load",function(){
 
     globalMenu = globalLayout.cells("a").attachMenu();
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
-    globalMenu.loadStruct("{{ url('xml_menu') }}");
+    globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
 
     myRibbon = globalLayout.cells("a").attachRibbon(); 
     myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
@@ -80,7 +80,7 @@ dhtmlxEvent(window,"load",function(){
     myGrid.setColumnHidden(9,true); 
     myGrid.setColumnHidden(7,true); 
     myGrid.setColumnHidden(10,true); 
-    myGrid.loadXML( "{{ url('xml_JID_jobs_grid') }}");
+    myGrid.load( "{{ url('xml_JID_jobs_grid') }}");
     myGrid.attachEvent("onRowDblClicked",JobDetail );
 
     myDonut.attachEvent("onItemClick",function(id, value){
@@ -359,7 +359,7 @@ function GridRefresh() {
     seconds = "0" + seconds;
     }
     myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-    myGrid.loadXML("{{ url('xml_JID_jobs_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning, function(){    
+    myGrid.load("{{ url('xml_JID_jobs_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning, function(){    
         globalLayout.cells("b").progressOff();
 //        myGrid.refreshFilters();
 //        myGrid.filterByAll();
@@ -390,11 +390,11 @@ function JobDetail(id) {
     if (status!= 'RUNNING') {
         myDetailToolbar.hideItem('kill_task');      
     }
-    myParameters.loadXML("{{ url('xml_JID_job_params') }}?id="+id );
+    myParameters.load("{{ url('xml_JID_job_params') }}?id="+id );
     myHistory.clearAll();
-    myHistory.loadXML("{{ url('xml_JID_job_history') }}?id="+id );  
+    myHistory.load("{{ url('xml_JID_job_history') }}?id="+id );  
     myLog.clearAll();
-    myLog.loadXML("{{ url('xml_JID_job_log') }}?id="+id, function (id) {
+    myLog.load("{{ url('xml_JID_job_log') }}?id="+id, function (id) {
         globalLayout.cells("c").progressOff();    
     });
 }
