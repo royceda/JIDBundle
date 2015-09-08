@@ -32,6 +32,11 @@ class DefaultController extends Controller
         return $this->render('AriiJIDBundle:Default:ribbon.json.twig',array(), $response );
     }
 
+    public function readmeAction()
+    {
+        return $this->render('AriiJIDBundle:Default:readme.html.twig');
+    }
+
     public function indexAction()   
     {
         $session = $this->container->get('arii_core.session');

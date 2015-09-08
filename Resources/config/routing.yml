@@ -5,6 +5,10 @@ arii_JID_index:
     pattern:  /
     defaults: { _controller: AriiJIDBundle:Orders:index }
 
+arii_JID_readme:
+    pattern:  /readme
+    defaults: { _controller: AriiJIDBundle:Default:readme }
+
 xml_JID_toolbar:
     pattern:  /toolbar.xml
     defaults: { _controller: AriiJIDBundle:Default:toolbar }
