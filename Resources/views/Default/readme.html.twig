@@ -19,7 +19,12 @@ dhtmlxEvent(window,"load",function(){
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
 
-//    globalLayout.cells("a").attachURL("{ { url('xml_Home_docs') }}?route={{ app.request.attributes.get('_route') }}"); 
+    myTree = globalLayout.cells("a").attachTree();
+    myTree.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    myTree.load("{{ url('xml_docs_tree') }}?route={{ app.request.attributes.get('_route') }}");
+    myTree.attachEvent("onClick",function(id){
+        globalLayout.cells("b").attachURL("{{ url('html_doc_view') }}?doc="+id);
+    })    
     globalLayout.cells("b").attachURL("{{ url('html_Home_readme') }}?route={{ app.request.attributes.get('_route') }}");
 });
 
