@@ -21,6 +21,22 @@ xml_JID_menu:
     pattern:  /menu.xml
     defaults: { _controller: AriiJIDBundle:Default:menu }
 
+arii_JID_config:
+    pattern:  /config
+    defaults: { _controller: AriiJIDBundle:Config:index }
+
+html_JID_config:
+    pattern:  /config.html
+    defaults: { _controller: AriiJIDBundle:Config:config }
+
+#--------------------------------------------------------------------
+# Outils communs aux modules JobScheduler
+#--------------------------------------------------------------------
+# Command XML
+arii_XML_Command:
+    pattern:  /XML/command
+    defaults: { _controller: AriiJIDBundle:SOS:XMLCommand }
+
 # --------------------------------------------------------------------------
 # Jobs
 # --------------------------------------------------------------------------
@@ -935,3 +951,23 @@ arii_JID_simile_xml_events:
 arii_JID_doc:
     pattern:  /doc
     defaults: { _controller: AriiJIDBundle:Doc:default }
+    
+# --------------------------------------------------------------------------
+# REQUESTS
+# --------------------------------------------------------------------------
+arii_JID_requests:
+    pattern:  /requests
+    defaults: { _controller: AriiJIDBundle:Requests:index }
+
+xml_JID_requests_list:
+    pattern:  /requests/list.xml
+    defaults: { _controller: AriiJIDBundle:Requests:list }
+
+arii_JID_requests_result:
+    pattern:  /requests/result.html
+    defaults: { _controller: AriiJIDBundle:Requests:result }
+
+arii_JID_requests_summary:
+    pattern:  /requests/summary.html
+    defaults: { _controller: AriiJIDBundle:Requests:summary }
+

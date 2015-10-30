@@ -1,0 +1,16 @@
+{# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
+{% extends "AriiCoreBundle::layout.html.twig" %}
+{% block body %}
+<body>
+<div class="container">    
+  <div class="panel panel-danger">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{ "Error" | trans }}</h3>
+    </div>
+    <div class="panel-body">
+      {{ error.text | trans  }}
+    </div>
+  </div>
+</div>
+</body>
+{% endblock body %}

@@ -1,0 +1,30 @@
+{% extends "AriiCoreBundle::base.html.twig" %}
+{% block head %}
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="{{ asset('bootstrap/css/bootstrap.min.css') }}">
+<!-- Optional theme -->
+<link rel="stylesheet" href="{{ asset('bootstrap/css/bootstrap-theme.min.css') }}">
+<!-- Latest compiled and minified JavaScript -->
+<!-- <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script> -->
+{% endblock %} 
+{% block body %}
+<body>
+<div class="container-fluid">
+<div class="jumbotron">
+{% set db = app.session.get('database') %}
+  <h1>{{ db.name }}</h1>
+  <p>{{ db.type }}</p>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <tr><th>{{ "driver" | trans }}</th><td>{{ db.driver }}</td></tr>
+        <tr><th>{{ "database" | trans }}</th><td>{{ db.dbname }}</td></tr>
+        <tr><th>{{ "host" | trans }}</th><td>{{ db.host }}</td></tr>
+        <tr><th>{{ "port" | trans }}</th><td>{{ db.port }}</td></tr>
+        <tr><th>{{ "user" | trans }}</th><td>{{ db.user }}</td></tr>
+    </table>
+</div>    
+</div>
+</body>
+{% endblock %}

@@ -1,12 +1,7 @@
 {% extends "AriiCoreBundle::base.html.twig" %}
 {% block dhtmlx %}
-{% if arii_pro %}
-	<link rel="stylesheet" type="text/css" href="{{ asset('dhtmlx_pro/skins/' ~  skin ~ '/dhtmlx.css') }}" />
-        <script src="{{ asset('dhtmlx_pro/codebase/dhtmlx.js') }}" type="text/javascript"></script>
-{% else %}
-	<link rel="stylesheet" type="text/css" href="{{ asset('dhtmlx_gpl/skins/terrace/dhtmlx.css') }}" />
-        <script src="{{ asset('dhtmlx_gpl/codebase/dhtmlx.js') }}" type="text/javascript"></script>
-{% endif %}
+<link rel="stylesheet" type="text/css" href="{{ asset('dhtmlx/skins/terrace/dhtmlx.css') }}" />
+<script src="{{ asset('dhtmlx/codebase/dhtmlx.js') }}" type="text/javascript"></script>
 {% endblock dhtmlx %}
 {% block dhtmlx_plus %}
 {% endblock dhtmlx_plus %}
@@ -65,6 +60,12 @@ function ClickRibbon (itemid,state) {
         dhx4.ajax.get( "{{ url('arii_session_update') }}?refresh="+itemid);
         GlobalRefresh();
         break;
+    case 'menu_index':
+        window.location = "{{ url('arii_JID_index') }}";
+        break;
+    case 'menu_config':
+        window.location = "{{ url('arii_JID_config') }}";
+        break;
     case 'menu_job':
         window.location = "{{ url('arii_JID_jobs') }}";
         break;
@@ -96,6 +97,22 @@ function ClickRibbon (itemid,state) {
             dhx4.ajax.get( "{{ url('arii_session_update') }}?filter="+itemid.substr(7), function(){
                 GridRefresh();
             });
+        }
+        else if (itemid.substr(0,7)=='request') {
+            window.location = "{{ url('arii_JID_requests') }}?id="+itemid.substr(8);
+        }
+        else if (itemid.substr(0,2)=='DB') {
+            dhx4.ajax.get( "{{ url('arii_session_update') }}?database="+itemid.substr(2), function(loader,response) {
+                dhtmlx.message({
+                    type: "Notice",
+                    text: loader.xmlDoc.responseText,
+                    width: "800"
+                });
+                if (typeof GlobalRefresh == 'function') { GlobalRefresh(); }
+                else if (typeof GridRefresh == 'function') { GridRefresh(); }
+                // on recree le ruban 
+                myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+            } );
         }
         else {
             alert(itemid);

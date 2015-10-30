@@ -1,0 +1,63 @@
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block body %}
+<body>
+<script type="text/javascript">
+last='';
+update=30;
+dhtmlxEvent(window,"load",function(){     
+    globalLayout = new dhtmlXLayoutObject(document.body,"2U");  
+    globalLayout.cells("a").setWidth(355); 
+    globalLayout.cells("a").hideHeader(); 
+    globalLayout.cells("b").hideHeader(); 
+
+    {% if  app.request.query.get('id') is defined %}
+    last = "{{ app.request.query.get('id') }}";
+    globalLayout.cells("b").attachURL("{{ url('arii_JID_requests_result') }}?request="+last );
+    {% else %}
+    globalLayout.cells("b").attachURL("{{ url('arii_JID_requests_summary') }}");
+    {% endif %}
+
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('/bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
+
+    myGrid = globalLayout.cells("a").attachGrid();
+    myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myGrid.setHeader("#text_filter");
+    myGrid.setColSorting("str");
+    myGrid.init();
+    myGrid.load( "{{ url('xml_JID_requests_list') }}");
+    myGrid.attachEvent("onRowDblClicked", function (id) {
+        last = id;
+        globalLayout.cells("b").attachURL("{{ url('arii_JID_requests_result') }}?request="+id);
+    });
+    
+    autorefresh = setInterval( "GlobalRefresh()",update*1000);
+});
+
+function GlobalRefresh() {
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+    if (minutes < 10){
+    minutes = "0" + minutes;
+    }
+    if (seconds < 10){
+    seconds = "0" + seconds;
+    }
+    myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+    globalLayout.cells("b").attachURL("{{ url('arii_JID_requests_result') }}?request="+last);
+    globalLayout.cells("a").progressOff();
+    globalLayout.cells("b").progressOff();
+    globalLayout.progressOff();
+}
+</script>
+</body>
+{% endblock %}

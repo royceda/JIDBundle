@@ -6,10 +6,15 @@
           "text_pos": "top", 
           "list":
           [
+             {   id: "menu_index",
+                 type:  "button", 
+                 text:  "", 
+                 isbig: true, 
+                 img:   "48/jid.png" 
+             },
              {   "type": "buttonSelect", 
                  text:"", 
-                 "isbig": true, 
-                 "img": "48/jid.png", 
+                 "img": "view.png", 
                  items:
                  [ 
                     { id:"menu_order", text: "{{ "Orders" | trans }}", img: "order.png" },
@@ -24,39 +29,26 @@
                     { id:"menu_events", text: "{{ "Events" | trans }}", img: "events.png" }
 */                 ]
               },
-          ]
-      },      
-     {   "type":"block", 
-          "id": "current_filter",
-          {% if (app.session.get('user_filter')|length) >0 %}
-          {% set filter = app.session.get('user_filter') %}
-          text:"{{ filter.name }}",
-          {% else %}
-          text:"{{ "Filter" | trans }}", 
-          {% endif %}
-          "text_pos": "bottom", 
-          "list":
-          [
-             {   "type": "buttonSelect", 
-                 text:"",
-                 "id": "Filters",
-                 "isbig": true, 
-                 "img": "48/search.png", 
+             {   type:  "buttonSelect", 
+                 text:  "", 
+                 img:   "table.png", 
                  items:
                  [ 
-     {% if (app.session.get('UserFilters')|length) >0 %}
-    {% set filter = app.session.get('user_filter') %}     
-       {% set filters = app.session.get('UserFilters') %}     
-        {% for k,filter in filters %}
-            { id:"filter_{{ filter.id }}", text: "{{ filter.name }}" },
-        {% endfor %}
-    {% endif %}
-                  ]
+{% for k,request in Requests %}
+                    { id:"request_{{ request.id }}", text: "{{ request.title }}", img: "{{ request.icon }}.png" },
+{% endfor %}                 
+                 ]
               },
-              {id:"filter_edit","type":"button",text:"","img":"edit.png","tooltip": "{{ "Edit filter" | trans }}" },
-              {id:"filter_all","type":"button",text:"","img":"zoom_out.png"},
+             {   type:  "buttonSelect", 
+                 text:  "", 
+                 img:   "tools.png", 
+                 items:
+                 [ 
+                    { id:"menu_config", text: "{{ "Config" | trans }}", img: "config.png" },
+                 ]
+              } 
           ]
-      },
+      },      
       {   "type":"block", 
           text:"{{ "History" | trans }}", 
           "text_pos": "bottom", 
@@ -98,13 +90,45 @@
                      { id: "3600", text: "1 {{ "hour" | trans }}" }
                   ]
               },
-              {   id : "group_2", 
+              {
+                  id : "group_2", 
                   type : "group", 
                   list : 
                   [   {id:"chained","type":"buttonTwoState",text:"","img":"ordered.png"},
-                      {id:"only_warning","type":"buttonTwoState",text:"","img":"warning.png" /*, state: true*/ }                  ]
-              }
-          ]
-      }
+                      {id:"only_warning","type":"buttonTwoState",text:"","img":"warning.png" /*, state: true*/ }
+                  ]
+              },
+{% set current_db = app.session.get('database') %} 
+              {   id: "database", 
+                  "type":"buttonSelect", 
+                  text:"", 
+                  "img": "database.png",
+                  "items": 
+                  [ 
+{% for database in Databases %}
+{id:"{{ database.id }}", text:"{{ database.name }}"{% if database.name == current_db.name %}, img: "accept.png"{% endif %} },
+{% endfor %}
+                  ]
+               },
+            {   "type": "buttonSelect", 
+                 text:"",
+                 "id": "Filters",
+                 "img": "zoom.png", 
+                 items:
+                 [ 
+              {id:"filter_edit","type":"button",text:"{{ "New" | trans }}","img":"zoom_in.png","tooltip": "{{ "Edit filter" | trans }}" },
+     {% if (app.session.get('UserFilters')|length) >0 %}
+            { id:"sepf0", type: "separator" },    
+    {% set current = app.session.get('user_filter') %}     
+       {% set filters = app.session.get('UserFilters') %}     
+        {% for k,filter in filters %}
+            { id:"filter_{{ filter.id }}", text: "{{ filter.name }}" {% if filter.name == current.name %}, img: "accept.png"{% endif %}  },
+        {% endfor %}
+    {% endif %}
+                  ]
+              },
+              {id:"filter_all","type":"button",tooltip:"{{ "All" | trans }}","img":"zoom_out.png"}
+            ]
+        }
    ]
 }

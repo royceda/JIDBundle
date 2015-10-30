@@ -1,0 +1,19 @@
+title:          Jobs en erreur
+description:    Exemple de requête personnalisée
+header:         INSTANCE,LAST_START,LAST_END,DURATION,STATUS,DESCRIPTION,JOB_NAME
+icon:           job
+sql:
+    oracle: |
+        select 
+            SUBSTR(JOB_NAME,6,4) as INSTANCE,
+            JOB_NAME,TEXT as STATUS,DESCRIPTION,
+            To_Char( (To_Date( '01.01.1970','DD.MM.YYYY')+ last_start  / 86400) 
+                    - (select INT_VAL from UJO_ALAMODE where TYPE = 'gmt_offset' ) / 86400,'YYYY-DD-MM HH24:Mi:Ss') as LAST_START,
+            To_Char( (To_Date( '01.01.1970','DD.MM.YYYY')+ last_end / 86400)
+                    - (select INT_VAL from UJO_ALAMODE where TYPE = 'gmt_offset' ) / 86400,'YYYY-DD-MM HH24:Mi:Ss') as LAST_END,
+            LAST_END - LAST_START as DURATION
+        from UJO_JOBST
+            left join UJO_INTCODES
+                on STATUS=CODE
+        where JOB_NAME like 'ORA%.BOX.BackupFull'
+        order by JOB_NAME

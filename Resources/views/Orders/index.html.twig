@@ -85,7 +85,7 @@ dhtmlxEvent(window,"load",function(){
     myGrid.setColumnHidden(7,true); 
     myGrid.setColumnHidden(8,true); 
     myGrid.enableSmartRendering(true,50);
-    myGrid.loadXML( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
+    myGrid.load( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
     myGrid.attachEvent("onRowDblClicked",OrderDetail );
 
     myGridToolbar = globalLayout.cells("b").attachToolbar();
@@ -477,7 +477,7 @@ function GridRefresh(detail) {
     seconds = "0" + seconds;
     }
     myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-    myGrid.loadXML("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function(){
+    myGrid.load("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function(){
         globalLayout.cells("b").progressOff();
         myGrid.filterBy(5, status);  
         if (detail>0) OrderDetail(id);
@@ -486,10 +486,7 @@ function GridRefresh(detail) {
                 myDonut.refresh();                
             });
             globalLayout.progressOff();
-//            myTree.deleteChildItems(0);
-//            myTree.loadXML("{{ url('xml_JID_orders_tree') }}?chained="+chained+"&only_warning="+only_warning, function() {
-                globalLayout.cells("a").progressOff();
-//            });
+            globalLayout.cells("a").progressOff();
         myGrid.filterByAll();
         autorefresh = setInterval( "GridRefresh()", update*1000 );
     });    
