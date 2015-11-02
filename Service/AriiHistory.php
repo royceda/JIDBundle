@@ -28,6 +28,7 @@ class AriiHistory
  *********************************************************************/
    public function Jobs($history_max=0,$ordered = 0,$only_warning= 1,$next=1) {   
         $data = $this->db->Connector('data');
+     
         $sql = $this->sql;
         $date = $this->date;
         

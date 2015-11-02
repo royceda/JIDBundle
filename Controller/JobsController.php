@@ -60,8 +60,8 @@ class JobsController extends Controller
         $Timeline['start'] = 0;
         $refresh = $session->GetRefresh();
         
-        // Liste des spoolers pour cette plage
-        
+        // Liste des spoolers pour cette plage        
+/*        
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
         
@@ -70,12 +70,12 @@ class JobsController extends Controller
             '{spooler}'    => 'SPOOLER_ID',
             '{start_time}' => 'START_TIME' );
 
-    $qry = $sql->Select(array('SPOOLER_ID'),'distinct') 
-               .$sql->From(array('SCHEDULER_HISTORY'))
-               .$sql->Where($Fields)
-               .$sql->OrderBy(array( 'SPOOLER_ID' ));
+        $qry = $sql->Select(array('SPOOLER_ID'),'distinct') 
+                   .$sql->From(array('SCHEDULER_HISTORY'))
+                   .$sql->Where($Fields)
+                   .$sql->OrderBy(array( 'SPOOLER_ID' ));
 
-    $SPOOLERS = array();
+        $SPOOLERS = array();
         if ($data) {
             $res = $data->sql->query( $qry );
             while ($line = $data->sql->get_next($res)) {
@@ -83,7 +83,8 @@ class JobsController extends Controller
             }
         }
         $Timeline['spoolers'] = $SPOOLERS;
-       return $this->render('AriiJIDBundle:Jobs:index.html.twig', array('refresh' => $refresh, 'Timeline' => $Timeline ) );
+*/
+        return $this->render('AriiJIDBundle:Jobs:index.html.twig', array('refresh' => $refresh, 'Timeline' => $Timeline ) );
     }
 
     public function toolbarAction()

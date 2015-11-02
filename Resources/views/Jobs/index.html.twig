@@ -311,6 +311,7 @@ dhtmlxEvent(window,"load",function(){
                 text: Text });
                 globalLayout.cells("a").progressOn();        
                 globalLayout.cells("b").progressOn();
+                // alert("{{ url('arii_XML_Command') }}?command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id);
                 dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id,function(loader,response){
                     dhtmlx.message({
                     type: "Notice",
