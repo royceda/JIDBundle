@@ -1,0 +1,597 @@
+{# src/Arii/CoreBundle/Resources/views/Filter/list.html.twig #}
+
+{% extends "AriiCoreBundle::layout.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Batch Installer" | trans }}</h2>
+		
+		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+                                                <div class="sct_right">
+                                                    <form action="{{ url('arii_batchinstaller_form') }}">
+                                                        <input type="submit"/>
+<table border=0 width="100%" valign="top">
+<tr><td>
+    <div id="toolbarObj"></div>
+</td></tr>
+<tr><td valign="top">
+    <div id="form_container" width="100%"></div>
+</td></tr>
+<tr><td valign="top">
+    <div id="recinfoArea"></div>
+</td></tr>
+</table>
+                                                            
+</form>
+                                                    </div>
+                                                
+					</div>
+				</div>
+			</div>
+		</div>
+<script language="javascript">
+var myForm, formData;
+formData = [
+   { type: "settings", position: "label-left", labelWidth: 80, inputWidth: 550, position: "label-left" },
+   {    type: "hidden", 
+        name: "id",  
+        value: "{{ id }}" 
+   },
+   {    type: "fieldset",
+        label: "{{ "Package" | trans }}",
+        width: 700,
+        list: [ {   type: "input",
+                    name: "name",
+                    label: "{{ "Name" | trans }}",
+                    required: true
+                },
+                {   type: "input",
+                    name: "title",
+                    label: "{{ "Title" | trans }}"
+                },
+                {   type: "input",
+                    name: "description",
+                    label: "{{ "Description" | trans }}",
+                    rows: 2
+                }
+        ]    
+   },
+   {    type: "fieldset",
+        label: "{{ "Licence" | trans }}",
+        width: 700,
+        list: [ {   type: "radio",
+                    name: "licenceOptions",
+                    label: "{{ "GPL" | trans }}",
+                    value: "gpl_licence",
+                    position: "label-right",
+                    checked: true
+                },
+                {   type: "radio",
+                    name: "licenceOptions",
+                    label: "{{ "Commercial" | trans }}",
+                    value: "commercial_licence",
+                    position: "label-right",
+                    list: [ {   type: "input",
+                                name: "licence",
+                            }
+                    ]
+                }
+        ]    
+   },
+  {    type: "fieldset", 
+        label: "{{ "Network" | trans }}",
+        width: 700,
+        list: [ {   type: "input", 
+                    name: "schedulerId", 
+                    label: "{{ "Id" | trans }}",
+                    value: "scheduler",
+                    note: { text: "L'identifiant doit être unique par serveur et ne doit pas contenir les caractères suivants : / \\ : ; * ? ! $ % & \" < > ( ) | ^" },
+                    required: true                    
+                },
+                {   type: "select", 
+                    name: "clusterOptions", 
+                    label: "{{ "Type" | trans }}",
+                    options: [  {   text: "{{ "Standalone server" | trans }}", value: "" },
+                                {   text: "{{ "Primary server" | trans }}", value: "-exclusive" },
+                                {   text: "{{ "Backup server" | trans }}", value: "-exclusive -backup" },
+                                {   text: "{{ "Load balancing" | trans }}", value: "-distributed-orders" }
+                    ]
+                },
+                {   type: "input", 
+                    name: "schedulerHost", 
+                    label: "{{ "Host" | trans }}",
+                    value: "hostname"
+                },
+                {   type: "input", 
+                    name: "schedulerPort", 
+                    label: "{{ "Port" | trans }}",
+                    value: "4444"
+                },
+                {   type: "input", 
+                    name: "schedulerAllowedHost", 
+                    label: "{{ "Allowed Host" | trans }}",
+                    value: "0.0.0.0",
+                    note: { text: "Il est recommandé d'activer la restriction d'accès à un nombre limité de machines. Pour autoriser toutes les machines, il faut saisir 0.0.0.0" }
+                },
+                {   type: "checkbox", 
+                    name: "jobEvents", 
+                    label: "{{ "Job events" | trans }}",
+                    value: "on",
+                    note: { text: "Cocher cette option si le moteur doit traiter des évènements." }
+                }               
+        ]
+  },
+   {    type: "fieldset", 
+        label: "{{ "Installation" | trans }}",
+        width: 700,
+        list: [ {   type: "select", 
+                    name: "os_target", 
+                    label: "{{ "Operating System" | trans }}",
+                    options: [ {    text: "Unix",
+                                    value: "unix",
+                                    selected: true,
+                                    list: [ {   type: "input",
+                                                name: "unix_installpath",
+                                                label: "{{ "Install path" | trans }}",
+                                                note: { text: "Le répertoire d'installation contient les binaires et les bibliothèques." },
+                                                value: "/opt/jobscheduler"
+                                            },
+                                            {   type: "input",
+                                                name: "unix_userpath",
+                                                label: "{{ "User path" | trans }}",
+                                                note: { text: "Le répertoire utilisateur contient la configuration." },
+                                                value: "~/jobscheduler"
+                                            },
+                                            {   type: "checkbox",
+                                                name: "Cron",
+                                                label: "{{ "Cron adapter" | trans }}",
+                                                checked: false,
+                                                value: "yes",
+                                                note: { text: "Le connecteur CRON peut être utilisé pour configurer des traitements à partir d'un fichier contab." },
+                                                list: [ 
+                                                        {   type: "input",
+                                                            text: "cronCrontab",
+                                                            label: "{{ "Path" | trans }}",
+                                                            value: "/etc/crontab"
+                                                        },
+                                                        {   type: "input",
+                                                            text: "cronTimeout",
+                                                            label: "{{ "Timeout (s)" | trans }}",
+                                                            value: "600"
+                                                        },
+                                                        {   type: "checkbox",
+                                                            text: "cronSystab",
+                                                            label: "{{ "Cron System" | trans }}",
+                                                            checked: false,
+                                                            value: "system",
+                                                            position: "label-right",
+                                                            list: [ {   type: "select",
+                                                                        name: "cronChangeUser",
+                                                                        label: "{{ "User change" | trans }}",
+                                                                        options: [  { text: "{{ "Custom" | trans }}", value: "" },
+                                                                                    { text: "su [user] -c [command]", value: "su" },
+                                                                                    { text: "sudo -u [user] [command]", value: "sudo" }
+                                                                        ]
+                                                                    }
+                                                            ]
+                                                        },
+                                                        {   type: "input",
+                                                            name: "cronChangeCommand",
+                                                            label: "{{ "Change command" | trans }}"
+                                                        }
+                                                ]
+                                            }
+                                    ]
+                                },
+                                {   text: "Windows ",
+                                    value: "windows",
+                                    list: [ {   type: "input",
+                                                name: "windows_installpath",
+                                                label: "{{ "Install path" | trans }}",
+                                                note: { text: "Le répertoire d'installation contient les binaires et les bibliothèques." },
+                                                value: "%PROGRAMFILES%/jobscheduler"
+                                            },
+                                            {   type: "input",
+                                                name: "windows_userpath",
+                                                label: "{{ "User path" | trans }}",
+                                                note: { text: "Le répertoire utilisateur contient la configuration." },
+                                                value: "%COMMONAPPDATAROOT%/jobscheduler"
+                                            }
+                                    ]
+                               }                               
+                    ]    
+                }
+       ]
+  },
+  {    type: "fieldset", 
+        label: "{{ "Base de données" | trans }}",
+        width: 700,
+        list: [ {   type: "settings", labelWidth: 80, inputWidth: 450 },
+                {   type: "select", 
+                    name: "databaseDbms", 
+                    label: "{{ "Type" | trans }}",
+                    options: [ {    text: "{{ "No database" | trans }}", 
+                                    value: ""
+                               },
+                               {    text: "MySQL", 
+                                    value: "mysql",
+                                    list: [ {   type: "input",
+                                                name: "mysql_databaseHost",
+                                                label: "{{ "Host" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "mysql_databasePort",
+                                                label: "{{ "Port" | trans }}",
+                                                value: "3306"
+                                            },
+                                            {   type: "input",
+                                                name: "mysql_databaseSchema",
+                                                label: "{{ "Schema" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "mysql_databaseUser",
+                                                label: "{{ "User" | trans }}"
+                                            },
+                                            {   type: "input",  
+                                                name: "mysql_databaseSchema",
+                                                label: "{{ "Password" | trans }}"
+                                            },
+                                            {   type: "input",  
+                                                name: "mysql_connector",
+                                                label: "{{ "Connector" | trans }}"
+                                            }
+                                    ]
+                                 },
+                                 {    text: "Oracle", 
+                                    value: "oracle",
+                                    list: [ {   type: "input",
+                                                name: "oracle_databaseHost",
+                                                label: "{{ "Host" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "oracle_databasePort",
+                                                label: "{{ "Port" | trans }}",
+                                                value: "1521"
+                                            },
+                                            {   type: "input",
+                                                name: "oracle_databaseSchema",
+                                                label: "{{ "Schema" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "oracle_databaseUser",
+                                                label: "{{ "User" | trans }}"
+                                            },
+                                            {   type: "input",  
+                                                name: "oracle_databasePassword",
+                                                label: "{{ "Password" | trans }}"
+                                            }
+                                    ]
+                                 },
+                                 {  text: "MS SQL Server", 
+                                    value: "mssql",
+                                    list: [ {   type: "input",
+                                                name: "mssql_databaseHost",
+                                                label: "{{ "Host" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "mssql_databasePort",
+                                                label: "{{ "Port" | trans }}",
+                                                value: "1433"
+                                            },
+                                            {   type: "input",
+                                                name: "mssql_databaseSchema",
+                                                label: "{{ "Schema" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "mssql_databaseUser",
+                                                label: "{{ "User" | trans }}"
+                                            },
+                                            {   type: "input",  
+                                                name: "mssql_databaseSchema",
+                                                label: "{{ "Password" | trans }}"
+                                            },
+                                            {   type: "mssql_input",  
+                                                name: "databaseSchema",
+                                                label: "{{ "Password" | trans }}"
+                                            }, 
+                                            {   type: "checkbox",  
+                                                name: "mssql_connectorJTDS",
+                                                label: "{{ "JDBC driver" | trans }}",
+                                                value: "no",
+                                                note: { text: "Par défaut, un connecteur jTDS est fourni." },
+                                                list: [ {   type: "input",  
+                                                            name: "mssql_connector",
+                                                            label: "{{ "Connector" | trans }}"
+                                                        }
+                                                ]
+                                            }
+                                    ]
+                                 },
+                                 {    text: "PostgreSQL", 
+                                    value: "pgsql",
+                                    list: [ {   type: "input",
+                                                name: "pgsql_databaseHost",
+                                                label: "{{ "Host" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "pgsql_databasePort",
+                                                label: "{{ "Port" | trans }}",
+                                                value: "5432"
+                                            },
+                                            {   type: "input",
+                                                name: "pgsql_databaseSchema",
+                                                label: "{{ "Schema" | trans }}"
+                                            },
+                                            {   type: "pgsql_input",
+                                                name: "databaseUser",
+                                                label: "{{ "User" | trans }}"
+                                            },
+                                            {   type: "pgsql_input",  
+                                                name: "databaseSchema",
+                                                label: "{{ "Password" | trans }}"
+                                            }
+                                    ]
+                                 },
+                                 {    text: "Firebird", 
+                                    value: "fbsql",
+                                    list: [ {   type: "input",
+                                                name: "fbsql_databaseHost",
+                                                label: "{{ "Host" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "fbsql_databasePort",
+                                                label: "{{ "Port" | trans }}",
+                                                value: "3050"
+                                            },
+                                            {   type: "input",
+                                                name: "fbsql_databaseSchema",
+                                                label: "{{ "Schema" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "fbsql_databaseUser",
+                                                label: "{{ "User" | trans }}"
+                                            },
+                                            {   type: "input",  
+                                                name: "fbsql_databaseSchema",
+                                                label: "{{ "Password" | trans }}"
+                                            }
+                                    ]
+                                 },
+                                 {    text: "DB2", 
+                                    value: "db2",
+                                    list: [ {   type: "input",
+                                                name: "db2_databaseHost",
+                                                label: "{{ "Host" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "db2_databasePort",
+                                                label: "{{ "Port" | trans }}",
+                                                value: "50000"
+                                            },
+                                            {   type: "input",
+                                                name: "db2_databaseSchema",
+                                                label: "{{ "Schema" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "db2_databaseUser",
+                                                label: "{{ "User" | trans }}"
+                                            },
+                                            {   type: "input",  
+                                                name: "db2_databaseSchema",
+                                                label: "{{ "Password" | trans }}"
+                                            }
+                                    ]
+                                 },
+                                 {    text: "Sybase", 
+                                    value: "sybase",
+                                    list: [ {   type: "input",
+                                                name: "sybase_databaseHost",
+                                                label: "{{ "Host" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "sybase_databasePort",
+                                                label: "{{ "Port" | trans }}",
+                                                value: "5000"
+                                            },
+                                            {   type: "input",
+                                                name: "sybase_databaseSchema",
+                                                label: "{{ "Schema" | trans }}"
+                                            },
+                                            {   type: "input",
+                                                name: "sybase_databaseUser",
+                                                label: "{{ "User" | trans }}"
+                                            },
+                                            {   type: "input",  
+                                                name: "sybase_databaseSchema",
+                                                label: "{{ "Password" | trans }}"
+                                            }, 
+                                            {   type: "checkbox",  
+                                                name: "sybase_connector",
+                                                label: "{{ "JDBC driver" | trans }}",
+                                                value: "no",
+                                                note: { text: "Par défaut, un connecteur jTDS est fourni." },
+                                                list: [ {   type: "input",  
+                                                            name: "sybase_connector",
+                                                            label: "{{ "Connector" | trans }}"
+                                                        }
+                                                ]
+                                            }
+                                    ]
+                                 }
+                                ]
+           }
+        ]
+  },
+  {    type: "fieldset", 
+        label: "{{ "Notifications" | trans }}",
+        width: 700,
+        list: [ {   type: "checkbox",
+                    name: "mailOnError",
+                    label: "{{ "Mail on Error" | trans }}",
+                    value: "yes",
+                    position: "label-right",
+                    labelWidth: 300,
+                    checked: true
+                },
+                {   type: "checkbox",
+                    name: "mailOnWarning",
+                    label: "{{ "Mail on Warning" | trans }}",
+                    value: "yes",
+                    position: "label-right",
+                    labelWidth: 300,
+                    checked: true
+                },
+                {   type: "checkbox",
+                    name: "mailOnSuccess",
+                    label: "{{ "Mail on Success" | trans }}",
+                    value: "yes",
+                    position: "label-right",
+                    labelWidth: 300,
+                    checked: false
+                },
+                {   type: "checkbox",
+                    name: "mail",
+                    label: "{{ "Mail Server" | trans }}",
+                    check: false,
+                    position: "label-right",
+                    list: [ {   type: "input", 
+                                name: "mailServer", 
+                                label: "{{ "Host" | trans }}"
+                            },
+                            {   type: "input", 
+                                name: "mailPort", 
+                                label: "{{ "Port" | trans }}",
+                                value: "25"
+                            },
+                            {   type: "input", 
+                                name: "mailFrom", 
+                                label: "{{ "Mail from" | trans }}"
+                            },
+                            {   type: "input", 
+                                name: "mailTo", 
+                                label: "{{ "Mail to" | trans }}"
+                            },
+                            {   type: "input", 
+                                name: "mailCc", 
+                                label: "{{ "Mail Cc" | trans }}"
+                            },
+                            {   type: "input", 
+                                name: "mailBcc", 
+                                label: "{{ "Mail Bcc" | trans }}"
+                            },
+                            {   type: "checkbox",
+                                name: "smtpAuth",
+                                label: "{{ "Authentication" | trans }}",
+                                position: "label-right",
+                                list: [ {   type: "input", 
+                                            name: "smtpAccount", 
+                                            label: "{{ "Account" | trans }}"
+                                        },
+                                        {   type: "input", 
+                                            name: "smtpPass", 
+                                            label: "{{ "Account" | trans }}",
+                                            value: ""
+                                        }
+                                ]
+                            }
+                    ]
+                }
+        ]
+  },
+  {    type: "fieldset", 
+        label: "{{ "Traitements" | trans }}",
+        width: 700,
+        list: [ {   type: "checkbox", 
+                    name: "CheckUpdate", 
+                    label: "{{ "Check for update" | trans }}",
+                    position: "label-right",
+                    labelWidth: 300,
+                    checked: false,
+                    list: [ {   type: "select",
+                                name: "checkForUpdateStartDay",
+                                label: "{{ "Start day" | trans }}",
+                                value: "1",
+                                options: [  { text: "{{ "dow.Monday" | trans }}", value: "1" },
+                                            { text: "{{ "dow.Tuesday" | trans }}", value: "2" },
+                                            { text: "{{ "dow.Wednesday" | trans }}", value: "3" },
+                                            { text: "{{ "dow.Thursday" | trans }}", value: "4" },
+                                            { text: "{{ "dow.Friday" | trans }}", value: "5" },
+                                            { text: "{{ "dow.Saturday" | trans }}", value: "6" },
+                                            { text: "{{ "dow.Sunday" | trans }}", value: "0" }
+                                ]
+                            },
+                            {   type: "input",
+                                name: "checkForUpdateStarttime",
+                                label: "{{ "Start time" | trans }}",
+                                value: "13:00"
+                            },
+                            {   type: "checkbox",
+                                name: "autoUpdateDownload",
+                                label: "{{ "Automatic download" }}",
+                                value: "1",
+                                position: "label-right",
+                                checked: false,
+                                labelWidth: 300
+                            }
+                    ]
+                }
+        ]
+  }
+];
+myForm = new dhtmlXForm("form_container", formData);
+{% if id>0 %}
+myForm.load( "{{ url('arii_batchinstaller_form') }}?id={{ id }}" );
+{% endif %}
+
+var dp = new dataProcessor( "{{ url('arii_batchinstaller_form') }}" );
+dp.setUpdateMode("off");
+dp.init(myForm);
+
+var toolbar;
+toolbar = new dhtmlXToolbarObject("toolbarObj");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_batchinstaller_toolbar_edit') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+        case "save":
+            dp.sendData();
+            toolbar.setItemText('save', '{{ "Saved" | trans }}' );
+            toolbar.disableItem('save');
+        break;
+        case "list":
+            document.location.href= "{{ url('arii_batchinstaller_index') }}"; 
+        break;
+        default:
+            alert(id);
+    }
+});
+myForm.attachEvent( "onChangeValue", function(id, value) {
+    toolbar.enableItem('save');
+});
+myForm.attachEvent( "onEnter", function(id, value) {
+    toolbar.enableItem('save');
+});
+
+</script>
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+{% endblock %}

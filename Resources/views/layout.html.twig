@@ -60,6 +60,12 @@ function ClickRibbon (itemid,state) {
         dhx4.ajax.get( "{{ url('arii_session_update') }}?refresh="+itemid);
         GlobalRefresh();
         break;
+    case 'silent_install':
+        window.location = "{{ url('arii_JID_silent') }}";
+        break;
+    case 'cron_converter':
+        window.location = "{{ url('arii_JID_cron') }}";
+        break;
     case 'menu_index':
         window.location = "{{ url('arii_JID_index') }}";
         break;

@@ -1,0 +1,31 @@
+{
+   "items":
+   [
+      {   "type":"block", 
+          text:"{{ "module.Tools" | trans }}", 
+          "text_pos": "top", 
+          "list":
+          [
+             {   "type": "buttonSelect", 
+                 text:"", 
+                 "isbig": true, 
+                 "img": "48/tools.png", 
+                 items:
+                 [ 
+                    { id:"silent_install", text: "{{ "Silent install" | trans }}", img: "silent.png" },
+                    { id:"cron_converter", text: "{{ "Cron converter" | trans }}", img: "cron.png" }
+                 ]
+              }
+          ]
+      },
+      {   "type":"block", 
+          text:"{{ "Silent install" | trans }}", 
+          "text_pos": "bottom", 
+          "list":
+          [
+              {id:"generate","type":"button",text:"{{ "View" | trans }}","img":"file_code.png"},
+              {id:"download","type":"button",text:"{{ "Download" | trans }}","img":"file_get.png"}
+          ]
+      }      
+   ]
+}

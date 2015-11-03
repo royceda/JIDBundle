@@ -971,3 +971,106 @@ arii_JID_requests_summary:
     pattern:  /requests/summary.html
     defaults: { _controller: AriiJIDBundle:Requests:summary }
 
+#--------------------------------------------------------------------
+# Installation silencieuse
+#--------------------------------------------------------------------
+arii_JID_silent:
+    pattern:  /silent
+    defaults: { _controller: AriiJIDBundle:Silent:index }
+
+xml_JID_silent_toolbar:
+    pattern:  /silent/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Silent:toolbar }
+
+json_JID_silent_ribbon:
+    pattern:  /silent/ribbon.json
+    defaults: { _controller: AriiJIDBundle:Silent:ribbon }
+
+arii_JID_silent_generate:
+    pattern:  /silent/generate
+    defaults: { _controller: AriiJIDBundle:Silent:generate }
+
+arii_JID_silent_generate_direct:
+    pattern:  /silent/direct
+    defaults: { _controller: AriiJIDBundle:Silent:direct }
+
+arii_JID_silent_files:
+    pattern:  /silent/files
+    defaults: { _controller: AriiJIDBundle:Silent:files }
+
+arii_JID_get_file:
+    pattern:  /get/file
+    defaults: { _controller: AriiJIDBundle:Default:getfile }
+
+#--------------------------------------------------------------------
+# Monitoring
+#--------------------------------------------------------------------
+arii_JID_monitoring:
+    pattern:  /monitoring
+    defaults: { _controller: AriiJIDBundle:Monitoring:index }
+
+#--------------------------------------------------------------------
+# Cron converter
+#--------------------------------------------------------------------
+arii_JID_cron:
+    pattern:  /cron
+    defaults: { _controller: AriiJIDBundle:Cron:index }
+
+arii_JID_cron_convert:
+    pattern:  /cron/convert
+    defaults: { _controller: AriiJIDBundle:Cron:convert }
+
+xml_JID_cron_dirlist:
+    pattern:  /cron/dirlist.xml
+    defaults: { _controller: AriiJIDBundle:Cron:dirlist }
+
+xml_JID_cron_job_view:
+    pattern:  /cron/job/view
+    defaults: { _controller: AriiJIDBundle:Cron:job_view }
+
+json_JID_cron_upload:
+    pattern:  /cron/upload
+    defaults: { _controller: AriiJIDBundle:Cron:upload }
+
+arii_JID_cron_form:
+    pattern:  /cron/form
+    defaults: { _controller: AriiJIDBundle:Cron:form }
+
+json_JID_cron_ribbon:
+    pattern:  /cron/ribbon.json
+    defaults: { _controller: AriiJIDBundle:Cron:ribbon }
+
+arii_JID_task:
+    pattern:  /task_scheduler
+    defaults: { _controller: AriiJIDBundle:Cron:task_scheduler }
+
+#--------------------------------------------------------------------
+# Log analyzer
+#--------------------------------------------------------------------
+xml_JID_log_server:
+    pattern:  /log_server.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:log_analyzer }
+
+arii_JID_log_toolbar:
+    pattern:  /log_server/toolbar.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:toolbar }
+
+arii_JID_log_server:
+    pattern:  /log_server
+    defaults: { _controller: AriiJIDBundle:Spooler:log }
+
+xml_JID_log_dirlist:
+    pattern:  /log_server/dirlist.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:dirlist }
+    
+json_JID_log_upload:
+    pattern:  /log_server/upload.json
+    defaults: { _controller: AriiJIDBundle:Spooler:upload }
+
+arii_JID_log_scheduler:
+    pattern:  /log_scheduler
+    defaults: { _controller: AriiJIDBundle:Spooler:log_scheduler }
+
+xml_JID_log_server_chart:
+    pattern:  /log_chart.xml
+    defaults: { _controller: AriiJIDBundle:Spooler:log_chart }

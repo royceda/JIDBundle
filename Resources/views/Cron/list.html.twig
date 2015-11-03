@@ -1,0 +1,145 @@
+{# src/Arii/CoreBundle/Resources/views/Batch/list.html.twig #}
+
+{% extends "AriiCoreBundle::layout.html.twig" %}
+{% block content %}
+<!--[if !IE]>start section<![endif]-->	
+<div class="section table_section">
+	<!--[if !IE]>start title wrapper<![endif]-->
+	<div class="title_wrapper">
+		<h2>{{ "Packages" | trans }}</h2>
+		
+		<!--[if !IE]>start section menu<![endif]-->
+		<!--[if !IE]>end section menu<![endif]-->
+		
+		
+		<span class="title_wrapper_left"></span>
+		<span class="title_wrapper_right"></span>
+	</div>
+	<!--[if !IE]>end title wrapper<![endif]-->
+<!--[if !IE]>start section content<![endif]-->
+	<div class="section_content">
+		<!--[if !IE]>start section content top<![endif]-->
+		<div class="sct">
+			<div class="sct_left">
+				<div class="sct_right">
+					<div class="sct_left">
+						<div class="sct_right">
+<table border="0" width="100%" height="715">
+<tr height="28"><td>
+    <div id="toolbarObj"></div>
+</td></tr>
+<tr height="659"><td>
+    <div id="mygrid" style="height:659px;background-color:white;overflow:hidden"></div>
+</td></tr>
+<tr height="28"><td>
+    <div id="recinfoArea"></div>
+</td></tr>
+</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--[if !IE]>end section content top<![endif]-->
+		<!--[if !IE]>start section content bottom<![endif]-->
+		<span class="scb"><span class="scb_left"></span><span class="scb_right"></span></span>
+		<!--[if !IE]>end section content bottom<![endif]-->
+		
+	</div>
+	<!--[if !IE]>end section content<![endif]-->
+</div>
+<!--[if !IE]>end section<![endif]-->
+<script language="javascript">
+var menu = new dhtmlXMenuObject(null);
+menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
+menu.renderAsContextMenu();
+menu.attachEvent("onClick", onButtonClick);
+menu.loadStruct("{{ url('arii_batchinstaller_contextmenu') }}");
+
+var mygrid;
+mygrid = new dhtmlXGridObject( "mygrid" );
+mygrid.setImagePath( "{{ asset('bundles/ariicore/images/grid/') }}");
+mygrid.enableTreeCellEdit(false);
+mygrid.setHeader("{{ "Name" | trans }},{{ "Title" | trans }}");
+mygrid.attachHeader("#text_filter,#text_filter");
+mygrid.setInitWidths("*,*");
+mygrid.setColAlign("left,left");
+mygrid.setColTypes("ro,ed");
+mygrid.setColSorting("str,str");
+mygrid.enablePaging(true, 30, 20, "recinfoArea");
+mygrid.setPagingSkin("bricks");
+mygrid.init();
+mygrid.setSkin('dhx_skyblue');
+mygrid.loadXML( "{{ url('xml_Home_log_server') }}" );
+mygrid.enableLightMouseNavigation( true );
+
+mygrid.enableContextMenu(menu);
+
+mygrid.attachEvent( "onRowDblClicked", function(id) {
+    document.location.href= "{{ url('arii_batchinstaller_edit') }}?id="+id;
+});
+
+var toolbar;
+toolbar = new dhtmlXToolbarObject("toolbarObj");
+toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+toolbar.loadStruct("{{ url('arii_batchinstaller_toolbar_list') }}");
+toolbar.attachEvent( "onClick", function(id, value) {
+    switch (id) {
+        case "add":
+            document.location.href= "{{ url('arii_batchinstaller_new') }}"; 
+        break;
+        case "pdf":
+            mygrid.toPDF('{{ asset('bundles/ariicore/grid-pdf/generate.php') }}');
+        break;
+        case "xls":
+            mygrid.toExcel('{{ asset('bundles/ariicore/grid-excel/generate.php') }}');
+        break;
+        default:
+            alert(id);
+    }
+});
+
+var dp = new dataProcessor( "{{ url('arii_batchinstaller_edit') }}" );
+dp.attachEvent("onAfterUpdate", function(sid,action,tid,xml_node) {
+    var msg;
+    if (action == 'deleted') msg="{{ "Record deleted" | trans }}";
+    if (action == 'updated') msg="{{ "Record updated" | trans }}";
+    dhtmlx.message({
+    title: "Save",
+    type: "Notice",
+    text: msg })
+});
+dp.init(mygrid);
+
+/* Gestion du menu contextuel */
+function onButtonClick(menuitemId, type) {
+    var data = mygrid.contextID.split("_");
+    //rowInd_colInd;
+    var rId = data[0];
+    var cInd = data[1];
+//     mygrid.setRowTextStyle(data[0], "color:" + menuitemId.split("_")[1]);
+    // alert("rId "+rId+" cInd "+cInd);
+    switch (menuitemId) {
+        case "edit":
+            document.location.href= "{{ url('arii_batchinstaller_edit') }}?id="+mygrid.getSelectedId();
+        break;
+        case "delete":
+            dhtmlx.confirm({
+            title: "{{ "Delete package" | trans }}",
+            type: "confirm-error",
+            text: "{{ "Do you really want to delete this queue ?" | trans }}",
+            callback: function(answer) { if (answer) mygrid.deleteRow(rId); },
+            cancel: "{{ "No" | trans }}",
+            ok: "{{ "Yes" | trans }}" });
+        break;
+        case "xml":
+            document.location.href= "{{ url('arii_batchinstaller_xml') }}?id="+mygrid.getSelectedId();
+            break;
+        default:
+            alert(menuitemId);    
+    }
+    return true;
+}
+
+</script>
+{% endblock %}

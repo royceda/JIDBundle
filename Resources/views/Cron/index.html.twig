@@ -1,0 +1,143 @@
+{# src/Arii/CoreBundle/Resources/views/Batch/list.html.twig #}
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block body %}
+<script>
+dhtmlxEvent(window,"load",function(){ 
+    
+    var globalLayout = new dhtmlXLayoutObject(document.body,"3L");
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+
+    globalLayout.cells("a").setWidth(360);
+    dhxTabbar = globalLayout.cells("a").attachTabbar();
+    // dhxTabbar.setImagePath("{{ asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/") }}");
+    dhxTabbar.addTab("a1", "{{ "Paste" | trans }}", 120, null, true);
+    dhxTabbar.addTab("a2", "{{ "Upload" | trans }}", 120);
+
+    var myForm,
+    formData,
+    myForm2,
+    formData2;
+
+    formData = [{
+        type: "fieldset",
+        label: "{{ "Uploader" | trans }}",
+        inputWidth: 350,
+        inputHeight: 650,
+        list: [{
+            type: "upload",
+            name: "myFiles",
+            inputWidth: 300,
+            inputHeight: 160,
+            url: "{{ url('json_JID_cron_upload') }}",
+            _swfLogs: "enabled",
+            autoStart: true,
+            swfPath: "{{ asset('bundles/ariicore/dhtmlx/dhtmlxForm/codebase/ext/uploader.swf') }}",
+            swfUrl: "{{ url('json_JID_cron_upload') }}"
+        }]
+        }];
+    myForm = dhxTabbar.cells("a2").attachForm(formData);
+
+    /*
+    myForm.attachEvent("onUploadFile", function(realName, serverName) {
+        dhtmlx.message({
+             type: "notice",
+             lifetime: 60000,
+             text: "{{ "Upload" | trans }}: "+ realName + "->" + serverName });
+    });
+    */
+    myForm.attachEvent("onUploadCancel", function(realName) {
+        dhtmlx.message({
+             type: "alert-warning",
+             lifetime: 60000,
+             text: "{{ "Upload canceled" | trans }} "+ realName });
+    });
+    myForm.attachEvent("onUploadFail", function(realName) {
+        dhtmlx.message({
+             type: "alert-error",
+             lifetime: 60000,
+             text: "{{ "Upload failed" | trans }} "+ realName });
+    });
+    myForm.attachEvent("onFileRemove", function(realName, serverName) {
+        dhtmlx.message({
+             type: "notice",
+             lifetime: 60000,
+             text: "{{ "File removed" | trans }}: "+ realName + "->" + (serverName == null ? "{{ "Not uploaded" | trans }}" : serverName) });
+    });
+
+    formData2 = [
+        {
+            type: "button",
+            name: "submit",
+            value:"{{ "Convert" | trans }}"
+        },
+        {
+            type: "input",
+            rows: 30,
+            name: "crontab",
+            inputWidth: 330,
+            inputHeight: 460
+        }
+        ];
+    myForm2 = dhxTabbar.cells("a1").attachForm(formData2);
+
+    myForm.attachEvent("onUploadComplete", function(count) {
+        // on charge le fichier cron dans le textearea
+      //  myForm2.loadStruct("xml_Home_cron_form");
+      myForm.send("{{ url('arii_JID_cron_form') }}", "GET", function (xml) {
+            crontab = xml.xmlDoc.responseText;
+            myForm2.setItemValue('crontab',crontab);
+            // dhxTabbar.tabs("a1").setActive();
+            dhxTabbar.tabs("a1").setActive();
+      });
+    });
+
+    globalLayout.cells("b").hideHeader();
+    var mygrid = globalLayout.cells("b").attachGrid();
+    mygrid.setImagePath( "{{ asset('bundles/ariicore/images/') }}");
+    mygrid.setHeader("{{ "File" | trans }},{{ "Date" | trans }},{{ "Size" | trans }}");
+    mygrid.setColAlign("left,right,right");
+    mygrid.setInitWidths("*,140,100");
+    mygrid.setColTypes("ed,ro,ro");
+    mygrid.init();
+    mygrid.load("{{ url('xml_JID_cron_dirlist') }}");
+
+    myForm2.attachEvent("onButtonClick", function(name, command){
+        globalLayout.cells("b").progressOn();      
+        myForm2.send("{{ url('arii_JID_cron_convert') }}", "POST", function (xml) {
+            n = xml.xmlDoc.responseText;
+            if (n==0) {
+                dhtmlx.message({
+                type: "alert-error",
+                lifetime: 60000,
+                text: "{{ "No cron found !" | trans }}" });
+                globalLayout.cells("b").progressOff();
+            }
+            else
+            mygrid.load("{{ url('xml_JID_cron_dirlist') }}", function () {
+                // file = mygrid.cells(1,0).getValue();
+                // alert(file);
+              //  globalLayout.cells("c").attachURL("{{ url('xml_JID_cron_job_view') }}?file="+file);        
+                globalLayout.cells("b").progressOff();
+            });
+        });
+
+    });
+
+    globalLayout.cells("c").hideHeader();
+    globalLayout.cells("b").setHeight(200);
+    mygrid.attachEvent("onRowDblClicked",function(id, value){
+        file = mygrid.cells(id,0).getValue();
+        globalLayout.cells("c").attachURL("{{ url('xml_JID_cron_job_view') }}?file="+file);        
+    });
+});
+
+function GlobalRefresh() {};
+
+</script>
+{% endblock %}

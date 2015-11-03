@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<AutomatedInstallation langpack="eng">
+        <com.izforge.izpack.panels.UserInputPanel id="home">
+                <userInput/>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="licences">
+                <userInput>
+                        <entry key="licenceOptions" value="{{licenceOptions}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.HTMLLicencePanel id="gpl_licence"/>
+        <com.izforge.izpack.panels.HTMLLicencePanel id="commercial_licence"/>
+        <com.izforge.izpack.panels.TargetPanel id="target">
+                <installpath>{{installpath}}</installpath>
+        </com.izforge.izpack.panels.TargetPanel>
+        <com.izforge.izpack.panels.UserPathPanel id="userpath">
+                <UserPathPanelElement>{{userpath}}</UserPathPanelElement>
+        </com.izforge.izpack.panels.UserPathPanel>
+        <com.izforge.izpack.panels.PacksPanel id="package">
+                <pack index="0" name="Job Scheduler" selected="true"/>
+                <pack index="1" name="Update Service" selected="false"/>
+                <pack index="2" name="Database Support" selected="true"/>
+                <pack index="3" name="Web" selected="false"/>
+                <pack index="4" name="Managed Jobs" selected="false"/>
+                <pack index="5" name="Housekeeping Jobs" selected="false"/>
+                <pack index="6" name="MySQL" selected="false"/>
+        </com.izforge.izpack.panels.PacksPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="network">
+                <userInput>
+                        <entry key="jettyHTTPSPort" value="{{jettyHTTPSPort}}"/>
+                        <entry key="schedulerPort" value="{{schedulerPort}}"/>
+                        <entry key="jettyHTTPPort" value="{{jettyHTTPPort}}"/>
+                        <entry key="launchScheduler" value="{{launchScheduler}}"/>
+                        <entry key="schedulerAllowedHost" value="{{schedulerAllowedHost}}"/>
+                        <entry key="schedulerHost" value="{{schedulerHost}}"/>
+                        <entry key="schedulerId" value="{{schedulerId}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="cluster">
+                <userInput>
+                        <entry key="clusterOptions" value="{{clusterOptions}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="smtp">
+                <userInput>
+                        <entry key="mailFrom" value="{{mailFrom}}"/>
+                        <entry key="smtpAccount" value="{{smtpAccount}}"/>
+                        <entry key="mailCc" value="{{mailCc}}"/>
+                        <entry key="mailPort" value="{{mailPort}}"/>
+                        <entry key="mailTo" value="{{mailTo}}"/>
+                        <entry key="smtpPass" value="{{smtpPass}}"/>
+                        <entry key="mailServer" value="{{mailServer}}"/>
+                        <entry key="mailBcc" value="{{mailBcc}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="email">
+                <userInput>
+                        <entry key="jobEvents" value="{{jobEvents}}"/>
+                        <entry key="mailOnError" value="{{mailOnError}}"/>
+                        <entry key="mailOnWarning" value="{{mailOnWarning}}"/>
+                        <entry key="mailOnSuccess" value="{{mailOnSuccess}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="update">
+                <userInput/>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="database">
+                <userInput>
+                        <entry key="databaseCreate" value="{{databaseCreate}}"/>
+                        <entry key="databaseDbms" value="{{databaseDbms}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="dbconnection">
+                <userInput>
+                        <entry key="databaseHost" value="{{databaseHost}}"/>
+                        <entry key="databasePassword" value="{{databasePassword}}"/>
+                        <entry key="databaseUser" value="{{databaseUser}}"/>
+                        <entry key="databaseSchema" value="{{databaseSchema}}"/>
+                        <entry key="databasePort" value="{{databasePort}}"/>
+                        <entry key="connectorJTDS" value="{{connectorJTDS}}"/>
+                        <entry key="connectorMaria" value="{{connectorMaria}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="jdbc">
+                <userInput>
+                        <entry key="connector" value="{{connector}}"/>
+                </userInput>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.UserInputPanel id="cron">
+                <userInput/>
+        </com.izforge.izpack.panels.UserInputPanel>
+        <com.izforge.izpack.panels.InstallPanel id="install"/>
+        <com.izforge.izpack.panels.ProcessPanel id="process"/>
+        <com.izforge.izpack.panels.FinishPanel id="finish"/>
+</AutomatedInstallation>
+
