@@ -283,7 +283,8 @@ dhtmlxEvent(window,"load",function(){
                     expire: 10000,
                     width: "500px",
                     text: loader.xmlDoc.responseText });
-                    GlobalRefresh();
+                    OrderDetail(id);
+                    GlobalRefresh();                    
                 });
                 break;
             default:
@@ -389,60 +390,6 @@ dhtmlxEvent(window,"load",function(){
     myHistory.enableSmartRendering(true,50);
     myHistory.enableAlterCss("","");
     
-    myDetailToolbar.attachEvent("onClick",function(itemid){
-        Text = '';
-        var id = myForm.getItemValue('ID');
-        switch(itemid) {
-            case "start_job":
-                Text = "{{ "Start job" | trans }}";
-                break;
-            case "stop_job":
-                Text = "{{ "Stop job" | trans }}";
-                break;
-            case "unstop_job":
-                Text = "{{ "Unstop job" | trans }}";
-                break;
-            case "delete_task":
-            case "kill_task":
-                Text = "{{ "Kill task" | trans }}";
-                break;
-        }
-        switch(itemid) {
-            case "start_job":
-            case "stop_job":
-            case "unstop_job":
-            case "delete_task":
-            case "kill_task":
-                var params = new Array();
-                myParameters.forEachRow(function(id){
-                    var param = myParameters.cells(id,0).getValue() + "=" + encodeURIComponent(myParameters.cells(id,1).getValue());
-                    params.push(param);
-                });
-                var paramsStr = params.join(",");
-                var start_time = '';
-                start_time = myDetailToolbar.getValue("ref_date");
-                // alert("{{ url('arii_XML_Command') }}?command="+Command+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id); 
-                dhtmlx.message({
-                type: "Notice",
-                text: Text });
-                globalLayout.cells("b").progressOn();
-                dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id,function(loader,response){
-                    dhtmlx.message({
-                    type: "Notice",
-                    expire: 10000,
-                    width: "500px",
-                    text: loader.xmlDoc.responseText });
-                    GlobalRefresh();
-                    globalLayout.cells("b").progressOff();        
-                });
-                break;
-            default:
-                alert(itemid);
-                break;
-        }
-        return true;
-    });
-    
     myParametersToolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {
             case "new":
@@ -513,7 +460,7 @@ function OrderDetail(id) {
         myChainToolbar.hideItem('unstop_chain');
         myDetailToolbar.hideItem('resume_order');
     }
-    myParameters.loadXML("{{ url('xml_JID_order_params') }}?id="+id, function() {
+    myParameters.load("{{ url('xml_JID_order_params') }}?id="+id, function() {
         mySteps.clearAndLoad("{{ url('xml_JID_order_steps') }}?id="+id, function() {
             myLog.clearAndLoad("{{ url('xml_JID_order_log') }}?id="+id, function () {
                 myHistory.clearAndLoad("{{ url('xml_JID_order_history') }}?id="+id, function() {                   
@@ -564,35 +511,6 @@ function onShowMenu(rowId, celInd, grid) {
     {% endif %} 
  return true;
 }
-
-// Fonctions
-function CheckSpooler(rid) 
-{
-    dhx4.ajax.get("{{ url('arii_JID_spooler_update') }}?id="+rid,function(loader,response){
-        dhtmlx.message({
-            type: "Notice",
-            expire: 10000,
-            width: "500px",
-            text: loader.xmlDoc.responseText
-        });
-    });
-return true;
-}
-
-function Spooler(url,rid)
-{
-    dhx4.ajax.get.get(url+"="+rid,function(loader,response){
-        dhtmlx.message({
-            type: "Notice",
-            expire: 10000,
-            width: "500px",
-            text: loader.xmlDoc.responseText
-        });
-        CheckSpooler(rid);
-    });
-    return true;
-}
-
 </script>
 </body>
 {% endblock %}

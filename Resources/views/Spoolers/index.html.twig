@@ -101,7 +101,7 @@ dhtmlxEvent(window,"load",function(){
 //    myGrid.attachEvent("onBeforeContextMenu", onShowMenu );
     myGrid.enableAlterCss("","");
     myGrid.init();
-    myGrid.loadXML( "{{ url('xml_JID_spoolers_list') }}" );
+    myGrid.load( "{{ url('xml_JID_spoolers_list') }}" );
     myGrid.enableLightMouseNavigation( true );
     myGrid.attachEvent("onRowDblClicked",SpoolerDetail );
     myGrid.attachEvent("onXLE",function(){
@@ -144,7 +144,7 @@ dhtmlxEvent(window,"load",function(){
     myParams.init();
     myQueue.attachEvent("onRowDblClicked", function(id) {
         myTasks.cells("b").progressOn();
-        myParams.loadXML("{{ url('xml_JID_spooler_task_params') }}?id="+id, function() {
+        myParams.load("{{ url('xml_JID_spooler_task_params') }}?id="+id, function() {
             myTasks.cells("b").progressOff();
         });
     });
@@ -219,7 +219,7 @@ function SpoolerDetail(id) {
         else if (myForm.getItemValue('IS_RUNNING')) {
             myFormToolbar.showItem('pause_spooler');        
         }
-        myQueue.loadXML("{{ url('xml_JID_spooler_tasks') }}?spooler="+spooler, function() {
+        myQueue.load("{{ url('xml_JID_spooler_tasks') }}?spooler="+spooler, function() {
             myTabbar.cells("queue").progressOff();
             myJobs.clearAndLoad("{{ url('xml_JID_spooler_jobs') }}?spooler="+spooler, function() {
                 myTabbar.cells("jobs").progressOff();

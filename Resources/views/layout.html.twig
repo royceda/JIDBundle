@@ -144,7 +144,7 @@ function Node(id,nid,command,message,chain)
         type: "Notice",
         text: message
     });
-    alert("{{ url('arii_XML_Command') }}?command="+command+"&node_id="+nid+"&id="+id);
+    // alert("{{ url('arii_XML_Command') }}?command="+command+"&node_id="+nid+"&id="+id);
     dhtmlxAjax.get("{{ url('arii_XML_Command') }}?command="+command+"&node_id="+nid+"&id="+id+"&chain="+chain,function(loader){
         dhtmlx.message({
         type: "Notice",
@@ -161,36 +161,12 @@ var msg;
 
 function ShowWhy( id ) { 
     largeur = 900;
-    msg = dhxWins.createWindow( "msgwin" ,  (document.getElementById("wrapper").offsetWidth-largeur)/2, 50, largeur, 550 );
+    var dhxWins = new dhtmlXWindows();
+
+    msg = dhxWins.createWindow( "msgwin" ,  (document.body.offsetWidth-largeur)/2, 50, largeur, 550 );
     msg.setText("{{ "Diagnostic" | trans }} ");
 
-    winLayout = msg.attachLayout("1C");
-    winLayout.cells("a").hideHeader();
-    winLayout.cells("a").progressOn();
-    
-    toolbar = winLayout.cells("a").attachToolbar();
-    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    toolbar.loadStruct("{{ url('arii_JID_toolbar_job_why') }}");
-    toolbar.attachEvent("onClick",function(buttonId){
-        switch (buttonId) {
-            case "cancel":
-                msg.close();
-                break;
-            default:
-                alert(buttonId);
-        }
-        return true;
-    });
-
-    var dhxgrid = winLayout.cells("a").attachGrid();
-    dhxgrid.setHeader("{{ "Name" | trans }},{{ "Value" | trans }}");
-    dhxgrid.setColTypes("tree,ro");
-    dhxgrid.enableTreeGridLines(true);
-    dhxgrid.setInitWidths("400,*");
-    dhxgrid.init();
-    dhxgrid.load("{{ url('arii_XML_Command') }}?command=why_job&job_id="+id, function () {
-        winLayout.cells("a").progressOff();    
-    });
+    winLayout = msg.attachURL("{{ url('arii_XML_Command') }}?command=why_job&job_id="+id);    
 }
 
 
@@ -282,7 +258,7 @@ function Order( Command, id, Text, Toolbar, Time, chain )
     winbar.cells("b1").progressOn();
     dhxForm.loadStruct("{ { url('json_JID_order_form') }}?id="+id, function(){
         winbar.cells("b1").progressOff();    
-        dhxgrid.loadXML("{{ url('xml_JID_order_params') }}?id="+id);
+        dhxgrid.load("{{ url('xml_JID_order_params') }}?id="+id);
     });
     
     toolbar.attachEvent("onClick",function(itemid){
@@ -383,7 +359,7 @@ var largeur = 600;
     var toolbar2;
     toolbar2 = winbar.cells("b2").attachToolbar();
     toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    toolbar2.loadXML("{{ url('xml_JID_toolbar_order_param') }}");
+    toolbar2.load("{{ url('xml_JID_toolbar_order_param') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {
@@ -429,7 +405,7 @@ var largeur = 600;
     dhxgrid.setColTypes("ed,ed");
     dhxgrid.setInitWidths("*,*");
     dhxgrid.init();
-    dhxgrid.loadXML("{{ url('xml_JID_start_order_parameters') }}?id="+encodeURIComponent(id));
+    dhxgrid.load("{{ url('xml_JID_start_order_parameters') }}?id="+encodeURIComponent(id));
     
     toolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {

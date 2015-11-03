@@ -145,14 +145,14 @@ mygrid.i18n.paging={
       notfound:"{{ "No Records Found" | trans }}" };
 
 {% if  app.request.get('status') != '' %}
-mygrid.loadXML( "{{ url('xml_JID_chains_list') }}", function() {
+mygrid.load( "{{ url('xml_JID_chains_list') }}", function() {
 //    toolbar.setItemState("deploy",true);
     mygrid.getFilterElement(4).value='{{ app.request.get('status') }}';
 //    mygrid.filterBy(4,"{{ app.request.get('status') }}",true);
     mygrid.expandAll();
 });
 {% else %}
-mygrid.loadXML( "{{ url('xml_JID_chains_list') }}");
+mygrid.load( "{{ url('xml_JID_chains_list') }}");
 {% endif %}
 mygrid.enableLightMouseNavigation( true );
 mygrid.attachEvent("onRowSelect",function(id,ind){
@@ -341,7 +341,7 @@ function GridRefresh() {
     var checkedRows = mygrid.getCheckedRows(1);
     if (checkedRows === "")
     {
-        mygrid.loadXML( "{{ url('xml_JID_chains_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps, function(){
+        mygrid.load( "{{ url('xml_JID_chains_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps, function(){
 //            mygrid.loadOpenStates();
 //            toolbar.setItemState("deploy",false);
             mygrid.changePage(page_number);
@@ -351,7 +351,7 @@ function GridRefresh() {
         });
     } else
     {
-        mygrid.loadXML( "{{ url('xml_JID_chains_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps+"&checked_rows="+encodeURIComponent(checkedRows), function(){
+        mygrid.load( "{{ url('xml_JID_chains_list') }}?time="+seconds+'&activated='+activated+'&steps='+steps+"&checked_rows="+encodeURIComponent(checkedRows), function(){
 //            mygrid.loadOpenStates();
 //            toolbar.setItemState("deploy",false);
             mygrid.changePage(page_number); 
@@ -716,7 +716,7 @@ dhxgrid.setColTypes("ro,ro,ro");
 dhxgrid.setInitWidths("*,180,180");
 dhxgrid.setPagingSkin("toolbar","dhx_skyblue");
 dhxgrid.init();
-dhxgrid.loadXML("{{ url('arii_JID_orders_selected_orders') }}?ids="+encodeURIComponent(ids));
+dhxgrid.load("{{ url('arii_JID_orders_selected_orders') }}?ids="+encodeURIComponent(ids));
 
 return true;
         
@@ -827,7 +827,7 @@ function AddOrder(id,chain)
     var toolbar2;
     toolbar2 = winLayout.cells("b").attachToolbar();
     toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    toolbar2.loadXML("{{ url('xml_JID_toolbar_order_param') }}");
+    toolbar2.load("{{ url('xml_JID_toolbar_order_param') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {
@@ -885,7 +885,7 @@ function AddOrder(id,chain)
     dhxgrid.setInitWidths("*,*");
     dhxgrid.setPagingSkin("toolbar","dhx_skyblue");
     dhxgrid.init();
-    dhxgrid.loadXML("{{ url('xml_JID_add_order_parameters') }}?id="+id);
+    dhxgrid.load("{{ url('xml_JID_add_order_parameters') }}?id="+id);
     
     var formData = [
         { type: "settings", inputWidth: 420, position: "label-left", labelWidth: 100, labelAlign: "left", position: "label-left", offsetLeft: 10 },
@@ -959,7 +959,7 @@ var largeur = 600;
     var toolbar2;
     toolbar2 = winLayout.cells("b").attachToolbar();
     toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    toolbar2.loadXML("{{ url('xml_JID_toolbar_order_param') }}");
+    toolbar2.load("{{ url('xml_JID_toolbar_order_param') }}");
     
     toolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {
@@ -1012,7 +1012,7 @@ var largeur = 600;
     dhxgrid.setInitWidths("*,*");
     dhxgrid.setPagingSkin("toolbar","dhx_skyblue");
     dhxgrid.init();
-    dhxgrid.loadXML("{{ url('xml_JID_start_order_parameters') }}?id="+id);
+    dhxgrid.load("{{ url('xml_JID_start_order_parameters') }}?id="+id);
     
     return true;          
 }
@@ -1043,7 +1043,7 @@ var largeur = 600;
     var toolbar2;
     toolbar2 = winLayout.cells("b").attachToolbar();
     toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    toolbar2.loadXML("{{ url('xml_JID_toolbar_order_param') }}");
+    toolbar2.load("{{ url('xml_JID_toolbar_order_param') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {
@@ -1097,7 +1097,7 @@ var largeur = 600;
     dhxgrid.setInitWidths("*,*");
     dhxgrid.setPagingSkin("toolbar","dhx_skyblue");
     dhxgrid.init();
-    dhxgrid.loadXML("{{ url('xml_JID_start_order_parameters') }}?id="+id);
+    dhxgrid.load("{{ url('xml_JID_start_order_parameters') }}?id="+id);
     
     return true;          
 }
@@ -1128,7 +1128,7 @@ var largeur = 600;
     var toolbar2;
     toolbar2 = winLayout.cells("b").attachToolbar();
     toolbar2.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    toolbar2.loadXML("{{ url('xml_JID_toolbar_order_param') }}");
+    toolbar2.load("{{ url('xml_JID_toolbar_order_param') }}");
 
     toolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {
@@ -1183,7 +1183,7 @@ var largeur = 600;
     dhxgrid.setPagingSkin("toolbar","dhx_skyblue");
     dhxgrid.init();
     // alert("{{ url('xml_JID_start_order_parameters') }}?id="+id);
-    dhxgrid.loadXML("{{ url('xml_JID_start_order_parameters') }}?id="+encodeURIComponent(id));
+    dhxgrid.load("{{ url('xml_JID_start_order_parameters') }}?id="+encodeURIComponent(id));
     
     return true;          
 }

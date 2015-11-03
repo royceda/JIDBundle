@@ -45,7 +45,7 @@ dhtmlxEvent(window,"load",function(){
     mySteps.setColumnHidden(6,true);
     mySteps.enableAlterCss("","");
     mySteps.init();
-    mySteps.loadXML("{{ url('xml_JID_order_steps') }}?id={{ id }}");
+    mySteps.load("{{ url('xml_JID_order_steps') }}?id={{ id }}");
     mySteps.attachEvent("onRowDblClicked", JobDetail );
 
     globalLayout.cells("c").setText( "{{"Log" | trans }}" );
@@ -63,7 +63,7 @@ dhtmlxEvent(window,"load",function(){
 
 function JobDetail(id) {
     globalLayout.cells("c").progressOn();
-    myLog.loadXML( "{{ url('xml_JID_job_log') }}?id="+id, function () {
+    myLog.load( "{{ url('xml_JID_job_log') }}?id="+id, function () {
         globalLayout.cells("c").progressOff();
     });
 }

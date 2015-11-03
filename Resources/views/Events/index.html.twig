@@ -93,7 +93,7 @@ mygrid.i18n.paging={
       of:" {{ "of" | trans }} ",
       notfound:"{{ "No Records Found" | trans }}" };
       
-mygrid.loadXML( "{{ url('xml_JID_events') }}" );
+mygrid.load( "{{ url('xml_JID_events') }}" );
 mygrid.enableLightMouseNavigation( true );
 
 dhxLayout.cells("b").hideHeader();
@@ -105,7 +105,7 @@ mygrid.attachEvent("onRowDblClicked",function(id, value){
 function GlobalRefresh() {
     toolbar.setItemText( "refresh", "{{ 'Refreshing...' | trans}}" );
     //mygrid.clearAll();
-    mygrid.loadXML( "{{ url('arii_JID_events') }}" );
+    mygrid.load( "{{ url('arii_JID_events') }}" );
     var currentTime = new Date()
     var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
     toolbar.setItemText( "refresh", FormatTime(nextTime));

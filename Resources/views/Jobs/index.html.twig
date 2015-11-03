@@ -68,7 +68,7 @@ dhtmlxEvent(window,"load",function(){
     myGrid = globalLayout.cells("b").attachGrid();
     myGrid.selMultiRows = true;
     myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
-    myGrid.setHeader("{{ "Spooler" | trans }},{{ "Folder" | trans }},{{ "Job" | trans }},{{ "Status" | trans }},#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Exit Code" | trans }},{{ "Timeline" | trans }},{{ "PID" | trans }},&nbsp;");
+    myGrid.setHeader("{{ "Spooler" | trans }},{{ "Folder" | trans }},{{ "Job" | trans }},{{ "Status" | trans }},#cspan,{{ "Start time" | trans }},{{ "End time" | trans }},{{ "Duration" | trans }},{{ "Exit" | trans }},{{ "Timeline" | trans }},{{ "PID" | trans }},&nbsp;");
     myGrid.attachHeader("#select_filter,#text_filter,#text_filter,#select_filter,#cspan,#text_filter,#text_filter,#text_filter,#text_filter,<img width='480' src='{{app.request.baseurl}}/public/gantt'/>,#text_filter,#rspan");
     myGrid.setInitWidths("100,*,*,90,40,150,150,110,60,495,60,35");
     myGrid.setColAlign("left,left,left,center,center,right,right,right,right,right,right,center");
@@ -305,7 +305,7 @@ dhtmlxEvent(window,"load",function(){
                 var paramsStr = params.join(",");
                 var start_time = '';
                 start_time = myDetailToolbar.getValue("ref_date");
-                // alert("{{ url('arii_XML_Command') }}?command="+Command+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id); 
+                // alert("{{ url('arii_XML_Command') }}?command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&job_id="+id); 
                 dhtmlx.message({
                 type: "Notice",
                 text: Text });

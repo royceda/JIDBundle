@@ -58,7 +58,7 @@ HistoryGrid.setColSorting("str,int,date,date,str,str");
 HistoryGrid.enableTreeGridLines(true);
 HistoryGrid.enableTreeCellEdit(false);
 HistoryGrid.setSkin('dhx_skyblue');
-HistoryGrid.loadXML( "{{ url('arii_JID_grid_history_order') }}?id={{ id }}" );
+HistoryGrid.load( "{{ url('arii_JID_grid_history_order') }}?id={{ id }}" );
 HistoryGrid.enableAlterCss("even_row","odd_row");
 HistoryGrid.init();
 HistoryGrid.enableLightMouseNavigation( true );
@@ -69,7 +69,7 @@ HistoryGrid.attachEvent("onRowDblClicked",function(id, value) {
     dhxLayout.cells("c").progressOn();
     if (ids[1]) {
         tabbar.setTabActive("b2");
-        JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+ ids[1] );
+        JobLogGrid.load( "{{ url('xml_JID_job_log') }}?id="+ ids[1] );
     }
     else {
         tabbar.setTabActive("b1");
@@ -109,7 +109,7 @@ BarChart.attachEvent("onItemClick", function(id){
     // chargement de la partie joblog
     var ids = id.split('#');
     HistoryGrid.selectRowById(ids[0]);
-    JobLogGrid.loadXML( "{{ url('xml_JID_job_log') }}?id="+ ids[1] );
+    JobLogGrid.load( "{{ url('xml_JID_job_log') }}?id="+ ids[1] );
 });
 BarChart.load( "{{ url('arii_JID_chart_history_order') }}?id={{ id }}", "xml" );
 
@@ -130,7 +130,7 @@ OrderLogGrid.setColSorting("date,str,str,int");
 OrderLogGrid.setSkin('dhx_skyblue');
 OrderLogGrid.enableAlterCss("even_row","odd_row");
 OrderLogGrid.init();
-OrderLogGrid.loadXML( "{{ url('arii_JID_order_log') }}?id={{ id }}" );
+OrderLogGrid.load( "{{ url('arii_JID_order_log') }}?id={{ id }}" );
 
 var JobLogGrid = tabbar.cells("b2").attachGrid();
 JobLogGrid.setHeader("{{ "Date" | trans }},{{ "Message" | trans }},#cpan,{{ "Code" | trans }}");

@@ -111,7 +111,7 @@ dhtmlxEvent(window,"load",function(){
     myGrid.setColSorting("date,str,str,int,str,str,str,str,int");
     myGrid.init();
     myGrid.enableAlterCss("","");
-    myGrid.loadXML( "{{ url('xml_JID_messages_grid') }}" );
+    myGrid.load( "{{ url('xml_JID_messages_grid') }}" );
     myGrid.setColumnHidden(5,true);
     myGrid.setColumnHidden(6,true);
     myGrid.setColumnHidden(7,true);
@@ -144,7 +144,7 @@ dhtmlxEvent(window,"load",function(){
 });
 // Autorefresh
 function GlobalRefresh() {
-    myGrid.loadXML( "{{ url('xml_JID_messages_grid') }}" );
+    myGrid.load( "{{ url('xml_JID_messages_grid') }}" );
     myBar.load( "{{ url('xml_JID_messages_bar') }}" );
     myBar2.load( "{{ url('xml_JID_messages_spooler') }}" );
 }

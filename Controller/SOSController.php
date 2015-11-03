@@ -3,6 +3,7 @@ namespace Arii\JIDBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class SOSController extends Controller
 {
@@ -18,6 +19,9 @@ class SOSController extends Controller
         $request = Request::createFromGlobals();
         $xml_command = $request->get( 'command' );
         $spooler_id = $request->get( 'spooler_id' );
+
+        $SOS = $this->container->get('arii_jid.sos');
+
         switch ($xml_command) {            
             case 'add_order': 
                 // En entrée:
@@ -71,7 +75,7 @@ class SOSController extends Controller
                 // En entrée:
                 //   order_id: identifiant du traitement
                 //   at: heure de depart
-                 $id = $request->get('id');
+                 $id = $request->get('order_id');
                  $at = $request->get('time');
                  
                  list($spooler_id,$order_id,$job_chain) = $sos->getOrderInfos($id);                 
@@ -138,6 +142,10 @@ class SOSController extends Controller
                 list($spooler_id,$job) = $sos->getJobInfos($job_id);
                 // construction de la commande
                 $cmd  = '<job.why job="'.$job.'"/>';
+                $result = $SOS->Command($spooler_id,$cmd,'attr' );
+                $why = $result['spooler']['answer']['job.why'];
+                $reason_why = $this->show_array($why);
+                return $this->render('AriiJIDBundle::bootstrap.html.twig',array('page' => $reason_why ) );
                 break;
             case 'kill_task': 
                  $job_id = $request->get( 'job_id' );
@@ -273,7 +281,8 @@ class SOSController extends Controller
                 exit();
         }
         // Recherche les informations de connexion
-        list($protocol,$scheduler,$port,$path) = $sos->getConnectInfos($spooler_id);                
+        // Obsolete ! Le but est de se connecter quelque soit le moyen d'accès
+        // list($protocol,$scheduler,$port,$path) = $sos->getConnectInfos($spooler_id);                
         
         if (!isset($cmd)) {
             $errorlog->Error("XML Command undefined",0,__FILE__,__LINE__,__FUNCTION__);
@@ -281,8 +290,7 @@ class SOSController extends Controller
             exit();
         }
         
-        $SOS = $this->container->get('arii_core.sos');
-        $result = $SOS->XMLCommand($spooler_id,$scheduler,$port,$path,$protocol,$cmd);
+        $result = $SOS->Command($spooler_id,$cmd );
 
         if (isset($result['ERROR'])) {
             if (substr($result['ERROR'],0,7) === 'CONNECT') {
@@ -329,31 +337,22 @@ class SOSController extends Controller
             }
         }
         
-        switch ($xml_command) {
-           case 'why_job':
-                $xml = $this->XmlWhy($result['spooler']['answer']);
-                header('Content-type: text/xml');
-                print "<?xml version='1.0' encoding='utf-8' ?>";
-                print "<rows>$xml</rows>";
-                break;
-           default:
-                print "<table>";
-                if (isset($result['spooler']['answer_attr']['time']))
-                    print "<tr><th align='right'>Executed</th><td>".$result['spooler']['answer_attr']['time']."</td></tr>";
-               if (isset($result['spooler']['answer']['ok']['order_attr'])){
-                    foreach (array('job_chain','order','created','state') as $k) {
-                        if (isset($result['spooler']['answer']['ok']['order_attr'][$k]))
-                            print "<tr><th align='right'>$k</th><td>".$result['spooler']['answer']['ok']['order_attr'][$k]."</td></tr>";
-                    }
-                }
-                if (isset($result['spooler']['answer']['ok']['task_attr'])){
-                    foreach (array('job','id','start_at','state') as $k) {
-                        if (isset($result['spooler']['answer']['ok']['task_attr'][$k]))
-                            print "<tr><th align='right'>$k</th><td>".$result['spooler']['answer']['ok']['task_attr'][$k]."</td></tr>";
-                    }
-                }
-                print "</table>";
+        print "<table>";
+        if (isset($result['spooler']['answer_attr']['time']))
+            print "<tr><th align='right'>Executed</th><td>".$result['spooler']['answer_attr']['time']."</td></tr>";
+        if (isset($result['spooler']['answer']['ok']['order_attr'])){
+            foreach (array('job_chain','order','created','state') as $k) {
+                if (isset($result['spooler']['answer']['ok']['order_attr'][$k]))
+                    print "<tr><th align='right'>$k</th><td>".$result['spooler']['answer']['ok']['order_attr'][$k]."</td></tr>";
+            }
         }
+        if (isset($result['spooler']['answer']['ok']['task_attr'])){
+            foreach (array('job','id','start_at','state') as $k) {
+                if (isset($result['spooler']['answer']['ok']['task_attr'][$k]))
+                    print "<tr><th align='right'>$k</th><td>".$result['spooler']['answer']['ok']['task_attr'][$k]."</td></tr>";
+            }
+        }
+        print "</table>";
         exit();
    }
 
@@ -400,4 +399,33 @@ class SOSController extends Controller
             return "<font color='red'>Database error</font>";
         }
    }
+   
+    private function show_array($array, $page=''){
+        if (is_array($array) == 1){          // check if input is an array
+            foreach ($array as $k=>$v) {
+                if ($k !=  'attr') {
+                    $page .= "<blockquote>";
+                    if (($p = strpos($k,'.why'))>0) {
+                        $page .= "<i>".substr($k,0,$p)." ?</i>";
+                    }
+                    elseif ($k=='obstacle') {
+                        $page .= "<font color='red'>$k</font>";
+                    }
+                    else {
+                        $page .= $k;
+                    }
+                    $page .= $this->show_array($v);
+                    $page .= "</blockquote>";
+                }
+                else {
+                    $page .= $this->show_array($v);                    
+                }
+            }
+        }  
+        else{ // argument $array is not an array
+            $page .= " <strong>$array</strong>";
+        }
+        return $page;
+    }
+
 }

@@ -191,6 +191,7 @@ class SpoolerController extends Controller
        }
        // Si le l'id est celui de la configuration
        // on se rabat sur celui la
+       /* Obsolete
        if ($hostname=='') {
            if ($this->container->getParameter('osjs_id')==$spooler) {
             $hostname = $this->container->getParameter('osjs_ipaddress');
@@ -203,9 +204,10 @@ class SpoolerController extends Controller
                 exit();
             }
        }
+        */
        // on execute la commande show_state
-       $SOS = $this->container->get('arii_core.sos');
-       $result = $SOS->XMLCommand($spooler,$hostname,$port,$path,$protocol,'<show_state/>');
+       $SOS = $this->container->get('arii_jid.sos');
+       $result = $SOS->Command($spooler,'<show_state/>');
        $is_paused = $is_running = 0;
        $host = $hostname;
        if (isset($result['spooler']['answer']['state_attr'])){
@@ -237,6 +239,7 @@ class SpoolerController extends Controller
                                     'IS_PAUSED' => $is_paused,
                                     'HOSTNAME' => $host ))
                 .$sql->Where(array('SCHEDULER_ID' => $spooler ));
+
         $res = $data->sql->query( $qry );
         exit();
    }
