@@ -36,7 +36,7 @@ class SilentController extends Controller
 
     public function generateAction()
     {
-        $tmp = $this->container->getParameter('arii_tmp');
+        $tmp = sys_get_temp_dir();
         
         // Quel OS
         $Value = array();

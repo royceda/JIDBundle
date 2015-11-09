@@ -32,7 +32,7 @@ class ProcessController extends Controller
         $request = Request::createFromGlobals();
         $return = 0;
         
-        $tmp = $this->container->getParameter('arii_tmp');
+        $tmp = sys_get_temp_dir();
         $this->images = $this->container->getParameter('graphviz_images');
         $this->graphviz_dot = $this->container->getParameter('graphviz_dot');
         $session = $this->getRequest()->getSession();

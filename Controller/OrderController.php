@@ -360,7 +360,7 @@ class OrderController extends Controller {
         $request = Request::createFromGlobals();
         $return = 0;
         
-        $tmp = $this->container->getParameter('arii_tmp');
+        $tmp = sys_get_temp_dir();
         $images = '/bundles/ariigraphviz/images/silk';
         $this->images = $this->get('kernel')->getRootDir().'/../web'.$images;
         $images_url = $this->container->get('templating.helper.assets')->getUrl($images);        
