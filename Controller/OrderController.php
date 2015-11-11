@@ -210,8 +210,13 @@ class OrderController extends Controller {
 
     public function logAction()
     {
+        # Il est preferable de connaitre le type de base plutot que le deviner
+        $session = $this->container->get('arii_core.session');
+        $db = $session->getDatabase();
+        
         $request = Request::createFromGlobals();
         $id = $request->get('id');
+        
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $sql = $this->container->get('arii_core.sql');  
         $qry = $sql->Select(array('HISTORY_ID','JOB_CHAIN','ORDER_ID','SPOOLER_ID','TITLE','STATE','STATE_TEXT','START_TIME','END_TIME'))
@@ -244,15 +249,20 @@ class OrderController extends Controller {
                 $Res = explode("\n",@gzinflate($log));
             } 
             else{
-               if (gettype($Infos['LOG'])=='object') {
-                     $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG']->load(), 10, -8) ));
-               }
-               elseif ((strpos(' '.$Infos['LOG'],'\\')>0) and (function_exists('pg_unescape_bytea'))) {
-                    $Res = explode("\n",gzinflate (substr(pg_unescape_bytea( $Infos['LOG']), 10, -8) ));
-               }
-               else {
-                     $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG'], 10, -8) ));
-               }
+                switch ($db['driver']) {
+                    case 'postgre':
+                    case 'postgres':
+                    case 'pdo_pgsql':
+                        $Res = explode("\n",gzinflate (substr(pg_unescape_bytea( $Infos['LOG']), 10, -8) ));
+                        break;
+                    case 'oci8':
+                    case 'oracle':
+                    case 'pdo_oci':
+                        $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG']->load(), 10, -8) ));
+                        break;            
+                    default:
+                        $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG'], 10, -8) ));
+                }
             }
     
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
