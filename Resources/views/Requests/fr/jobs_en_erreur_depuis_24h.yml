@@ -1,0 +1,9 @@
+title:          Jobs en erreur
+description:    Jobs en erreur depuis les dernières 24h.
+header:         INSTANCE,LAST_START,LAST_END,DURATION,STATUS,DESCRIPTION,JOB_NAME
+icon:           job
+sql:
+    mysql: |
+        SELECT "SPOOLER_ID" AS "JOB_SCHEDULER", "JOB_NAME", "ERROR", 
+            "START_TIME", "END_TIME", "END_TIME"-"START_TIME" AS "ELAPSED" 
+            FROM SCHEDULER_HISTORY

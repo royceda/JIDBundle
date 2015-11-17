@@ -86,6 +86,19 @@ class RequestsController extends Controller
         $request = Request::createFromGlobals();
         if ($request->query->get( 'request' ))
             $req=$request->query->get( 'request');
+        else {
+            print "Request ?!";
+            exit();
+        }
+                        
+        // cas de l'appel direct
+        if ($request->query->get( 'dbname' )) {
+            $instance=$request->query->get( 'dbname');
+
+            $session = $this->container->get('arii_core.session');
+            $engine = $session->setDatabaseByName($instance,'waae');            
+        }
+        
         if (!isset($req)) return $this->summaryAction();
         
         $page = '../src/Arii/JIDBundle/Resources/views/Requests/'.$lang.'/'.$req.'.yml';
@@ -105,28 +118,84 @@ class RequestsController extends Controller
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
 
-        $res = $data->sql->query($value['sql']['oracle']);
+        # on prend la base par défaut 
+        $session = $this->container->get('arii_core.session');     
+        $db = $session->getDatabase();
+        switch($db['driver']) {
+            case 'postgre':
+            case 'postgres':
+                $driver = 'postgres';
+                break;
+            case 'mysql':
+            case 'mysqli':
+                $driver = 'mysql';
+                break;
+            case 'oci8':
+            case 'oracle':
+            case 'pdo_oci':
+                $driver = 'oracle';
+                break;
+            default:
+                $driver = $db['driver'];
+        }
+                
+        if (!isset($value['sql'][$driver])) {
+            print "$driver ?!";
+            exit();
+        }
+        
+        $res = $data->sql->query($value['sql'][$driver]);
         $date = $this->container->get('arii_core.date');
         $nb=0;
-        $value['columns'] = explode(',',$value['header']);
+        // On cree le tableau des consoles et des formats
+        $value['columns'] = $Format = array();
+        foreach (explode(',',$value['header']) as $c) {
+            if (($p = strpos($c,'('))>0) {
+                $h = substr($c,0,$p);
+                $Format[$h] = substr($c,$p+1,strpos($c,')',$p)-$p-1);
+                $c = $h;
+            }
+            array_push($value['columns'],$c);
+        }
+        // bibliothèques
+        $date = $this->container->get('arii_core.date');   
         while ($line = $data->sql->get_next($res))
         {
             $r = array();
+            $status = 'unknown';
             foreach ($value['columns'] as $h) {
                 if (isset($line[$h])) {
-                    $val = $line[$h];
-                    // on a un statut ?
-                    if ($h == 'STATUS')
-                        $value['status'] = $val;
+                    // format special
+                    $value['status'] = '';
+                    if (isset($Format[$h])) {
+                        switch ($Format[$h]) {
+                            case 'timestamp':
+                                $val = $date->Time2Local($line[$h]);
+                                break;
+                            case 'duration':
+                                $val = $date->FormatTime($line[$h]);
+                                break;
+                            case 'br':
+                                $val = str_replace(array("\t","\n"),array("     ","<br/>"),$line[$h]);
+                                break;
+                            default:
+                                $val = $line[$h].'('.$Format[$h].')';
+                                break;
+                        }
+                    }
+                    else {
+                        $val = $line[$h];
+                    }
                 }
                 else  $val = '';
                 array_push($r,$val);
             }
             $nb++;
-            $value['line'][$nb] = $r;
-        }
+            $value['lines'][$nb]['cells'] = $r;
+            $value['lines'][$nb]['status'] = $status;
+         }
         $value['count'] = $nb;
-        return $this->render('AriiJIDBundle:Requests:bootstrap.html.twig', array('result' => $value));
+        return $this->render('AriiJIDBundle:Requests:bootstrap.html.twig', array('result' => $value ));
     }
 
 }

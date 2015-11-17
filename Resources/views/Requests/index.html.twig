@@ -10,7 +10,7 @@ dhtmlxEvent(window,"load",function(){
     globalLayout.cells("b").hideHeader(); 
 
     {% if  app.request.query.get('id') is defined %}
-    last = "{{ app.request.query.get('id') }}";
+    last = "{{ app.request.query.get('request') }}";
     globalLayout.cells("b").attachURL("{{ url('arii_JID_requests_result') }}?request="+last );
     {% else %}
     globalLayout.cells("b").attachURL("{{ url('arii_JID_requests_summary') }}");

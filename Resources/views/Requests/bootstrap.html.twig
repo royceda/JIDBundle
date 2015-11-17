@@ -8,6 +8,7 @@
 <!-- <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script> -->
 {% endblock %} 
 {% block body %}
+<body>
 <div class="container-fluid">
 <div class="jumbotron">
   <h1>{{ result.title | trans }}</h1>
@@ -23,15 +24,15 @@
         <th>{{ cell | trans }}</th>
     {% endfor %}
     </tr>
-    {% for id, row in result.line %}
-        {% if result.status is defined %}
-        <tr{% if result.status == 'SUCCESS' %} class="success"{% endif %}{%if result.status == 'FAILURE' %} class="failure"{% endif %}>
+    {% for id,line in result.lines %}
+        {% if line.status is defined %}
+        <tr class="{% if line.status == 'SUCCESS' %}success{% endif %}{% if line.status == 'RUNNING' %}warning{% endif %}{% if line.status == 'FAILURE' %}danger{% endif %}{% if line.status == 'ON_ICE' %}info{% endif %}{% if line.status == 'ON_HOLD' %}info{% endif %}">
         {% else %}
         <tr>
-        {% endif %}
+        {% endif %}        
         <th>{{ id }}</th>
-        {% for cell in row %}
-            <td>{{ cell }}</td>
+        {% for cell in line.cells %}  
+            <td>{{ cell | raw }}</td>
         {% endfor %}
         </tr>
     {% endfor %}
@@ -47,4 +48,5 @@
 {% endif %}
 </div>
 </div>    
+</body>
 {% endblock %}

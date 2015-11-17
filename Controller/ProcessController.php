@@ -33,7 +33,10 @@ class ProcessController extends Controller
         $return = 0;
         
         $tmp = sys_get_temp_dir();
-        $this->images = $this->container->getParameter('graphviz_images');
+        $images = '/bundles/ariigraphviz/images/silk';
+        $images_path = $this->get('kernel')->getRootDir().'/../web'.$images;
+        $images_url = $this->container->get('templating.helper.assets')->getUrl($images);        
+
         $this->graphviz_dot = $this->container->getParameter('graphviz_dot');
         $session = $this->getRequest()->getSession();
         $id = $request->query->get( 'id' );

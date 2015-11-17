@@ -1,0 +1,35 @@
+title:          Ordres depuis 10 jours
+description:    Liste des ordres depuis les 10 derniers jours.
+header:         JOB_SCHEDULER,JOB_CHAIN,ORDER_ID,ORDER_COUNT,ELAPSED(duration)
+icon:           job
+sql:
+    mysql: |
+        SELECT  SPOOLER_ID AS "JOB_SCHEDULER", 
+                JOB_CHAIN, 
+                ORDER_ID, 
+                COUNT(*) AS "ORDER_COUNT", 
+                END_TIME-START_TIME AS "ELAPSED"
+        FROM SCHEDULER_ORDER_HISTORY s
+        WHERE START_TIME >= (CURRENT_DATE - INTERVAL 10 DAY)
+        GROUP BY 1, 2, 3, 5;
+    oracle: |
+        SELECT  SPOOLER_ID AS JOB_SCHEDULER, 
+                JOB_CHAIN, 
+                ORDER_ID, 
+                COUNT(*) AS ORDER_COUNT,
+                round((END_TIME-START_TIME)*86400) AS ELAPSED
+        FROM SCHEDULER_ORDER_HISTORY
+        GROUP BY SPOOLER_ID,JOB_CHAIN,ORDER_ID,END_TIME-START_TIME
+    postgres: |
+        SELECT  "SPOOLER_ID" AS "JOB_SCHEDULER", 
+                "JOB_CHAIN", 
+                "ORDER_ID", 
+                COUNT(*) AS "ORDER_COUNT", 
+                ((DATE_PART('day',  "END_TIME" - "START_TIME") * 24 + 
+                DATE_PART('hour',   "END_TIME" - "START_TIME")) * 60 +
+                DATE_PART('minute', "END_TIME" - "START_TIME")) * 60 +
+                DATE_PART('second', "END_TIME" - "START_TIME") as "ELAPSED"
+        FROM SCHEDULER_ORDER_HISTORY
+        WHERE "START_TIME" >= CURRENT_DATE - INTERVAL '10' DAY
+        GROUP BY 1,2,3,5;
+        
