@@ -355,13 +355,12 @@ dhtmlxEvent(window,"load",function(){
     });
     
     mySteps = myChainDetail.cells("a").attachGrid();
-    mySteps.setHeader("{{ "Step" | trans }},{{ "State" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
-    mySteps.attachHeader("#numeric_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
-    mySteps.setInitWidths("80,*,160,160,60,60,200");
-    mySteps.setColAlign("right,left,right,right,right,right,left");
-    mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro");
-    mySteps.setColSorting("int,str,date,date,int,str,str");
-    mySteps.setColumnHidden(3,true);  
+    mySteps.setHeader("{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
+    mySteps.attachHeader("#numeric_filter,#select_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    mySteps.setInitWidths("80,*,120,160,160,60,60,200");
+    mySteps.setColAlign("right,left,left,right,right,right,right,left");
+    mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro");
+    mySteps.setColSorting("int,str,str,date,date,int,str,str");
     mySteps.setColumnHidden(4,true);  
     mySteps.setColumnHidden(5,true);  
     mySteps.setColumnHidden(6,true);  

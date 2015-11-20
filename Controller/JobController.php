@@ -118,14 +118,18 @@ class JobController extends Controller
 
     public function logAction()
     {
-            $request = Request::createFromGlobals();
-            $dhtmlx = $this->container->get('arii_core.dhtmlx');
-            $sql = $this->container->get('arii_core.sql');
-            $data = $dhtmlx->Connector('data');
-                $qry = $sql->Select(array('h.ID','h.SPOOLER_ID','h.LOG','h.END_TIME'))
-                .$sql->From(array('SCHEDULER_HISTORY h'));
-                $id = intval($request->query->get( 'id' ));
-                $qry .= $sql->Where(array('h.ID'=>$id));
+        # Il est preferable de connaitre le type de base plutot que le deviner
+        $session = $this->container->get('arii_core.session');
+        $db = $session->getDatabase();
+
+        $request = Request::createFromGlobals();
+        $dhtmlx = $this->container->get('arii_core.dhtmlx');
+        $sql = $this->container->get('arii_core.sql');
+        $data = $dhtmlx->Connector('data');
+            $qry = $sql->Select(array('h.ID','h.SPOOLER_ID','h.LOG','h.END_TIME'))
+            .$sql->From(array('SCHEDULER_HISTORY h'));
+            $id = intval($request->query->get( 'id' ));
+            $qry .= $sql->Where(array('h.ID'=>$id));
 
         try {
             $res = $data->sql->query( $qry );
@@ -134,6 +138,7 @@ class JobController extends Controller
         }
 
         $logs = array();
+        $Res = array();
         while ($Infos = $data->sql->get_next($res))
         {
             $spooler = $Infos['SPOOLER_ID'];
@@ -175,23 +180,27 @@ class JobController extends Controller
                   $Infos['LOG'] = "http://".$Infos['HOSTNAME'].':'.$Infos['TCP_PORT'].'/show_log?task='.$Infos['ID'];
               }
            } else {
-               $type = gettype($Infos['LOG']);
-               if ($type=='object') {
-                    $Infos['LOG'] = explode("\n",gzinflate ( substr($Infos['LOG']->load(), 10, -8) ));
-               }
-               elseif ((strpos(' '.$Infos['LOG'],'\\')>0)  and (function_exists('pg_unescape_bytea'))) {
-                    $Infos['LOG'] = explode("\n",gzinflate (substr(pg_unescape_bytea( $Infos['LOG']), 10, -8) ));
-               }
-               else {
-                     $Infos['LOG'] = explode("\n",gzinflate ( substr($Infos['LOG'], 10, -8) ));
-               }
+                switch ($db['driver']) {
+                    case 'postgre':
+                    case 'postgres':
+                    case 'pdo_pgsql':
+                        $Res = explode("\n",gzinflate (substr(pg_unescape_bytea( $Infos['LOG']), 10, -8) ));
+                        break;
+                    case 'oci8':
+                    case 'oracle':
+                    case 'pdo_oci':
+                        $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG']->load(), 10, -8) ));
+                        break;            
+                    default:
+                        $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG'], 10, -8) ));
+                }
            }   
            
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<rows><head><afterInit><call command="clearAll"/></afterInit></head>';
-        sort($Infos['LOG']);
+
         // $svcdate = $this->container->get('arii_core.date');
-        foreach ($Infos['LOG'] as $l) {
+        foreach ($Res as $l) {
            if ($l=='') continue;
            $date = substr($l,0,23);
            $code = '';

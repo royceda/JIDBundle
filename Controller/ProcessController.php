@@ -76,7 +76,6 @@ class ProcessController extends Controller
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
         
-        $SOS = $this->container->get('arii_core.sos');
         $sql = $this->container->get('arii_core.sql');
 
         $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
@@ -84,7 +83,6 @@ class ProcessController extends Controller
         .$sql->From(array('SCHEDULER_ORDER_HISTORY soh')) 
         .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
         .$sql->Where(array('soh.HISTORY_ID' => $id ))
-//                . ' where soh.HISTORY_ID in (select max(HISTORY_ID) from SCHEDULER_ORDER_HISTORY)'
         .$sql->OrderBy(array('sosh.STEP desc'));
         $res = $data->sql->query( $qry );
         // Par jour 
@@ -112,17 +110,13 @@ class ProcessController extends Controller
             }
         }
         
-        // on va chercher les conditions
-        // est ce qu'il est en cache ?
-
-        list($protocol,$hostname,$port,$path) = $this->getConnectInfos($scheduler);
-        $cache = $tmp.'/'.$hostname.','.$port.',job_chains,job_commands.'.$scheduler.'.xml';
+        $cache = $tmp.'/'.$scheduler.',job_chains,job_commands.'.$scheduler.'.xml';
         $I =  @stat( $cache );
         $modif = $I[9];
+        $SOS = $this->container->get('arii_jid.sos');
         if ((time() - $I[9])>300) {            
-            $SOS = $this->container->get('arii_core.sos');
             $cmd = '<show_state what="job_chains,job_commands"/>';
-            $xml = $SOS->XMLCommand($scheduler,$hostname,$port,$path,$protocol,$cmd, 'xml');
+            $xml = $SOS->Command($scheduler,$cmd, 'xml');
             file_put_contents($cache, $xml);
         }
         else {
@@ -191,7 +185,7 @@ exit();
         if ($output == 'svg') {
             // exec($cmd,$out,$return);
             $out = `$cmd`;
-            header('Content-type: image/svg+xml');
+            header('Content-type: image/svg+xml; charset=utf-8"');
             // integration du script svgpan
             $head = strpos($out,'<g id="graph');
             $xml = '<?xml version="1.0" encoding="utf-8"?>
@@ -279,65 +273,4 @@ exit();
         return "$res\n";
     }
 
-   private function getConnectInfos($spooler) {
-        $session = $this->container->get('arii_core.session');
-	$enterprise_id = $session->getEnterpriseId(); // get the enterprise id from the session
-		
-       // si il n'existe pas d'entreprise
-       if ($enterprise_id<0) {
-           $dhtmlx = $this->container->get('arii_core.dhtmlx');
-           $data = $dhtmlx->Connector('data');
-           
-           // on cherche le scheduler dans la base de données
-           $sql = $this->container->get('arii_core.sql');
-           $qry = $sql->Select(array('SCHEDULER_ID as SPOOLER_ID','HOSTNAME','TCP_PORT','IS_RUNNING','IS_PAUSED','START_TIME'))
-                   .$sql->From(array('SCHEDULER_INSTANCES'))
-                   .$sql->Where(array('SCHEDULER_ID' => $spooler ));
-
-           $res = $data->sql->query( $qry );
-           // pourrais etre en parametre si besoin
-           $protocol = "http"; $path = "";
-           while ($line = $data->sql->get_next($res)) {
-               $scheduler = $line['SPOOLER_ID'];
-               $hostname = $line['HOSTNAME'];
-               $port = $line['TCP_PORT'];
-               $start_time = $line['TCP_PORT'];
-               if ($line['IS_RUNNING']!=1) {
-                   // on tente un update ?
-               }
-               return array($protocol,$hostname,$port,$path);  
-           }
-           // sinon on regarde dans les parametres
-           
-           
-           // return array('http','localhost','4444','/');
-       }
-
-       // A voir si on elargit la recherche
-       // Si oui, il faut reintegrer le code dans le service CMD
-       
-       // sinon on retrouve le spooler dans la base de données
-       $qry = "SELECT ac.interface as HOSTNAME,ac.port as TCP_PORT,ac.path,an.protocol 
-        from ARII_SPOOLER asp
-        LEFT JOIN ARII_CONNECTION ac
-        ON asp.connection_id=ac.id
-        LEFT JOIN ARII_NETWORK an
-        ON ac.network_id=an.id
-        where asp.name='".$spooler."' 
-        and asp.site_id in (select site.id from ARII_SITE site where site.enterprise_id='$enterprise_id')"; // we should use ac.interface as HOSTNAME
-
-        if ($line['protocol'] == "osjs")
-        {
-            $protocol = "http";
-        } elseif($line['protocol'] == "sosjs")
-        {
-            $protocol = "https";
-        }
-        if ((!isset($scheduler)) or ($scheduler == "") or ($port=="")) {
-            $errorlog = $this->container->get('arii_core.log');
-            $errorlog->createLog("No scheduler or port found!",0,__FILE__,__LINE__,"Error at: ".__FILE__." function: ".__FUNCTION__." line: ".__LINE__." SCHEDULER & PORT ?!",$_SERVER['REMOTE_ADDR']);
-            print "SCHEDULER & PORT ?!"; // we use the audit service here to record the errors during using the XML command
-            exit();
-        }
-   }
 }

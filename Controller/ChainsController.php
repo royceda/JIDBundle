@@ -1862,49 +1862,131 @@ if ($activated) {
         
     }
 
-/******************************************************************/
-/* Fonctions simples de date 
-/******************************************************************/
-    
-    function ShortDate($date) {
-        if (substr($date,0,4)=='2038') {
-            return $this->get('translator')->trans('Never');
+    public function treeAction() {
+        // en attendant le cache
+        $request = Request::createFromGlobals();
+        $stopped = $request->get('stopped');
+        
+        $folder = 'live';
+        // $this->syncAction($folder);
+        $dhtmlx = $this->container->get('arii_core.dhtmlx');
+        $data = $dhtmlx->Connector('data');
+   /* On prend l'historique */
+        $Fields = array (
+           '{spooler}'    => 'sh.SPOOLER_ID', 
+            '{job_chain}'   => 'sh.JOB_CHAIN',
+//            '{order}'   => 'sh.ORDER_ID',
+            '{start_time}' => 'sh.START_TIME' );
+
+        $sql = $this->container->get('arii_core.sql');
+        $tools = $this->container->get('arii_core.tools');
+
+        $qry = $sql->Select(array('sh.ORDER_ID','sh.HISTORY_ID','sh.SPOOLER_ID','sh.JOB_CHAIN','sh.START_TIME','sh.END_TIME','sh.STATE' ))
+                .$sql->From(array('SCHEDULER_ORDER_HISTORY sh'))
+                .$sql->Where($Fields)
+                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_CHAIN','sh.START_TIME desc'));  
+   
+        $res = $data->sql->query( $qry );
+        $Chains = $Orders = array();
+        
+        while ( $line = $data->sql->get_next($res) ) {
+            $id  =  $line['HISTORY_ID'];
+            $chain = "/".$line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
+            $dir = $chain.'/'.$line['ORDER_ID'];
+            
+            if (!isset($Chains[$chain])) {
+                $key_files[$chain] = $chain;
+                $Chains[$chain]=1; 
+            }
+            
+            if (isset($Orders[$dir])) continue;
+            $Orders[$dir] = $line; 
+            
+            // On ccompte les erreurs
+            $key_files[$dir] = $dir;
         }
-        if (substr($date,0,10)==date('Y-m-d'))
-                return substr($date,11);
-        return $date;
+        
+        // Prend on en compte les suspended ?
+            $Fields = array (
+                '{spooler}'    => 'sh.SPOOLER_ID', 
+                '{job_chain}'   => 'sh.JOB_CHAIN' /*,
+                '{order}'   => 'sh.ID'*/ );
+            $qry = $sql->Select(array('sh.SPOOLER_ID','sh.JOB_CHAIN' ))
+                    .$sql->From(array('SCHEDULER_ORDERS sh'))
+                    .$sql->Where($Fields);  
+
+              $res = $data->sql->query( $qry );
+              while ( $line = $data->sql->get_next($res) ) {
+                $dir = '/'.$line['SPOOLER_ID'].'/'.dirname($line['JOB_CHAIN']);
+                
+                $Chains[$dir]='STOPPED';
+            }
+                
+        /*
+             print_r($Info);
+            exit();
+        */
+        
+        $tools = $this->container->get('arii_core.tools');
+        $tree = $tools->explodeTree($key_files, "/");
+        
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/xml');
+        $list = '<?xml version="1.0" encoding="UTF-8"?>';
+        $list .= "<tree id='0'>\n";
+        
+        $list .= $this->Folder2XML( $tree, '', $Chains, $Orders );
+        $list .= "</tree>\n";
+        $response->setContent( $list );
+        return $response;
     }
-    
-    function FormatTime($d) {
-       $str = '';
-       if ($d>86400) {
-           $n = (int) ($d/86400);
-           $d %= 86400;
-           $str .= ' '.$n.'d'; 
-           return $str;
-       }
-       if ($d>3600) {
-           $n = (int) ($d/3600);
-           $d %= 3600;
-           $str .= ' '.$n.'h';           
-           return $str;
-       }
-       if ($d>60) {
-           $n = (int) ($d/60);
-           $d %= 60;
-           $str .= ' '.$n.'m';           
-       }
-       if ($d>0) 
-        $str .= ' '.$d.'s';
-       return $str;        
-    }
-    
-    function Duration($start,$end = '' ) {
-       if ($end == '') {
-           $end = time();
-       }
-       $d = $end - $start;
-       return $this->FormatTime($d);
+ 
+   function Folder2XML( $leaf, $id = '', $Chains, $Orders ) {
+            $return = '';
+            if (is_array($leaf)) {
+                    foreach (array_keys($leaf) as $k) {
+                            $Ids = explode('/',$k);
+                            $here = array_pop($Ids);
+                            $i  = "$id/$k";
+                            # On ne prend que l'historique
+                            // Chains ?
+                            if (isset($Chains[$i])) {
+                                $return .= '<item id="'.$i.'" text="'.basename($i).'" im0="job_chain.png"  open="1">';
+                            }
+                            elseif (isset($Orders[$i])) {
+                                $detail = ' ('.$Orders[$i]['STATE'].')';
+                                if (substr($Orders[$i]['STATE'],0,1)=='!') {
+                                    $style =  ' style="background-color: red;"';
+                                }
+                                else {
+                                    // Statut
+                                    switch ($Orders[$i]['STATE']) {
+                                        case 'SUCCESS':
+                                            $style =  ' style="background-color: #ccebc5;"';
+                                            break;
+                                        case 'FAILURE':
+                                            $style =  ' style="background-color: #fbb4ae;"';
+                                            break;
+                                        default:
+                                            $style = '';
+                                            break;
+                                    }
+                                    $detail = '';
+                                }
+                                $return .= '<item'.$style.' id="O:'.$Orders[$i]['HISTORY_ID'].'" text="'.basename($i).$detail.'" im0="order.png">';
+                            }
+                            elseif ($id == '' ) {
+                                
+                                $return .= '<item id="'.$i.'" text="'.basename($i).'" im0="cog.png"  open="1">';
+                            }
+                            else {
+                                $return .=  '<item style="background-color: #ccebc5;" id="'.$i.'" text="'.basename($i).'" im0="folderClosed.gif">';
+                            }
+                           $return .= $this->Folder2XML( $leaf[$k], $id.'/'.$k, $Chains, $Orders);
+                           $return .= '</item>';
+                    }
+            }
+            return $return;
     }
 
 

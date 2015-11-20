@@ -440,6 +440,10 @@ xml_JID_chains_list:
     pattern:  /chains/list.xml
     defaults: { _controller: AriiJIDBundle:Chains:list_xml }
 
+xml_JID_chains_tree:
+    pattern:  /chains/tree.xml
+    defaults: { _controller: AriiJIDBundle:Chains:tree }
+
 arii_JID_toolbar_start_chains:
     pattern:  /toolbar/start_chains
     defaults: { _controller: AriiJIDBundle:Toolbar:toolbar_start_chains}

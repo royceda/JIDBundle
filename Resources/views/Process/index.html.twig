@@ -1,6 +1,9 @@
 {% extends "AriiJIDBundle::layout.html.twig" %}
 {% block body %}
 <script type="text/javascript">
+var autorefresh;
+var update = 30;
+var last={{ app.request.get('id') }};
 
 dhtmlxEvent(window,"load",function(){
 
@@ -8,7 +11,7 @@ dhtmlxEvent(window,"load",function(){
     globalLayout.cells("a").setWidth(350); 
     globalLayout.cells("a").hideHeader(); 
     globalLayout.cells("b").hideHeader(); 
-    globalLayout.cells("c").hideHeader(); 
+    globalLayout.cells("c").setText("{{ "Step" | trans }}"); 
     
     globalMenu = globalLayout.cells("a").attachMenu();
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
@@ -16,101 +19,227 @@ dhtmlxEvent(window,"load",function(){
 
     myRibbon = globalLayout.cells("a").attachRibbon(); 
     myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
-    myRibbon.loadStruct("{{ url('json_JOC_ribbon') }}");
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
+
+    myTree = globalLayout.cells("a").attachTree();
+    myTree.setImagesPath("{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myTree.load("{{ url('xml_JID_chains_tree') }}");
+    myTree.attachEvent("onClick",function(id){
+        switch (id.substr(0,1)) {
+            case 'O':
+                OrderDetail(id.substr(2));
+                break;
+            default:
+                break;
+        }
+    })    
+
+    myOrderTab = globalLayout.cells("b").attachTabbar();
+    myOrderTab.addTab("chain","{{ "Chain" | trans }}","150px",null,true);
+    myOrderTab.addTab("info","{{ "Order" | trans }}","150px");
+    myOrderTab.addTab("log","{{ "Log" | trans }}","150px");
     
-    var toolbar = globalLayout.cells("b").attachToolbar();
-    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
-    toolbar.loadStruct("{{ url('xml_JID_toolbar_process') }}", function() {
-        toolbar.setItemState("contract",true);
+    myOrderDetailLayout = myOrderTab.cells("info").attachLayout("2U");
+    myOrderDetailLayout.cells("a").hideHeader(); 
+    myOrderDetailLayout.cells("b").hideHeader(); 
+    
+    myChainDetail =  myOrderTab.cells("chain").attachLayout("2U");
+    myChainDetail.cells("a").hideHeader();
+    myChainDetail.cells("b").hideHeader();
+
+    myChainToolbar = globalLayout.cells("b").attachToolbar();
+    myChainToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myChainToolbar.loadStruct( "{{ url('xml_JID_orders_form_toolbar') }}" );
+
+    myChainDetail.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id="+last);
+    myOrderTab.attachEvent("onContentLoaded", function(id){
+        myOrderTab.cells(id).progressOff();
     });
-    toolbar.attachEvent("onStateChange", function(id,state) {
-        switch (id) {
-            case 'contract':
-                if (state) {
-                    globalLayout.cells("b").collapse();
-                }
-                else {
-                    globalLayout.cells("b").expand();
-                 }
-                break;
-            default:
-                break;
-        }
-    });
-    toolbar.attachEvent( "onClick", function(id, value) {
-        switch (id) {
+
+    myChainToolbar.attachEvent("onClick",function(itemid){
+        var id = myForm.getItemValue('HISTORY_ID');
+        switch (itemid) {
             case "refresh":
-                GlobalRefresh();
-            break;
-        case "menu":
-            document.location.href = "{{ url('arii_JID_index') }}";
-            break;
-        case "menu_ha":
-            document.location.href = "{{ url('arii_JID_spoolers') }}";
-            break;
-        case "menu_msg":
-            document.location.href = "{{ url('arii_JID_messages') }}";
-            break;
-            default:
-                alert(id);
+                break;
+            case "stop_chain":
+                Text = "{{ "Stop chain" | trans }}";
+                break;
+            case "unstop_chain":
+                Text = "{{ "Unstop chain" | trans }}";
+                break;
+        }
+        switch (itemid) {
+            case "stop_chain":
+            case "unstop_chain":
+                dhtmlx.message({
+                type: "Notice",
+                text: Text });
+//                alert("{{ url('arii_XML_Command') }}?command="+itemid+"&order_id="+id);
+                dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&order_id="+id,function(loader,response){
+                    dhtmlx.message({
+                    type: "Notice",
+                    expire: 10000,
+                    width: "500px",
+                    text: loader.xmlDoc.responseText });
+                    globalLayout.progressOn();   
+                    GlobalRefresh();
+                    if (itemid=='stop_chain') {
+                        myChainToolbar.hideItem('stop_chain');
+                        myChainToolbar.showItem('unstop_chain');
+                    }
+                    else {
+                        myChainToolbar.hideItem('stop_chain');
+                        myChainToolbar.showItem('unstop_chain');
+                    }
+                });
+                break;
         }
     });
+    
+    mySteps = myChainDetail.cells("a").attachGrid();
+    mySteps.setHeader("{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
+    mySteps.attachHeader("#numeric_filter,#select_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    mySteps.setInitWidths("80,*,120,160,160,60,60,200");
+    mySteps.setColAlign("right,left,left,right,right,right,right,left");
+    mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro");
+    mySteps.setColSorting("int,str,str,date,date,int,str,str");
+    mySteps.setColumnHidden(4,true);  
+    mySteps.setColumnHidden(5,true);  
+    mySteps.setColumnHidden(6,true);  
+    mySteps.enableAlterCss("","");
+    mySteps.init();
+    mySteps.load("{{ url('xml_JID_order_steps') }}?id="+last);
+    mySteps.attachEvent("onRowDblClicked", JobDetail );
 
-    globalLayout.cells("a").hideHeader();
-    globalLayout.cells("b").setHeight(295);
+    myOrderLog = myOrderTab.cells("log").attachGrid();
+    myOrderLog.setHeader("{{ "Date" | trans }},{{ "Task" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+    myOrderLog.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+    myOrderLog.setInitWidths("160,250,*,60");
+    myOrderLog.setColAlign("right,left,left,right");
+    myOrderLog.setColTypes("ro,ro,ro,ro");
+    myOrderLog.setColSorting("date,str,str,int");
+    myOrderLog.init();
+    myOrderLog.load("{{ url('xml_JID_order_log') }}?id="+last);
+    
+    myOrderForm = myOrderDetailLayout.cells("a").attachForm();
+    myOrderForm.loadStruct("{{ url('json_JID_orders_form') }}");
+    myOrderForm.load("{{ url('xml_JID_order_form') }}?id="+last);
+    
+    myOrderParametersToolbar = myOrderDetailLayout.cells("b").attachToolbar();
+    myOrderParametersToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myOrderParametersToolbar.loadStruct("{{ url('xml_JID_job_params_toolbar') }}");
 
-    globalLayout.cells("a").attachURL("{{ url('arii_JID_process_graphviz') }}?id={{ app.request.get('id') }}", false);
-    globalLayout.cells("b").hideHeader();
-    globalLayout.cells("b").collapse();
+    myOrderParameters = myOrderDetailLayout.cells("b").attachGrid();
+    myOrderParameters.selMultiRows = true;
+    myOrderParameters.setHeader("{{ "Parameter" | trans }},{{ "Value" | trans }}");
+    myOrderParameters.setColTypes("ed,ed");
+    myOrderParameters.setInitWidths("*,*");
+    myOrderParameters.init();
 
-    var tabbar = globalLayout.cells("b").attachTabbar();
-    tabbar.setImagePath("{{asset("arii/dhtmlx/dhtmlxTabbar/codebase/imgs/")}}");
-    tabbar.setSkin("dhx_skyblue");
-    tabbar.addTab("b1","{{ "Information" | trans }}","150px");
-    tabbar.addTab("b2","{{ "Log" | trans }}","150px");
-    tabbar.setTabActive("b1");
-    tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_order') }}?id={{ app.request.get('id') }}",true);
+    myTabbar = globalLayout.cells("c").attachTabbar();
+    myTabbar.addTab("detail","{{ "Job" | trans }}","150px",null,true);
+    myTabbar.addTab("log","{{ "Log" | trans }}","150px");
 
-    var loggrid = tabbar.cells("b2").attachGrid();
-    loggrid.setHeader("{{ "Date" | trans }},{{ "Task" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
-    loggrid.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
-    loggrid.setInitWidths("160,250,*,60");
-    loggrid.setColAlign("right,left,left,right");
-    loggrid.setColTypes("ro,ro,ro,ro");
-    loggrid.setColSorting("date,str,str,int");
-    loggrid.init();
-    loggrid.setSkin('dhx_skyblue');
+    myDetailLayout = myTabbar.cells("detail").attachLayout("2U");
+    myDetailLayout.cells("a").hideHeader(); 
+    myDetailLayout.cells("b").hideHeader(); 
+    myDetailLayout.cells("a").setWidth(650); 
+    
+    myForm = myDetailLayout.cells("a").attachForm();
+    myForm.loadStruct("{{ url('json_JID_jobs_form') }}");
 
-    function JobDetail(id) {
-        globalLayout.cells("b").expand();
-        globalLayout.cells("b").progressOn();
-        tabbar.cells("b1").attachURL("{{ url('arii_JID_detail_job') }}?id="+id,true);
-            loggrid.load( "{{ url('arii_JID_job_log') }}?id="+ id, function () {
-            globalLayout.cells("b").progressOff();
-        });
-       }
+    myDetailToolbar = myDetailLayout.cells("a").attachToolbar();
+    myDetailToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myDetailToolbar.loadStruct( "{{ url('xml_JID_jobs_form_toolbar') }}" , function(){
+        GBCalendar = new dhtmlXCalendarObject(myDetailToolbar.getInput('ref_date'));
+        GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
+        GBCalendar.setWeekStartDay(1);
+    });
+    
+    myOrderParametersToolbar = myDetailLayout.cells("b").attachToolbar();
+    myOrderParametersToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myOrderParametersToolbar.loadStruct("{{ url('xml_JID_job_params_toolbar') }}");
+
+    myParameters = myDetailLayout.cells("b").attachGrid();
+    myParameters.selMultiRows = true;
+    myParameters.setHeader("{{ "Parameter" | trans }},{{ "Value" | trans }}");
+    myParameters.setColTypes("ed,ed");
+    myParameters.setInitWidths("*,*");
+    myParameters.init();
+    
+    myJobLog = myTabbar.cells("log").attachGrid();
+    myJobLog.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
+    myJobLog.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
+    myJobLog.setInitWidths("180,60,*,60");
+    myJobLog.setColAlign("right,left,left,right");
+    myJobLog.setColTypes("ro,ro,ro,ro");
+    myJobLog.setColSorting("date,str,str,int");
+    myJobLog.init();
+
+    globalLayout.cells("c").collapse(); 
+    
+    autorefresh = setInterval( "GridRefresh()", update*1000 );
 });
-   
+
+function OrderDetail(id) {    
+    globalLayout.cells("b").progressOn();
+    last = id;
+    myChainDetail.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id="+last);
+    mySteps.clearAndLoad("{{ url('xml_JID_order_steps') }}?id="+last, function () {
+        myOrderForm.load("{{ url('xml_JID_order_form') }}?id="+last, function () { 
+            myOrderLog.clearAndLoad("{{ url('xml_JID_order_log') }}?id="+last, function () {
+                globalLayout.cells("b").progressOff();
+            });
+        });
+    });
+}
+
+function JobDetail(id) {
+
+    globalLayout.cells("c").expand();
+    globalLayout.cells("c").progressOn();
+    myForm.load("{{ url('xml_JID_job_form') }}?id="+id);
+
+    myDetailToolbar.showItem('unstop_job');
+    myDetailToolbar.showItem('stop_job');
+    myDetailToolbar.showItem('kill_task');
+    if (status== 'STOPPED') {
+        myDetailToolbar.hideItem('stop_job');
+    }
+    else {
+        myDetailToolbar.hideItem('unstop_job');
+    }
+    if (status!= 'RUNNING') {
+        myDetailToolbar.hideItem('kill_task');      
+    }
+    myParameters.load("{{ url('xml_JID_job_params') }}?id="+id );
+    myJobLog.clearAll();
+    myJobLog.load("{{ url('xml_JID_job_log') }}?id="+id, function (id) {
+        globalLayout.cells("c").progressOff();    
+    });
+}
+
 function GlobalRefresh() {
+    GridRefresh();
+}
+
+function GridRefresh() {
     var currentTime = new Date();
     var hours = currentTime.getHours();
     var minutes = currentTime.getMinutes();
     var seconds = currentTime.getSeconds();
     if (minutes < 10){
-    minutes = "0" + minutes;
+        minutes = "0" + minutes;
     }
     if (seconds < 10){
-    seconds = "0" + seconds;
+        seconds = "0" + seconds;
     }
-    toolbar.setItemState("contract",false);
-    toolbar.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-    globalLayout.cells("a").progressOn();
-    globalLayout.attachEvent("onContentLoaded", function(win){
-    globalLayout.cells("a").progressOff();
-});
-    globalLayout.cells("a").attachURL("{{ url('arii_JID_process_graphviz') }}?id={{ app.request.get('id') }}", false);
+    myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+    myTree.smartRefreshBranch(0,"{{ url('xml_JID_chains_tree') }}", function(){
+        OrderDetail(last);
+    });
 }
 </script>
 
