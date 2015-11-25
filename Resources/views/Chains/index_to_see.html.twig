@@ -1,0 +1,156 @@
+{% extends "AriiJIDBundle::layout.html.twig" %}
+{% block body %}
+<script type="text/javascript">
+dhtmlxEvent(window,"load",function(){
+
+    var dhxLayout = new dhtmlXLayoutObject(document.body,"3U");
+    var toolbar = dhxLayout.attachToolbar();
+    toolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    toolbar.loadStruct("{{ url('arii_JID_toolbar') }}");
+    toolbar.attachEvent( "onClick", function(id, value) {
+        switch (id) {
+            case "refresh":
+                GlobalRefresh();
+            break;
+            default:
+                alert(id);
+        }
+    });
+
+    dhxLayout.cells("a").setText("{{ 'Orders status' | trans }}");
+    dhxLayout.cells("a").setWidth(300);
+    dhxLayout.cells("a").setHeight(300);
+
+    donutChart =  dhxLayout.cells("a").attachChart({
+            view:"donut",
+            container:"pie_chart_container",
+            value:"#JOBS#",
+            label:"",
+            tooltip: "#STATUS#",
+            color: "#COLOR#",
+            gradient:true,
+            border:false,
+            pieInnerText: "#JOBS#",
+            shadow: 0,
+            legend:{
+                         width: 0,
+                         template: "#STATUS#"
+            }
+    });
+    donutChart.load( "{{ url('xml_JID_orders_pie') }}" );
+    donutChart.attachEvent("onItemClick",function(id, value){
+        dhtmlxAjax.get( "{{ url('arii_global_toolbar_update') }}?"+id+'=true' , function(loader){
+            window.location = "{{ url("arii_JID_orders") }}"; 
+        });
+    });
+
+    dhxLayout.cells("b").setText("{{ 'Orders per hour' | trans }}");
+    bar =  dhxLayout.cells("b").attachChart ({
+            view:"stackedBar",
+            container:"bar_container",
+            value:"#SUCCESS#",
+            label:"#SUCCESS#",
+            tooltip: "#SUCCESS#",
+            fill:true,
+            gradient:true,
+            color:"#749400",
+            yAxis:{
+                    title:"{{ "Jobs" | trans }}",
+                    lines: true
+            },
+            xAxis:{
+                    title:"{{ "Hour" | trans }}",
+                    template:"#HOUR#",
+                    lines: false                
+            }
+    //        disableItems:true
+    });
+    bar.addSeries({
+                    value:"#FAILURE#",
+                    label:"<span style='background-color: red;color: yellow;'>#FAILURE#</span>",
+                    tooltip: "#FAILURE#",
+                    gradient:false,
+                    color:"red",
+                    line:{
+                        color:"red",
+                        width:1
+                    }
+    });
+    bar.addSeries({
+                    value:"#RUNNING#",
+                    label:"<span style='background-color: orange;color: black;'>#RUNNING#</span>",
+                    tooltip: "#RUNNING#",
+                    gradient:false,
+                    color:"black",
+                    line:{
+                        color:"orange",
+                        width:1
+                    }
+    });
+    bar.load( "{{ url('xml_JID_orders_bar') }}" );
+
+    scheduler.locale.labels.timeline_tab = "Timeline";
+    //scheduler.locale.labels.section_custom="Section";
+    scheduler.config.details_on_create=false;
+    scheduler.config.details_on_dblclick=false;
+    scheduler.config.xml_date="%Y-%m-%d %H:%i";
+
+    scheduler.config.first_hour = 0;
+    scheduler.config.last_hour = 24;
+
+    scheduler.locale.labels.day_tab = "{{ "Day" | trans }}";
+    scheduler.locale.labels.timeline_tab = "{{ "Timeline" | trans }}";
+
+    //===============
+    //Configuration
+    //===============
+    scheduler.createTimelineView({
+        name: "timeline",
+        x_unit: "minute",
+        x_date: "%H:%i",
+        x_step: {{ Timeline.step }},
+        x_size: 24,
+        x_start: 48,
+        x_length: 48,
+        y_unit:	 [ {% for spooler in Timeline.spoolers %}
+                      { key: "{{ spooler }}", label: "{{ spooler }}" },
+                      {% endfor %} 
+                   ],
+    y_property:	"section_id",
+    render:"bar"
+    });
+    //===============
+    //Data loading
+    //===============
+    scheduler.config.lightbox.sections=[	
+        { name:"description", height:130, map_to:"text", type:"textarea" , focus:true},
+        {name:"time", height:72, type:"time", map_to:"auto"}
+     ];
+
+    scheduler.templates.event_class=function(start,end,event){
+     return event.color;
+    }
+
+    scheduler.init('scheduler_here',new Date( {{ Timeline.js_date }} ),"timeline");	
+
+    scheduler.load( "{{ url('xml_JID_orders_timeline') }}" );
+    timeline  = dhxLayout.cells("c").attachScheduler( new Date( {{ Timeline.js_date }} ) , "timeline", 'scheduler_here', scheduler);
+    dhxLayout.cells("c").hideHeader();
+});
+    
+function GlobalRefresh() {
+    donutChart.load( "{{ url('xml_JID_orders_pie') }}", function() {
+        toolbar.setItemText( "refresh", "{{ 'Pie chart refreshed.' | trans}}" );
+        bar.load( "{{ url('xml_JID_orders_bar') }}", function() {
+            bar.refresh();
+            toolbar.setItemText( "refresh", "{{ 'Bar chart refreshed.' | trans}}" );
+            scheduler.load( "{{ url('xml_JID_orders_timeline') }}", function() {
+                var currentTime = new Date();
+                var nextTime = new Date(currentTime.getTime() +(refreshing*1000));
+                toolbar.setItemText( "refresh", FormatTime(nextTime));
+            });
+        } );
+    });
+}
+</script>
+{% endblock %}

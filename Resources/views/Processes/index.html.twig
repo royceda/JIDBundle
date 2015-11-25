@@ -25,7 +25,7 @@ dhtmlxEvent(window,"load",function(){
 
     myTree = globalLayout.cells("a").attachTree();
     myTree.setImagesPath("{{ asset('bundles/ariicore/images/treegrid/') }}");
-    myTree.load("{{ url('xml_JID_chains_tree') }}");
+    myTree.load("{{ url('xml_JID_processes_tree') }}");
     myTree.attachEvent("onClick",function(id){
         switch (id.substr(0,1)) {
             case 'O':
@@ -53,7 +53,7 @@ dhtmlxEvent(window,"load",function(){
     myChainToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     myChainToolbar.loadStruct( "{{ url('xml_JID_orders_form_toolbar') }}" );
 
-    myChainDetail.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id="+last);
+    myChainDetail.cells("b").attachURL("{{ url('svg_JID_processes_steps') }}?id="+last);
     myOrderTab.attachEvent("onContentLoaded", function(id){
         myOrderTab.cells(id).progressOff();
     });
@@ -99,18 +99,18 @@ dhtmlxEvent(window,"load",function(){
     });
     
     mySteps = myChainDetail.cells("a").attachGrid();
-    mySteps.setHeader("{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
-    mySteps.attachHeader("#numeric_filter,#select_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
-    mySteps.setInitWidths("80,*,120,160,160,60,60,200");
-    mySteps.setColAlign("right,left,left,right,right,right,right,left");
-    mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro");
-    mySteps.setColSorting("int,str,str,date,date,int,str,str");
-    mySteps.setColumnHidden(4,true);  
+    mySteps.setHeader("{{ "Chain" | trans }},{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
+    mySteps.attachHeader("#select_filter,#numeric_filter,#select_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
+    mySteps.setInitWidths("200,80,*,120,160,160,60,60,200");
+    mySteps.setColAlign("left,right,left,left,right,right,right,right,left");
+    mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro");
+    mySteps.setColSorting("str,int,str,str,date,date,int,str,str");
     mySteps.setColumnHidden(5,true);  
     mySteps.setColumnHidden(6,true);  
+    mySteps.setColumnHidden(7,true);  
     mySteps.enableAlterCss("","");
     mySteps.init();
-    mySteps.load("{{ url('xml_JID_order_steps') }}?id="+last);
+    mySteps.load("{{ url('xml_JID_processes_steps') }}?id="+last);
     mySteps.attachEvent("onRowDblClicked", JobDetail );
 
     myOrderLog = myOrderTab.cells("log").attachGrid();
@@ -186,8 +186,8 @@ dhtmlxEvent(window,"load",function(){
 function OrderDetail(id) {    
     globalLayout.cells("b").progressOn();
     last = id;
-    myChainDetail.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id="+last);
-    mySteps.clearAndLoad("{{ url('xml_JID_order_steps') }}?id="+last, function () {
+    myChainDetail.cells("b").attachURL("{{ url('svg_JID_processes_steps') }}?id="+last);
+    mySteps.clearAndLoad("{{ url('xml_JID_processes_steps') }}?id="+last, function () {
         myOrderForm.load("{{ url('xml_JID_order_form') }}?id="+last, function () { 
             myOrderLog.clearAndLoad("{{ url('xml_JID_order_log') }}?id="+last, function () {
                 globalLayout.cells("b").progressOff();
@@ -237,7 +237,7 @@ function GridRefresh() {
         seconds = "0" + seconds;
     }
     myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-    myTree.smartRefreshBranch(0,"{{ url('xml_JID_chains_tree') }}", function(){
+    myTree.smartRefreshBranch(0,"{{ url('xml_JID_processes_tree') }}", function(){
         OrderDetail(last);
     });
 }

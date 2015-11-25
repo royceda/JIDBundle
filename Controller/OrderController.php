@@ -493,6 +493,8 @@ class OrderController extends Controller {
         $session = $this->getRequest()->getSession();
         $id = $request->query->get( 'id' );
 
+        if ($id==0) exit();
+        
         $file = '.*';
         $rankdir = 'LR';
         $splines = 'polyline';

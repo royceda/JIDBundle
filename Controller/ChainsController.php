@@ -16,6 +16,11 @@ class ChainsController extends Controller
           $this->images = $request->getUriForPath('/../arii/images/wa');
     }
 
+    public function indexAction()
+    {
+        return $this->render('AriiJIDBundle:Chains:index.html.twig');
+    }
+    
     public function menuAction()
     {
         return $this->render('AriiJIDBundle:Chains:menu.xml.twig');
@@ -1908,16 +1913,16 @@ if ($activated) {
         
         // Prend on en compte les suspended ?
             $Fields = array (
-                '{spooler}'    => 'sh.SPOOLER_ID', 
-                '{job_chain}'   => 'sh.JOB_CHAIN' /*,
+                '{spooler}'    => 'SPOOLER_ID', 
+                '{job_chain}'   => 'PATH' /*,
                 '{order}'   => 'sh.ID'*/ );
-            $qry = $sql->Select(array('sh.SPOOLER_ID','sh.JOB_CHAIN' ))
-                    .$sql->From(array('SCHEDULER_ORDERS sh'))
+            $qry = $sql->Select(array('SPOOLER_ID','PATH' ))
+                    .$sql->From(array('SCHEDULER_JOB_CHAINS'))
                     .$sql->Where($Fields);  
 
               $res = $data->sql->query( $qry );
               while ( $line = $data->sql->get_next($res) ) {
-                $dir = '/'.$line['SPOOLER_ID'].'/'.dirname($line['JOB_CHAIN']);
+                $dir = '/'.$line['SPOOLER_ID'].'/'.$line['PATH'];
                 
                 $Chains[$dir]='STOPPED';
             }
@@ -1951,7 +1956,10 @@ if ($activated) {
                             # On ne prend que l'historique
                             // Chains ?
                             if (isset($Chains[$i])) {
-                                $return .= '<item id="'.$i.'" text="'.basename($i).'" im0="job_chain.png"  open="1">';
+                                if ($Chains[$i]=='STOPPED')
+                                    $return .= '<item style="background-color: #red;" id="'.$i.'" text="'.basename($i).'" im0="job_chain.png" im1="job_chain.png" open="1">';
+                                else
+                                    $return .= '<item id="'.$i.'" text="'.basename($i).'" im0="job_chain.png" im1="job_chain.png" open="1">';
                             }
                             elseif (isset($Orders[$i])) {
                                 $detail = ' ('.$Orders[$i]['STATE'].')';
@@ -1973,14 +1981,14 @@ if ($activated) {
                                     }
                                     $detail = '';
                                 }
-                                $return .= '<item'.$style.' id="O:'.$Orders[$i]['HISTORY_ID'].'" text="'.basename($i).$detail.'" im0="order.png">';
+                                $return .= '<item'.$style.' id="O:'.$Orders[$i]['HISTORY_ID'].'" text="'.basename($i).$detail.'" im0="order.png" im1="order.png">';
                             }
                             elseif ($id == '' ) {
                                 
-                                $return .= '<item id="'.$i.'" text="'.basename($i).'" im0="cog.png"  open="1">';
+                                $return .= '<item id="'.$i.'" text="'.basename($i).'" im0="cog.png" im1="cog.png"  open="1">';
                             }
                             else {
-                                $return .=  '<item style="background-color: #ccebc5;" id="'.$i.'" text="'.basename($i).'" im0="folderClosed.gif">';
+                                $return .=  '<item id="'.$i.'" text="'.basename($i).'" im0="folderClosed.gif">';
                             }
                            $return .= $this->Folder2XML( $leaf[$k], $id.'/'.$k, $Chains, $Orders);
                            $return .= '</item>';

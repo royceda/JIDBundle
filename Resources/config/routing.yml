@@ -410,11 +410,30 @@ xml_JID_menu_activities:
     defaults: { _controller: AriiJIDBundle:Activities:menu }
 
 # --------------------------------------------------------------------------
+# Processes
+# --------------------------------------------------------------------------
+arii_JID_processes:
+    pattern:  /processes
+    defaults: { _controller: AriiJIDBundle:Processes:index }
+
+xml_JID_processes_tree:
+    pattern:  /processes/tree.xml
+    defaults: { _controller: AriiJIDBundle:Processes:tree }
+
+xml_JID_processes_steps:
+    pattern:  /processes/steps.xml
+    defaults: { _controller: AriiJIDBundle:Processes:steps }
+
+svg_JID_processes_steps:
+    pattern:  /processes/steps.svg
+    defaults: { _controller: AriiJIDBundle:Processes:graphviz }
+
+# --------------------------------------------------------------------------
 # Chains
 # --------------------------------------------------------------------------
 arii_JID_chains:
     pattern:  /chains
-    defaults: { _controller: AriiJIDBundle:Chains:list }
+    defaults: { _controller: AriiJIDBundle:Chains:index }
 
 arii_JID_chains_list:
     pattern:  /chains/list
@@ -925,29 +944,6 @@ arii_JID_toolbar_schedule_list:
 arii_JID_select_state:
     pattern:  /dhtmlx/select_state
     defaults: { _controller: AriiJIDBundle:Form:select_state }
-
-# --------------------------------------------------------------------------
-# SIMILE
-# --------------------------------------------------------------------------
-arii_JID_simile_xml_all:
-    pattern:  /timeline/xml/all
-    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: '' }
-
-arii_JID_simile_xml_history:
-    pattern:  /timeline/xml/history
-    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: history }
-
-arii_JID_simile_xml_orders:
-    pattern:  /timeline/xml/orders
-    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: orders }
-
-arii_JID_simile_xml_planned:
-    pattern:  /timeline/xml/planned
-    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: planned }
-
-arii_JID_simile_xml_events:
-    pattern:  /timeline/xml/events
-    defaults: { _controller: AriiJIDBundle:Simile:history_xml, part: events }
 
 # --------------------------------------------------------------------------
 # DOC
