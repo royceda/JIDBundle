@@ -412,13 +412,19 @@ class ProcessesController extends Controller
             $last = $s;
             $etape++;
         }
-        $current = $OrderInfo[$order_id]['STATE'];
+        $svg .= $this->Order($OrderInfo[$order_id]);
+        $svg .= '"O.'.$OrderInfo[$order_id]['ORDER_ID'].'" -> "META:'.$OrderInfo[$order_id]['CURRENT_STATE'].'" [style=dashed]'."\n";        
+
+        $current = '/'.$job_chain.'/'.$OrderInfo[$order_id]['STATE'];
         if (!isset($Done[$current])) {       
             $svg .= "\"$current\" [shape=record,color=$color,style=filled,fillcolor=\"".$this->ColorNode($current,$OrderInfo[$order_id]['ERROR'],$OrderInfo[$order_id]['END_TIME'])."\"]\n";    
             // on le relie au dernier
             $svg .= "\"$last\" -> \"$current\" [label=$etape,shape=ellipse,color=$color]\n";
-        }       
-        
+        }
+        else {
+            $svg .= "\"$last\" -> \"META:".$OrderInfo[$order_id]['CURRENT_STATE']."\" [label=$etape,shape=ellipse,color=$color]\n";
+        }
+
         // Schema de base 
         $cache = $tmp.'/'.$scheduler_id.',job_chains,job_commands.'.$scheduler_id.'.xml';
         $I =  @stat( $cache );
@@ -483,8 +489,6 @@ class ProcessesController extends Controller
         $svg .= 'label="'.$META_CHAIN."\"\n";                                        
         $svg .= "}\n";
 
-        $svg .= $this->Order($OrderInfo[$order_id]);
-        $svg .= '"O.'.$OrderInfo[$order_id]['ORDER_ID'].'" -> "META:'.$OrderInfo[$order_id]['CURRENT_STATE'].'" [style=dashed]'."\n";        
         $svg .= "}\n"; // fin de graph
 
         $tmpfile = $tmp.'/arii.dot';
@@ -531,7 +535,7 @@ print `$cmd`;
 
         $svg = "subgraph \"cluster$STATE\" {\n";
         $svg .= "style=filled;\n";
-        $svg .= "\"META:$STATE\" [label=$STATE]\n";
+        $svg .= "\"META:$STATE\" [label=$STATE;shape=ellipse;color=black]\n";
         
         $sql = $this->container->get('arii_core.sql');
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
@@ -625,7 +629,10 @@ print `$cmd`;
         
         $svg .=   '"'.$last_next.'" -> "META:'.$next.'" [color=green,style=dashed]'."\n";
         $svg .=   '"'.$last_error.'" -> "META:'.$error.'" [color=red,style=dashed]'."\n";
-                        
+
+        $svg .= '"META:'.$next."\" [label=\"$next\",shape=ellipse,color=green]\n";
+        $svg .= '"META:'.$error."\" [label=\"$error\",shape=ellipse,color=red]\n";
+        
     return $svg;
     }
     
