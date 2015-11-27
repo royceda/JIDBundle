@@ -6,7 +6,6 @@ namespace Arii\JIDBundle\Service;
 class AriiGraphviz
 {
 
-    protected $images;   
     protected $tools;
     protected $sql;
     protected $dhtmlx;
@@ -18,7 +17,6 @@ class AriiGraphviz
         $this->tools = $tools;
         $this->dhtmlx = $db;
         $this->sql = $sql;
-        $this->images = '/bundles/ariigraphviz/images/silk';
     }
 
     private function ColorNode($state,$error,$endtime) {
@@ -45,7 +43,7 @@ class AriiGraphviz
         return $color;
     }
     
-    public function Node($Infos=array()) {
+    public function Node($images, $Infos=array()) {
         $res = '"/'.$Infos['JOB_CHAIN'].'/'.$Infos['STATE'].'" '; 
         if (!isset($Infos['END_TIME'])) $Infos['END_TIME']='';
         
@@ -58,13 +56,13 @@ class AriiGraphviz
         $res .= '[id="\N";label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" COLOR="grey" BGCOLOR="'.$color.'">';
         $res .= '<TR><TD align="left" colspan="3">'.$Infos['STATE'].'</TD></TR>';
         if (isset($Infos['ERROR']) and ($Infos['ERROR']>0)) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/error.png"/></TD><TD align="left" COLSPAN="2">'.substr($Infos['ERROR_TEXT'],15).'</TD></TR>';
+            $res .= '<TR><TD><IMG SRC="'.$images.'/error.png"/></TD><TD align="left" COLSPAN="2">'.substr($Infos['ERROR_TEXT'],15).'</TD></TR>';
         }
         if (isset($Infos['JOB_NAME'])) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/cog.png"/></TD><TD align="left" colspan="2">'.$Infos['JOB_NAME'].'</TD></TR>';
+            $res .= '<TR><TD><IMG SRC="'.$images.'/cog.png"/></TD><TD align="left" colspan="2">'.$Infos['JOB_NAME'].'</TD></TR>';
         }
         if (isset($Infos['START_TIME'])) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/time.png"/></TD><TD align="left" >'.$Infos['START_TIME'].'</TD><TD align="left" >'.$Infos['END_TIME'].'</TD></TR>';
+            $res .= '<TR><TD><IMG SRC="'.$images.'/time.png"/></TD><TD align="left" >'.$Infos['START_TIME'].'</TD><TD align="left" >'.$Infos['END_TIME'].'</TD></TR>';
         }
         if (isset($Infos['TASK_ID']))
             $res .= "</TABLE>> URL=\"javascript:parent.JobDetail(".$Infos['TASK_ID'].");\"]";
@@ -73,7 +71,7 @@ class AriiGraphviz
         return "$res\n";
     }
     
-    public function Order($Infos=array()) {
+    public function Order($images, $Infos=array()) {
         if ($Infos['ORDER_END_TIME']=='') {
             $color='#ffffcc';
         }
@@ -123,15 +121,15 @@ class AriiGraphviz
         }
         $res = '"O.'.$Infos['ORDER_ID'].'" '; 
         $res .= '[id="\N";label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" COLOR="grey" BGCOLOR="'.$color.'">';
-        $res .= '<TR><TD><IMG SRC="'.$this->images.'/lightning.png"/></TD><TD align="left">'.$Infos['ORDER_ID'].'</TD></TR>';
+        $res .= '<TR><TD><IMG SRC="'.$images.'/lightning.png"/></TD><TD align="left">'.$Infos['ORDER_ID'].'</TD></TR>';
         if ($Infos['ORDER_TITLE']!='') {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/comment.png"/></TD><TD align="left">'.$Infos['ORDER_TITLE'].'</TD></TR>';
+            $res .= '<TR><TD><IMG SRC="'.$images.'/comment.png"/></TD><TD align="left">'.$Infos['ORDER_TITLE'].'</TD></TR>';
         }
         if (isset($Infos['ORDER_START_TIME'])) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/time.png"/></TD><TD align="left" >'.$Infos['ORDER_START_TIME'].'</TD><TD align="left" >'.$Infos['ORDER_END_TIME'].'</TD></TR>';
+            $res .= '<TR><TD><IMG SRC="'.$images.'/time.png"/></TD><TD align="left" >'.$Infos['ORDER_START_TIME'].'</TD><TD align="left" >'.$Infos['ORDER_END_TIME'].'</TD></TR>';
         }        
         if ($Infos['ERROR']>0) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/error.png"/></TD><TD align="left">'.$Infos['ERROR_TEXT'].'</TD></TR>';
+            $res .= '<TR><TD><IMG SRC="'.$images.'/error.png"/></TD><TD align="left">'.$Infos['ERROR_TEXT'].'</TD></TR>';
         }
 
         if (isset($Infos['PAYLOAD'])) {
@@ -153,14 +151,14 @@ class AriiGraphviz
 
                 # Attention aux password !
                 $val = preg_replace("/password=(.*?) /","password=**********","$val ");
-                $res .= '<TR><TD><IMG SRC="'.$this->images.'/config.png"/></TD><TD align="left">'.$var.'</TD><TD align="left">'.$val.'</TD></TR>';
+                $res .= '<TR><TD><IMG SRC="'.$images.'/config.png"/></TD><TD align="left">'.$var.'</TD><TD align="left">'.$val.'</TD></TR>';
             }
         }
         $res .= '</TABLE>>]';
         return "$res\n";
     }
 
-    public function Chain( $scheduler_id, $job_chain, $order_id, $Steps, $JobChains, $STATE = '', $next='', $error='' ) {
+    public function Chain($images,  $scheduler_id, $job_chain, $order_id, $Steps, $JobChains, $STATE = '', $next='', $error='' ) {
 
         $svg = "subgraph \"cluster$STATE\" {\n";
         $svg .= "style=filled;\n";

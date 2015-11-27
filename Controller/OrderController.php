@@ -671,7 +671,7 @@ class OrderController extends Controller {
             
             $s='/'.$line['JOB_CHAIN'].'/'.$line['STATE'];
             
-            $svg .= $gvz->Node($line);
+            $svg .= $gvz->Node($this->images, $line);
             $Done[$s]=1; 
             
             // si on est en split, cest différents
@@ -696,11 +696,11 @@ class OrderController extends Controller {
             $last = $s;
             $etape++;
         }
-        
-        $svg .= $gvz->Chain($scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains  );
+
+        $svg .= $gvz->Chain($this->images, $scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains  );
         
         foreach ($OrderInfo as $order_id => $Order ) {
-            $svg .= $gvz->Order($Order);
+            $svg .= $gvz->Order($this->images, $Order);
             $svg .= '"O.'.$Order['ORDER_ID'].'" -> "/'.$job_chain.'/'.$Order['CURRENT_STATE'].'" [style=dashed]'."\n";  
         }
         $svg .= "}\n"; // fin de graph

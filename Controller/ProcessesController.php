@@ -396,7 +396,7 @@ class ProcessesController extends Controller
             
             $s='/'.$line['JOB_CHAIN'].'/'.$line['STATE'];
             
-            $svg .= $gvz->Node($line);
+            $svg .= $gvz->Node($this->images, $line);
             $Done[$s]=1; 
             
             if ($last !='') 
@@ -414,7 +414,7 @@ class ProcessesController extends Controller
             $last = $s;
             $etape++;
         }
-        $svg .= $gvz->Order($OrderInfo[$order_id]);
+        $svg .= $gvz->Order($this->images,$OrderInfo[$order_id]);
         $svg .= '"O.'.$OrderInfo[$order_id]['ORDER_ID'].'" -> "META:'.$OrderInfo[$order_id]['CURRENT_STATE'].'" [style=dashed]'."\n";        
 
         $current = '/'.$job_chain.'/'.$OrderInfo[$order_id]['STATE'];
@@ -475,7 +475,7 @@ class ProcessesController extends Controller
             if (isset($Infos['job_chain'])) {
                 $chain = $Infos['job_chain'];
                 $Node[$state] = $chain;
-                $svg .= $gvz->Chain($scheduler_id, $chain,$order_id, $Steps, $JobChains, $state, $next, $error );  
+                $svg .= $gvz->Chain($this->images,$scheduler_id, $chain,$order_id, $Steps, $JobChains, $state, $next, $error );  
             }
             else {
                 $Node[$state] = $state;
