@@ -954,7 +954,10 @@ where h.ID=$id";
     function render_chart($row){
 	$start = strtotime($row->get_value("START_TIME"));
 	$end = $row->get_value("END_TIME");
-	$row->set_value("DURATION",strtotime($end)-$start );
+        if ($end>0)
+            $row->set_value("DURATION",strtotime($end)-$start );
+        else
+            $row->set_value("DURATION",0 );
         if ($end == '') {
             $row->set_value("COLOR", "orange");
         }

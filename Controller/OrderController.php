@@ -323,6 +323,7 @@ class OrderController extends Controller {
 
     public function logAction()
     {
+
         # Il est preferable de connaitre le type de base plutot que le deviner
         $session = $this->container->get('arii_core.session');
         $db = $session->getDatabase();
@@ -383,6 +384,8 @@ class OrderController extends Controller {
             $xml .= '<rows>';
             $xml .= '<head><afterInit><call command="clearAll"/></afterInit></head>';
             foreach ($Res as $l) {
+                if ($l=='') continue;
+                
                 $date = substr($l,0,23);
                 $type = rtrim(substr($l,29,8));
                 $info = mb_substr($l,38);
@@ -481,6 +484,7 @@ class OrderController extends Controller {
     // Chaque noeud est un step
     public function graphvizAction()
     {
+
         $request = Request::createFromGlobals();
         $return = 0;
         
@@ -534,6 +538,8 @@ class OrderController extends Controller {
         $sql = $this->container->get('arii_core.sql');
         $date = $this->container->get('arii_core.date');
 
+        $gvz = $this->container->get('arii_jid.graphviz');
+
         // On construit les donnees
         $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
             'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT'))
@@ -563,6 +569,36 @@ class OrderController extends Controller {
             $OrderInfo[$order_id] = $line;             
         }
    
+        // est on en mode splitté ?
+        // le mieux serait de reprendre les ordres du xml
+        $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
+            'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT'))
+        .$sql->From(array('SCHEDULER_ORDER_HISTORY soh')) 
+        .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
+        .$sql->Where(array(
+                'soh.HISTORY_ID>=' => $id, 
+                'soh.JOB_CHAIN' => $job_chain,
+                'soh.SPOOLER_ID' => $scheduler_id,
+                'soh.ORDER_ID' => '%:%' ))
+        .$sql->OrderBy(array('sosh.TASK_ID'));
+
+        $res = $data->sql->query( $qry );
+        while ($line = $data->sql->get_next($res)) {
+            $chain_id = $scheduler_id.'/'.$line['JOB_CHAIN'];            
+
+            $line['START_TIME']=$date->ShortDate( $date->Date2Local($line['START_TIME'],$scheduler_id));
+            $line['END_TIME']=$date->ShortDate( $date->Date2Local($line['END_TIME'],$scheduler_id));
+            
+            // Ordres
+            $order = $line['ORDER_ID'];
+            $order_id = $chain_id.'/'.$line['ORDER_ID'];
+
+            $step_id = $chain_id.'/'.$line['STATE'];                    
+            $Steps[$step_id] = $line;
+            
+            $OrderInfo[$order_id] = $line;             
+        }
+
         // On complete avec l'etat de la chaine
         $qry =  $sql->Select(array('SPOOLER_ID','PATH','STOPPED'))
                 .$sql->From(array('SCHEDULER_JOB_CHAINS')) 
@@ -618,33 +654,7 @@ class OrderController extends Controller {
         }
         $result = $SOS->xml2array($xml,1,'value');
         $JobChains = $result['spooler']['answer']['state']['job_chains']['job_chain'];
-        $n = 0;
-        $search = '/'.$job_chain;
-        while (isset($JobChains[$n])) {
-            if ($JobChains[$n]['attr']['path']==$search) {
-                $find = $n;
-                break;
-            }
-            $n++; 
-        }
-        $Conds = array(); 
-        if (isset($find)) {
-            // print_r($JobChains[$find]);
-            $n = 0;
-            $Node = $JobChains[$find]['job_chain_node'];
-            while (isset($Node[$n]['attr'])) {
-                if (isset($Node[$n]['attr']['next_state'])) {
-                    array_push($Conds,'"'.$Node[$n]['attr']['state'].'" -> "'.$Node[$n]['attr']['next_state'].'" [color=green,style=dotted]');
-                }
-                if (isset($Node[$n]['attr']['error_state'])) {
-                    array_push($Conds,'"'.$Node[$n]['attr']['state'].'" -> "'.$Node[$n]['attr']['error_state'].'" [color=red,style=dotted]');
-                }
-                $n++;
-                
-                // On conserve les types de noeuds
-                
-            }
-        }
+         
         $svg = "digraph arii {\n";
         $svg .= "fontname=arial\n";
         $svg .= "fontsize=12\n";
@@ -653,25 +663,15 @@ class OrderController extends Controller {
         $svg .= "node [shape=plaintext,fontname=arial,fontsize=8]\n";
         $svg .= "edge [shape=plaintext,fontname=arial,fontsize=8]\n";
         $svg .= "bgcolor=transparent\n";
-        $svg .= "subgraph \"clusterJOBCHAIN\" {\n";
-        $svg .= "style=filled;\n";
-        
-        foreach ($Conds as $c) {
-            $svg .= "$c\n";        
-        }
-        
-        if ($Chain[$chain_id]==1)
-            $svg .= "color=red;\n";
-        else 
-            $svg .= "color=lightgrey;\n";
         
         // Dessin des étapes
+        $last = '';
         $etape=0;
         foreach ($Steps as $step_id=>$line) {
             
-            $s=$line['STATE'];
+            $s='/'.$line['JOB_CHAIN'].'/'.$line['STATE'];
             
-            $svg .= $this->Node($line);
+            $svg .= $gvz->Node($line);
             $Done[$s]=1; 
             
             if ($last !='') 
@@ -689,19 +689,13 @@ class OrderController extends Controller {
             $last = $s;
             $etape++;
         }
-
-        $svg .= 'label="'.$job_chain."\"\n";
         
-        $current = $OrderInfo[$order_id]['STATE'];
-        if (!isset($Done[$current])) {       
-            $svg .= "\"$current\" [shape=record,color=$color,style=filled,fillcolor=\"".$this->ColorNode($current,$OrderInfo[$order_id]['ERROR'],$OrderInfo[$order_id]['END_TIME'])."\"]\n";    
-            // on le relie au dernier
-            $svg .= "\"$last\" -> \"$current\" [label=$etape,color=$color]\n";
+        $svg .= $gvz->Chain($scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains  );
+        
+        foreach ($OrderInfo as $order_id => $Order ) {
+            $svg .= $gvz->Order($Order);
+            $svg .= '"O.'.$Order['ORDER_ID'].'" -> "/'.$job_chain.'/'.$Order['CURRENT_STATE'].'" [style=dashed]'."\n";  
         }
-        $svg .= "}\n"; // fin de chaine
-        
-        $svg .= $this->Order($OrderInfo[$order_id]);
-        $svg .= '"O.'.$OrderInfo[$order_id]['ORDER_ID'].'" -> "'.$OrderInfo[$order_id]['CURRENT_STATE'].'" [style=dashed]'."\n";        
         $svg .= "}\n"; // fin de graph
         
         $tmpfile = $tmp.'/arii.dot';
@@ -738,144 +732,6 @@ print `$cmd`;
             print system($cmd);
         }
         exit();
-    }
-
-    private function ColorNode($state,$error,$endtime) {
-        if ($error == 'stop') {
-            $color='red';
-        }
-        elseif ($error == 'next_state') {
-            $color='orange';
-        }
-        elseif ($endtime=='') {
-            $color='#ffffcc';
-        }
-        elseif ($error) {
-            if (substr($state,0,1)=='!') {
-                $color = 'red';
-            }
-            else {
-                $color='#fbb4ae';
-            }
-        }
-        else {
-            $color = "#ccebc5";        
-        }
-        return $color;
-    }
-    private function Node($Infos=array()) {
-        $res = '"'.$Infos['STATE'].'" '; 
-        if (!isset($Infos['END_TIME'])) $Infos['END_TIME']='';
-        
-        if (isset($Infos['ACTION']) and ($Infos['ACTION']!='')) {
-            $color = $this->ColorNode($Infos['STATE'],$Infos['ACTION'],$Infos['END_TIME']);
-        }
-        else {
-            $color = $this->ColorNode($Infos['STATE'],$Infos['ERROR'],$Infos['END_TIME']);
-        }
-        $res .= '[id="\N";label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" COLOR="grey" BGCOLOR="'.$color.'">';
-        $res .= '<TR><TD align="left" colspan="3">'.$Infos['STATE'].'</TD></TR>';
-        if (isset($Infos['ERROR']) and ($Infos['ERROR']>0)) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/error.png"/></TD><TD align="left" COLSPAN="2">'.substr($Infos['ERROR_TEXT'],15).'</TD></TR>';
-        }
-        if (isset($Infos['JOB_NAME'])) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/cog.png"/></TD><TD align="left" colspan="2">'.$Infos['JOB_NAME'].'</TD></TR>';
-        }
-        if (isset($Infos['START_TIME'])) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/time.png"/></TD><TD align="left" >'.$Infos['START_TIME'].'</TD><TD align="left" >'.$Infos['END_TIME'].'</TD></TR>';
-        }
-        if (isset($Infos['TASK_ID']))
-            $res .= "</TABLE>> URL=\"javascript:parent.JobDetail(".$Infos['TASK_ID'].");\"]";
-        else
-            $res .= "</TABLE>>]";            
-        return "$res\n";
-    }
-    
-    private function Order($Infos=array()) {
-        if ($Infos['ORDER_END_TIME']=='') {
-            $color='#ffffcc';
-        }
-        elseif ($Infos['ERROR']) {
-            $color='#fbb4ae';
-        }
-        else {
-            $color = "#ccebc5";        
-        }
-        
-        $tools = $this->container->get('arii_core.tools');
-        if (isset($Infos['ORDER_XML'])) {
-
-            # On ouvre l'etat courant
-            if (gettype($Infos['ORDER_XML'])=='object') {
-                $order_xml = $tools->xml2array($Infos['ORDER_XML']->load());
-            }
-            else {
-                $order_xml = $tools->xml2array($Infos['ORDER_XML']);
-            }
-            $setback = 0; $setback_time = '';
-            if (isset($order_xml['order_attr']['suspended']) && $order_xml['order_attr']['suspended'] == "yes")
-            {
-                $order_status = "SUSPENDED";
-                $color = 'red';
-            }
-            elseif (isset($order_xml['order_attr']['setback_count']))
-            {
-                $order_status = "SETBACK";
-                $setback = $order_xml['order_attr']['setback_count'];
-                $setback_time = $order_xml['order_attr']['setback'];
-                $color = 'orange';
-            }
-            
-            $next_time = '';
-            if (isset($order_xml['order_attr']['start_time'])) {
-                $next_time = $order_xml['order_attr']['start_time'];
-            }
-            $at = '';
-            if (isset($order_xml['order_attr']['at'])) {
-                $at = $order_xml['order_attr']['at'];
-            }
-            $hid = 0;
-            if (isset($order_xml['order_attr']['history_id'])) {
-                $hid = $order_xml['order_attr']['history_id'];
-            }
-        }
-        $res = '"O.'.$Infos['ORDER_ID'].'" '; 
-        $res .= '[id="\N";label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" COLOR="grey" BGCOLOR="'.$color.'">';
-        $res .= '<TR><TD><IMG SRC="'.$this->images.'/lightning.png"/></TD><TD align="left">'.$Infos['ORDER_ID'].'</TD></TR>';
-        if ($Infos['ORDER_TITLE']!='') {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/comment.png"/></TD><TD align="left">'.$Infos['ORDER_TITLE'].'</TD></TR>';
-        }
-        if (isset($Infos['ORDER_START_TIME'])) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/time.png"/></TD><TD align="left" >'.$Infos['ORDER_START_TIME'].'</TD><TD align="left" >'.$Infos['ORDER_END_TIME'].'</TD></TR>';
-        }        
-        if ($Infos['ERROR']>0) {
-            $res .= '<TR><TD><IMG SRC="'.$this->images.'/error.png"/></TD><TD align="left">'.$Infos['ERROR_TEXT'].'</TD></TR>';
-        }
-
-        if (isset($Infos['PAYLOAD'])) {
-            if (gettype($Infos['PAYLOAD'])=='object') {
-                $params = $Infos['PAYLOAD']->load();
-            }
-            else {
-                $params = $Infos['PAYLOAD'];
-            }
-            // <sos.spooler.variable_set count="5" estimated_byte_count="413"><variable name="db_class" value="SOSMySQLConnection"/><variable name="db_driver" value="com.mysql.jdbc.Driver"/><variable name="db_password" value=""/><variable name="db_url" value="jdbc:mysql://localhost:3306/scheduler"/><variable name="db_user" value="root"/></sos.spooler.variable_set>
-            while (($p = strpos($params,'<variable name="'))>0) {
-                $begin = $p+16;
-                $end = strpos($params,'" value="',$begin);
-                $var = substr($params,$begin,$end-$begin);
-                $params = substr($params,$end+9);
-                $end = strpos($params,'"/>');
-                $val = substr($params,0,$end);
-                $params = substr($params,$end+2);
-
-                # Attention aux password !
-                $val = preg_replace("/password=(.*?) /","password=**********","$val ");
-                $res .= '<TR><TD><IMG SRC="'.$this->images.'/config.png"/></TD><TD align="left">'.$var.'</TD><TD align="left">'.$val.'</TD></TR>';
-            }
-        }
-        $res .= '</TABLE>>]';
-        return "$res\n";
     }
 
 }
