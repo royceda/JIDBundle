@@ -674,8 +674,15 @@ class OrderController extends Controller {
             $svg .= $gvz->Node($line);
             $Done[$s]=1; 
             
-            if ($last !='') 
-                $svg .= "\"$last\" -> \"$s\" [label=$etape,color=$color]\n";
+            // si on est en split, cest différents
+            if ($last !='') {
+                if (($p=strpos($s,':'))>0) {
+                    $svg .= "\"".substr($s,0,$p)."\" -> \"$s\" [label=$etape,color=$color]\n";
+                }
+                else {
+                    $svg .= "\"$last\" -> \"$s\" [label=$etape,color=$color]\n";
+                }
+            }   
             // On relie avec le noeud précédent
             // donc la couleur est pour le prochain lien
             if (!isset($line['ERROR'])) {
