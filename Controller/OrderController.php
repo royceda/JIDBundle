@@ -644,8 +644,8 @@ class OrderController extends Controller {
         $I =  @stat( $cache );
         $modif = $I[9];
         $SOS = $this->container->get('arii_jid.sos');
-        if ((time() - $I[9])>0) {            
-            $cmd = '<show_state what="job_chains,job_commands,job_params"/>';
+        if ((time() - $I[9])>300) {            
+            $cmd = '<show_state what="job_chains,job_commands"/>';
             $xml = $SOS->Command($scheduler_id,$cmd, 'xml');
             file_put_contents($cache, $xml);
         }
