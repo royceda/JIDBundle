@@ -644,8 +644,8 @@ class OrderController extends Controller {
         $I =  @stat( $cache );
         $modif = $I[9];
         $SOS = $this->container->get('arii_jid.sos');
-        if ((time() - $I[9])>300) {            
-            $cmd = '<show_state what="job_chains,job_commands"/>';
+        if ((time() - $I[9])>0) {            
+            $cmd = '<show_state what="job_chains,job_commands,job_params"/>';
             $xml = $SOS->Command($scheduler_id,$cmd, 'xml');
             file_put_contents($cache, $xml);
         }
@@ -653,8 +653,49 @@ class OrderController extends Controller {
             $xml = file_get_contents($cache);          
         }
         $result = $SOS->xml2array($xml,1,'value');
-        $JobChains = $result['spooler']['answer']['state']['job_chains']['job_chain'];
-         
+        
+       $JobChains = $result['spooler']['answer']['state']['job_chains']['job_chain'];
+
+       $XMLJobs = $result['spooler']['answer']['state']['jobs']['job'];
+
+       // On ne conserve que le significatif
+       $n=0;
+       $Jobs = array();
+       while (isset($XMLJobs[$n]['attr']['job'])) {           
+           $job = $XMLJobs[$n]['attr']['path'];
+           // successeurs
+           if (isset($XMLJobs[$n]['commands'])) {
+                if (isset($XMLJobs[$n]['commands']['attr'])) {
+                   $XMLJobs[$n]['commands'][0]['attr'] = $XMLJobs[$n]['commands']['attr'];
+                   $XMLJobs[$n]['commands'][0]['order'] = $XMLJobs[$n]['commands']['order'];
+                }
+                // Commandes
+                $c = 0;
+                $Commands = array();
+                while (isset($XMLJobs[$n]['commands'][$c]['attr']['on_exit_code'])) {
+                    $next = $XMLJobs[$n]['commands'][$c]['attr']['on_exit_code'];
+                    if (isset($XMLJobs[$n]['commands'][$c]['attr'])) {
+                        // mise en tableau forcée
+                        $o = 0;
+                        if (isset($XMLJobs[$n]['commands'][$c]['order']['attr']))
+                            $XMLJobs[$n]['commands'][$c]['order'][$o]['attr'] = $XMLJobs[$n]['commands'][$c]['order']['attr'];
+                        while (isset($XMLJobs[$n]['commands'][$c]['order'][$o])) {
+                            $XMLJobs[$n]['commands'][$c]['order'][$o]['attr']['on_exit_code'] = $next;
+                            array_push($Commands,$XMLJobs[$n]['commands'][$c]['order'][$o]);
+                            $o++;
+                        }
+                    }
+                    $c++;
+                }
+                $Jobs[$job] = $Commands;               
+           }           
+           // Next ? 
+           elseif (substr($XMLJobs[$n]['attr']['job'],0,1)=='_') {
+               $Jobs[$job][0]['synchro']=1;
+           }
+           $n++;
+       }
+
         $svg = "digraph arii {\n";
         $svg .= "fontname=arial\n";
         $svg .= "fontsize=12\n";
@@ -697,7 +738,7 @@ class OrderController extends Controller {
             $etape++;
         }
 
-        $svg .= $gvz->Chain($this->images, $scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains  );
+        $svg .= $gvz->Chain($this->images, $scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains, $Jobs  );
         
         foreach ($OrderInfo as $order_id => $Order ) {
             $svg .= $gvz->Order($this->images, $Order);

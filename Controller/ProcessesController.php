@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ProcessesController extends Controller
 {
     protected $images;
+    protected $Done;
     
     public function __construct( )
     {
@@ -327,59 +328,6 @@ class ProcessesController extends Controller
             $output = "svg";        
         }
         
-        // on commence par recuperer le statut de l'ordre
-        $dhtmlx = $this->container->get('arii_core.dhtmlx');
-        $data = $dhtmlx->Connector('data');
-        
-        $SOS = $this->container->get('arii_core.sos');
-        $date = $this->container->get('arii_core.date');
-        $sql = $this->container->get('arii_core.sql');
-
-        $gvz = $this->container->get('arii_jid.graphviz');
-
-        // On recupere le contexte
-        $qry = $sql->Select(array(  'ORDER_ID' ))
-                .$sql->From(array('SCHEDULER_ORDER_HISTORY'))
-                .$sql->Where(array( 'HISTORY_ID' => $id ));
-        $res = $data->sql->query( $qry );
-        $State = array();
-        if ($line = $data->sql->get_next($res)) {
-            $order_id = $line['ORDER_ID'];
-        }
-        else {
-            // l'ordre a disparu ?!
-            exit();
-        }
-        list($META_CHAIN,$ORDER)=explode('.',$order_id);
-        
-        $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
-            'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT'))
-        .$sql->From(array('SCHEDULER_ORDER_HISTORY soh')) 
-        .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
-        .$sql->Where(array( 'soh.HISTORY_ID>=' => $id,  'soh.ORDER_ID' => $order_id  ))
-        .$sql->OrderBy(array('sosh.TASK_ID'));
-
-        $res = $data->sql->query( $qry );
-        $Steps = $OrderInfo = array();
-        $job_chain='UNKNOWN ?';
-        while ($line = $data->sql->get_next($res)) {
-            $scheduler_id = $line['SPOOLER_ID'];
-            $chain_id = $scheduler_id.'/'.$line['JOB_CHAIN'];            
-
-            $line['START_TIME']=$date->ShortDate( $date->Date2Local($line['START_TIME'],$scheduler_id));
-            $line['END_TIME']=$date->ShortDate( $date->Date2Local($line['END_TIME'],$scheduler_id));
-            
-            // Ordres
-            $order = $line['ORDER_ID'];
-            $order_id = $chain_id.'/'.$line['ORDER_ID'];
-
-            $step_id = $chain_id.'/'.$line['STATE'];                    
-            $Steps[$step_id] = $line;
-
-            $job_chain = $line['JOB_CHAIN'];
-            $OrderInfo[$order_id] = $line;             
-        }
-
         $svg = "digraph arii {\n";
         $svg .= "fontname=arial\n";
         $svg .= "fontsize=12\n";
@@ -388,106 +336,13 @@ class ProcessesController extends Controller
         $svg .= "node [shape=plaintext,fontname=arial,fontsize=8]\n";
         $svg .= "edge [shape=plaintext,fontname=arial,fontsize=8]\n";
         $svg .= "bgcolor=transparent\n";
-
-        // Dessin des étapes
-        $last = '';
-        $etape=0;
-        foreach ($Steps as $step_id=>$line) {
-            
-            $s='/'.$line['JOB_CHAIN'].'/'.$line['STATE'];
-            
-            $svg .= $gvz->Node($this->images, $line);
-            $Done[$s]=1; 
-            
-            if ($last !='') 
-                $svg .= "\"$last\" -> \"$s\" [label=$etape,color=$color]\n";
-            // On relie avec le noeud précédent
-            // donc la couleur est pour le prochain lien
-            if (!isset($line['ERROR'])) {
-                $color= "grey";
-            }
-            elseif ($line['ERROR']==0 )
-                $color= "green";
-            else 
-                $color= "red";
-                
-            $last = $s;
-            $etape++;
-        }
-        $svg .= $gvz->Order($this->images,$OrderInfo[$order_id]);
-        $svg .= '"O.'.$OrderInfo[$order_id]['ORDER_ID'].'" -> "META:'.$OrderInfo[$order_id]['CURRENT_STATE'].'" [style=dashed]'."\n";        
-
-        $current = '/'.$job_chain.'/'.$OrderInfo[$order_id]['STATE'];
-        if (!isset($Done[$current])) {       
-            $svg .= "\"$current\" [shape=record,color=$color,style=filled,fillcolor=\"".$this->ColorNode($current,$OrderInfo[$order_id]['ERROR'],$OrderInfo[$order_id]['END_TIME'])."\"]\n";    
-            // on le relie au dernier
-            $svg .= "\"$last\" -> \"$current\" [label=$etape,shape=ellipse,color=$color]\n";
-        }
-        else {
-            $svg .= "\"$last\" -> \"META:".$OrderInfo[$order_id]['CURRENT_STATE']."\" [label=$etape,shape=ellipse,color=$color]\n";
-        }
-
-        // Schema de base 
-        $cache = $tmp.'/'.$scheduler_id.',job_chains,job_commands.'.$scheduler_id.'.xml';
-        $I =  @stat( $cache );
-        $modif = $I[9];
-        $SOS = $this->container->get('arii_jid.sos');
-        if ((time() - $I[9])>300) {            
-            $cmd = '<show_state what="job_chains,job_commands"/>';
-            $xml = $SOS->Command($scheduler_id,$cmd, 'xml');
-            file_put_contents($cache, $xml);
-        }
-        else {
-            $xml = file_get_contents($cache);          
-        }
-        $result = $SOS->xml2array($xml,1,'value');
-        $JobChains = $result['spooler']['answer']['state']['job_chains']['job_chain'];
         
-        // On retrouve la chaine principale
-        $n = 0;
-        $search = '/'.dirname($job_chain).'/'.$META_CHAIN;
-        while (isset($JobChains[$n])) {
-            if ($JobChains[$n]['attr']['path']==$search) {
-                $find = $n;
-                break;
-            }
-            $n++; 
-        }
-        
-        $svg .= "subgraph \"clusterMETACHAIN\" {\n";
-
-        $MetaChain = $JobChains[$n];
-        
-        $n = 0;
-        while (isset($MetaChain['job_chain_node'][$n]['attr'])) {
-            $Infos = $MetaChain['job_chain_node'][$n]['attr'];
-            $state = $Infos['state'];
-            
-            if (isset($Infos['next_state']))
-                $next = $Infos['next_state'];
-            else 
-                $next = '';
-            if (isset($Infos['error_state']))
-                $error = $Infos['error_state'];
-            else
-                $error = '';
-            
-            if (isset($Infos['job_chain'])) {
-                $chain = $Infos['job_chain'];
-                $Node[$state] = $chain;
-                $svg .= $gvz->Chain($this->images,$scheduler_id, $chain,$order_id, $Steps, $JobChains, $state, $next, $error );  
-            }
-            else {
-                $Node[$state] = $state;
-            }
-            $n++;
-        }
-            
-        $svg .= 'label="'.$META_CHAIN."\"\n";                                        
-        $svg .= "}\n";
-
+        $this->Done = array();
+        $svg .= $this->GraphOrder($id);
         $svg .= "}\n"; // fin de graph
-
+        
+        
+// print $svg; exit();
         $tmpfile = $tmp.'/arii.dot';
         file_put_contents($tmpfile, $svg);
         $cmd = '"'.$this->graphviz_dot.'" "'.$tmpfile.'" -T '.$output;
@@ -517,6 +372,256 @@ class ProcessesController extends Controller
             print system($cmd);
         }
         exit();
+        
+    }
+    
+    function GraphOrder($id,$order_id='',$job_chain='') {
+        
+        // on commence par recuperer le statut de l'ordre
+        $dhtmlx = $this->container->get('arii_core.dhtmlx');
+        $data = $dhtmlx->Connector('data');
+        
+        $SOS = $this->container->get('arii_core.sos');
+        $date = $this->container->get('arii_core.date');
+        $sql = $this->container->get('arii_core.sql');
+
+        $gvz = $this->container->get('arii_jid.graphviz');
+
+        // Si on n'a pas d'ordre, c'est une chaine principale
+        if ($order_id=='') {
+            $qry = $sql->Select(array(  'ORDER_ID' ))
+                    .$sql->From(array('SCHEDULER_ORDER_HISTORY'))
+                    .$sql->Where(array( 'HISTORY_ID' => $id ));
+            $res = $data->sql->query( $qry );
+            $State = array();
+            if ($line = $data->sql->get_next($res)) {
+                $order_id = $line['ORDER_ID'];
+            }
+            else {
+                // l'ordre a disparu ?!
+                exit();
+            }
+            list($META_CHAIN,$ORDER)=explode('.',$order_id);
+        }
+        else {
+            $META_CHAIN=$job_chain;
+            $ORDER = $order_id;
+        }
+        
+        $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
+            'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT'))
+        .$sql->From(array('SCHEDULER_ORDER_HISTORY soh')) 
+        .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
+        .$sql->Where(array( 'soh.HISTORY_ID>=' => $id,  'soh.ORDER_ID' => $order_id  ))
+        .$sql->OrderBy(array('sosh.START_TIME','sosh.TASK_ID'));
+
+        $res = $data->sql->query( $qry );
+        $Steps = $OrderInfo = array();
+        $job_chain='UNKNOWN ?';
+        while ($line = $data->sql->get_next($res)) {
+            $scheduler_id = $line['SPOOLER_ID'];
+            $chain_id = $scheduler_id.'/'.$line['JOB_CHAIN'];            
+
+            $line['START_TIME']=$date->ShortDate( $date->Date2Local($line['START_TIME'],$scheduler_id));
+            $line['END_TIME']=$date->ShortDate( $date->Date2Local($line['END_TIME'],$scheduler_id));
+            
+            // Ordres
+            $order = $line['ORDER_ID'];
+            $order_id = $chain_id.'/'.$line['ORDER_ID'];
+
+            $step_id = $chain_id.'/'.$line['STATE'];                    
+            $Steps[$step_id] = $line;
+
+            $job_chain = $line['JOB_CHAIN'];
+            $OrderInfo[$order_id] = $line;             
+        }
+
+        $svg = '';
+        // Dessin des étapes
+        $last = '';
+        $etape=0;
+        foreach ($Steps as $step_id=>$line) {
+            
+            $s='/'.$line['JOB_CHAIN'].'/'.$line['STATE'];
+            
+            $svg .= $gvz->Node($this->images, $line);
+            $Done[$s]=1; 
+            
+            if ($last !='') 
+                $svg .= "\"$last\" -> \"$s\" [label=$etape,color=$color]\n";
+            // On relie avec le noeud précédent
+            // donc la couleur est pour le prochain lien
+            if (!isset($line['ERROR'])) {
+                $color= "grey";
+            }
+            elseif ($line['ERROR']==0 )
+                $color= "green";
+            else 
+                $color= "red";
+                
+            $last = $s;
+            $etape++;
+        }
+        if (isset($OrderInfo[$order_id])) {
+            $svg .= $gvz->Order($this->images,$OrderInfo[$order_id]);
+            $svg .= '"/'.$job_chain.'/'.$OrderInfo[$order_id]['CURRENT_STATE'].'" [label="'.$OrderInfo[$order_id]['CURRENT_STATE'].'"]'."\n";
+            $svg .= '"O.'.$OrderInfo[$order_id]['ORDER_ID'].'" -> "/'.$job_chain.'/'.$OrderInfo[$order_id]['CURRENT_STATE'].'" [style=dashed]'."\n";        
+
+            $current = '/'.$job_chain.'/'.$OrderInfo[$order_id]['STATE'];
+            if (!isset($Done[$current])) {       
+                $svg .= "\"$current\" [shape=record,color=$color,style=filled,fillcolor=\"".$this->ColorNode($current,$OrderInfo[$order_id]['ERROR'],$OrderInfo[$order_id]['END_TIME'])."\"]\n";    
+                // on le relie au dernier
+                $svg .= "\"$last\" -> \"$current\" [label=$etape,shape=ellipse,color=$color]\n";
+            }
+            else {
+                $svg .= "\"$last\" -> \"/$job_chain/".$OrderInfo[$order_id]['CURRENT_STATE']."\" [label=$etape,shape=ellipse,color=$color]\n";
+            }
+        }
+        // Schema de base 
+        $tmp = sys_get_temp_dir();
+        $cache = $tmp.'/'.$scheduler_id.',job_chains,job_commands.'.$scheduler_id.'.xml';
+        $I =  @stat( $cache );
+        $modif = $I[9];
+        $SOS = $this->container->get('arii_jid.sos');
+        if ((time() - $I[9])>300) {            
+            $cmd = '<show_state what="job_chains,job_commands"/>';
+            $xml = $SOS->Command($scheduler_id,$cmd, 'xml');
+            file_put_contents($cache, $xml);
+        }
+        else {
+            $xml = file_get_contents($cache);          
+        }
+        $result = $SOS->xml2array($xml,1,'value');
+        
+        // On ajoute les
+       $JobChains = $result['spooler']['answer']['state']['job_chains']['job_chain'];
+       // Information sur les jobs pour les split&merge
+       $XMLJobs = $result['spooler']['answer']['state']['jobs']['job'];
+       // On ne conserve que le significatif
+       $n=0;
+       $Jobs = array();
+       while (isset($XMLJobs[$n]['attr']['job'])) {           
+           $job = $XMLJobs[$n]['attr']['path'];
+           // successeurs
+           if (isset($XMLJobs[$n]['commands'])) {
+                if (isset($XMLJobs[$n]['commands']['attr'])) {
+                   $XMLJobs[$n]['commands'][0]['attr'] = $XMLJobs[$n]['commands']['attr'];
+                   $XMLJobs[$n]['commands'][0]['order'] = $XMLJobs[$n]['commands']['order'];
+                }
+                // Commandes
+                $c = 0;
+                $Commands = array();
+                while (isset($XMLJobs[$n]['commands'][$c]['attr']['on_exit_code'])) {
+                    $next = $XMLJobs[$n]['commands'][$c]['attr']['on_exit_code'];
+                    if (isset($XMLJobs[$n]['commands'][$c]['attr'])) {
+                        // mise en tableau forcée
+                        $o = 0;
+                        if (isset($XMLJobs[$n]['commands'][$c]['order']['attr']))
+                            $XMLJobs[$n]['commands'][$c]['order'][$o]['attr'] = $XMLJobs[$n]['commands'][$c]['order']['attr'];
+                        while (isset($XMLJobs[$n]['commands'][$c]['order'][$o])) {
+                            $XMLJobs[$n]['commands'][$c]['order'][$o]['attr']['on_exit_code'] = $next;
+                            array_push($Commands,$XMLJobs[$n]['commands'][$c]['order'][$o]);
+                            $o++;
+                        }
+                    }
+                    $c++;
+                }
+                $Jobs[$job] = $Commands;               
+           }           
+           // Next ? 
+           elseif (substr($XMLJobs[$n]['attr']['job'],0,1)=='_') {
+               $Jobs[$job][0]['synchro']=1;
+           }
+           $n++;
+       }
+        // 
+        // On retrouve la chaine principale
+        $find = -1;
+        $n = 0;
+        $search = '/'.dirname($job_chain).'/'.$META_CHAIN;
+        while (isset($JobChains[$n])) {
+            if ($JobChains[$n]['attr']['path']==$search) {
+                $find = $n;
+                break;
+            }
+            $n++; 
+        }
+        
+        if ($find>=0) {
+    //        $svg .= "subgraph \"clusterMETACHAIN\" {\n";
+            
+            $svg .= $gvz->Chain($this->images,$scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains, $Jobs, basename($job_chain)  );
+
+            $MetaChain = $JobChains[$find];
+            $n = 0;
+            while (isset($MetaChain['job_chain_node'][$n]['attr'])) {
+                $Infos = $MetaChain['job_chain_node'][$n]['attr'];
+                $state = $Infos['state'];
+
+                if (isset($Infos['next_state']))
+                    $next = $Infos['next_state'];
+                else 
+                    $next = '';
+                if (isset($Infos['error_state']))
+                    $error = $Infos['error_state'];
+                else
+                    $error = '';
+
+                if (isset($Infos['job_chain'])) {
+                    $chain = $Infos['job_chain'];
+                    $Node[$state] = $chain;
+                    $svg .= $gvz->Chain($this->images, $scheduler_id, $chain,$order_id, $Steps, $JobChains, $Jobs, $state, $next, $error );  
+                }
+                elseif (isset($Infos['job'])) {                
+                    $job = $Infos['job'];
+                    // Sous-chaine ?
+                    if (isset($Jobs[$job])) {
+                        $c = 0;
+                        while (isset($Jobs[$job][$c])) { 
+                            if (isset($Jobs[$job][$c]['attr']['on_exit_code'])) {
+                                $exit = $Jobs[$job][$c]['attr']['on_exit_code'];
+                                if ($exit == 'success')
+                                    $color = 'green';
+                                elseif ($exit == 'error')
+                                    $color = 'red';
+                                else 
+                                    $color = 'blue';
+                                $jc   = $Jobs[$job][$c]['attr']['job_chain'];
+                                $o    = $Jobs[$job][$c]['attr']['id'];
+                                // Lien 
+                                $svg .= '"/'.$job_chain.'/'.$state.'" -> "'.$jc.'" [label="'.$o.'",color='.$color.',style=dashed]'."\n";
+
+                                // appel recursif
+                                if (!isset($this->Done[$o])) {
+                                    $this->Done[$o]=1;
+                                    $svg .= $this->GraphOrder($id,$o,$jc);
+                                }
+                            }
+                            // on dessine la sous-chaine
+                            /*
+                            if (!isset($Done[$jc])) {
+                                $svg .= $gvz->Chain($this->images,$scheduler_id, $jc, $o, $Steps, $JobChains, basename($jc) );
+                                $Done[$jc]=1;
+                            }                        
+                             */
+                            $c++;
+                        }
+                    }
+                }   
+                else {
+                    $Node[$state] = $state;
+                }
+                $n++;
+            }            
+    //        $svg .= 'label="'.$META_CHAIN."\"\n";                                        
+    //        $svg .= "}\n";
+        }
+        else {
+            // Chaine simple
+            $svg .= $gvz->Chain($this->images,$scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains, $Jobs, basename($job_chain) );
+        }
+        
+        return $svg;
     }
 
 }

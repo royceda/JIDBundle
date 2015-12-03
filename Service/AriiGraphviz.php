@@ -158,12 +158,12 @@ class AriiGraphviz
         return "$res\n";
     }
 
-    public function Chain($images,  $scheduler_id, $job_chain, $order_id, $Steps, $JobChains, $STATE = '', $next='', $error='' ) {
+    public function Chain($images,  $scheduler_id, $job_chain, $order_id, $Steps, $JobChains, $Jobs, $STATE = '', $next='', $error='' ) {
 
         $svg = "subgraph \"cluster$STATE\" {\n";
         $svg .= "style=filled;\n";
         if ($STATE != '') {
-            $prefix = 'META:';
+            $prefix = dirname($job_chain).'/';
             $svg .= "\"$prefix$STATE\" [label=$STATE;shape=ellipse;color=black]\n";
         }
         else {            
@@ -207,9 +207,9 @@ class AriiGraphviz
         $qry =  $sql->Select(array('SPOOLER_ID','JOB_CHAIN','STATE','STATE_TEXT','TITLE','PAYLOAD','INITIAL_STATE','ORDER_XML'))
                 .$sql->From(array('SCHEDULER_ORDERS')) 
                 .$sql->Where(array('SPOOLER_ID' => $scheduler_id, 'JOB_CHAIN' => $job_chain, 'ID' => $order_id ));
-
+        
         $res = $data->sql->query( $qry );
-        while ($line = $data->sql->get_next($res)) {            
+        while ($line = $data->sql->get_next($res)) {      
             $OrderInfo[$order_id]['ORDER_XML'] = $line['ORDER_XML'];
             $OrderInfo[$order_id]['PAYLOAD'] = $line['PAYLOAD'];
         }
@@ -241,16 +241,41 @@ class AriiGraphviz
                     $split = substr($s,0,$p);
                     $svg .=  '"'.$job_chain.'/'.$split.'" -> "'.$job_chain.'/'.$s.'" [color=yellow,style=dashed]'."\n";
                 }
-                
                 if (isset($Node[$n]['attr']['job'])) {
+                    $j = $Node[$n]['attr']['job'];
                     // Noeud traité ?
                     if (isset($Steps["$scheduler_id$job_chain/$s"]))
                         $svg .= '"'.$job_chain.'/'.$Node[$n]['attr']['state']."\"\n";
                     else 
                         $svg .= '"'.$job_chain.'/'.$Node[$n]['attr']['state']."\" [label=\"$s\"]\n";
+                    
+                    // Point de synchro ?
+                    if (isset($Jobs[$j][0]['synchro']))  {
+                        $synchro = substr(basename($j),1);
+                        // par evenement ?
+                        switch (substr($synchro,0,1)) {
+                            case '+':
+                                $svg .= '"'.substr($synchro,1).'" [shape=ellipse;style=dashed]'."\n"; 
+                                $svg .= ' "'.$job_chain.'/'.$s.'" -> "'.substr($synchro,1).'" [label="+";arrowtail=dot;dir=both;color=green]'."\n";                                 
+                                break;
+                            case '-':
+                                $svg .= '"'.substr($synchro,1).'" [shape=ellipse;style=dashed]'."\n"; 
+                                $svg .= ' "'.$job_chain.'/'.$s.'" -> "'.substr($synchro,1).'" [label="-";arrowhead=dot;dir=both;color=red]'."\n";                                 
+                                break;
+                            case '_':
+                                $svg .= '"'.substr($synchro,1).'" [shape=ellipse;style=dashed]'."\n"; 
+                                $svg .= ' "'.$job_chain.'/'.$s.'" -> "'.substr($synchro,1).'" [label="?";arrowhead=dot;dir=both;color=blue]'."\n";                                 
+                                break;
+                            default:
+                                $svg .= '"'.$j.'" [label="'.basename($j).'";shape=ellipse;style=dashed]'."\n"; 
+                                $svg .= ' "'.$job_chain.'/'.$s.'" -> "'.$synchro.'" [arrowhead=dot;arrowtail=dot;dir=both]'."\n";    
+                                break;
+                        }
+                    }
                 }
                 else {
                     $svg .= '"'.$job_chain.'/'.$Node[$n]['attr']['state']."\" [label=\"".$Node[$n]['attr']['state']."\";shape=ellipse;color=grey]\n";                    
+                    // $svg .= '"'.$job_chain.'/'.$Node[$n]['attr']['state']."\" [shape=ellipse;color=grey]\n";                    
                 }
                 if (isset($Node[$n]['attr']['next_state'])) {
                     $last_next = $job_chain.'/'.$Node[$n]['attr']['next_state'];
@@ -269,7 +294,7 @@ class AriiGraphviz
         else 
             $svg .= "color=lightgrey;\n";
         
-        $svg .= 'label="'.$job_chain."\"\n";
+        $svg .= 'label="'.dirname($job_chain)."\"\n";
         
         $svg .= "}\n"; // fin de chaine
         
