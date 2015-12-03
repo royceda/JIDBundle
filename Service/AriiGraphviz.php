@@ -267,8 +267,8 @@ class AriiGraphviz
                                 $svg .= ' "'.$job_chain.'/'.$s.'" -> "'.substr($synchro,1).'" [label="?";arrowhead=dot;dir=both;color=blue]'."\n";                                 
                                 break;
                             default:
-                                $svg .= '"'.$j.'" [label="'.basename($j).'";shape=ellipse;style=dashed]'."\n"; 
-                                $svg .= ' "'.$job_chain.'/'.$s.'" -> "'.$synchro.'" [arrowhead=dot;arrowtail=dot;dir=both]'."\n";    
+                                $svg .= '"'.$j.'" [label="'.basename($j).'";shape=ellipse;style=dashed;color=black]'."\n"; 
+                                $svg .= ' "'.$job_chain.'/'.$s.'" -> "'.$j.'" [arrowhead=dot;arrowtail=dot;dir=both]'."\n";    
                                 break;
                         }
                     }
