@@ -362,9 +362,9 @@ function GridRefresh() {
     myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     myGrid.load("{{ url('xml_JID_jobs_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning, function(){    
         globalLayout.cells("b").progressOff();
-//        myGrid.refreshFilters();
-//        myGrid.filterByAll();
-        myGrid.filterBy(4, status);  
+        myGrid.refreshFilters();
+        myGrid.filterByAll();
+//        myGrid.filterBy(4, status);  
         myDonut.load( "{{ url('xml_JID_jobs_pie') }}?chained="+chained+"&only_warning="+only_warning, function () {
             myDonut.refresh();                
             globalLayout.progressOff();

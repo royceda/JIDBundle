@@ -61,15 +61,23 @@ class GanttController extends Controller
         else
             $col = $black;
         
-        if ($days==0) {
+        if ($start>$end) {
+            $h = ($height/2)-$days-2;
+            imagefilledrectangle($im, $start*$step, 1, 24*$step, $h+1, $col);            
+            imagefilledrectangle($im, 0,$days*2+$h+2, $end*$step, ($h+$days)*2+1, $col);
+            for($i=0;$i<$days;$i++) {
+                imageline($im, 0, $h+3+($i*2), $width, $h+3+($i*2), $black);
+            }
+        }
+        elseif ($days==0) {
             imagefilledrectangle($im, $start*$step, 1, $end*$step, $height-2, $col);
         }
         else {
             $h = ($height/2)-$days-2;
             imagefilledrectangle($im, $start*$step, 1, 24*$step, $h+1, $col);            
-            imagefilledrectangle($im, 0,$days*2+$h+2, $end*$step, ($h+$days)*2+1, $col);
+            imagefilledrectangle($im, 0,$days*2+$h+2, $end*$step, ($h+$days)*2+1, $col );
             for($i=0;$i<$days;$i++) {
-                imageline($im, 0, $h+3+($i*2), $width, $h+3+($i*2), $col);
+                imageline($im, 0, $h+3+($i*2), $width, $h+3+($i*2), $black );
             }
         }
         imagepng($im);        
