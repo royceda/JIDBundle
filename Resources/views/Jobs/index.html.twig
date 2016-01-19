@@ -84,8 +84,10 @@ dhtmlxEvent(window,"load",function(){
 
     myDonut.attachEvent("onItemClick",function(id, value){
         status = id;
-        myGrid.filterBy(4, status);  
+        myGrid.filterBy(3, status);  
+        myGrid.getFilterElement(3).value = status;      
     });
+    
     myTree.attachEvent("onClick",function(id, value){
         var Path = id.split('/');
         Path.shift();

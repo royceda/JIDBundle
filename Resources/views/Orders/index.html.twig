@@ -55,10 +55,6 @@ dhtmlxEvent(window,"load",function(){
             } 
     });
     myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning );
-    myDonut.attachEvent("onItemClick",function(id, value){
-        status = id;
-        myGrid.filterBy(5, status);  
-    });
 /*             
     myTree = myAccordion.cells("a2").attachTree();
 //    myTree = globalLayout.cells("a").attachTree();
@@ -86,6 +82,12 @@ dhtmlxEvent(window,"load",function(){
     myGrid.enableSmartRendering(true,50);
     myGrid.load( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
     myGrid.attachEvent("onRowDblClicked",OrderDetail );
+
+    myDonut.attachEvent("onItemClick",function(id, value){
+        status = id;
+        myGrid.filterBy(5, status);
+        myGrid.getFilterElement(5).value = status;        
+    });
 
     myGridToolbar = globalLayout.cells("b").attachToolbar();
     myGridToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
