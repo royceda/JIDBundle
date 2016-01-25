@@ -636,7 +636,7 @@ class OrderController extends Controller {
             $OrderInfo[$order_id]['PAYLOAD'] = $line['PAYLOAD'];
         }
         
-        $last = '';        
+        $last = '';
         $Done = array(); // Noeuds traités
 
         // Schema de base 
@@ -653,6 +653,8 @@ class OrderController extends Controller {
             $xml = file_get_contents($cache);          
         }
         $result = $SOS->xml2array($xml,1,'value');
+        
+        if (!isset($result['spooler'])) exit();
         
        $JobChains = $result['spooler']['answer']['state']['job_chains']['job_chain'];
 

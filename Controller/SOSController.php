@@ -317,6 +317,7 @@ class SOSController extends Controller
 
         if (!isset($result['spooler'])) {
             print "<font color='red'>No answer!</font>";
+            print_r($result);
             exit();
         }
         if (!isset($result['spooler']['answer'])) {
