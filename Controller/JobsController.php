@@ -18,17 +18,17 @@ class JobsController extends Controller
             'STOPPING' => '#ffffcc',
             'UNKNOW' => '#BBB'
         );
-    
+
     public function __construct( )
     {
           $request = Request::createFromGlobals();
-          $this->images = $request->getUriForPath('/../bundles/ariicore/images/wa');          
+          $this->images = $request->getUriForPath('/../bundles/ariicore/images/wa');
     }
 
     public function indexAction()
     {
         $session = $this->container->get('arii_core.session');
-        
+
         // Une date peut etre passe en get
         $request = Request::createFromGlobals();
         if ($request->query->get( 'ref_date' )) {
@@ -38,39 +38,39 @@ class JobsController extends Controller
             $ref_date   = $session->getRefDate();
         }
         $Timeline['ref_date'] = $ref_date;
-        
+
         $past   = $session->getRefPast();
         $future = $session->getRefFuture();
-        
+
         // On prend 24 fuseaux entre maintenant et le passe
         // on trouve le step en minute
         $step = ($future-$past)*2.5; // heure * 60 minutes / 24 fuseaux
         if ($step == 0) $step = 1;
         $Timeline['step'] = 60;
-    
-        // on recalcule la date courante moins la plage de passé 
+
+        // on recalcule la date courante moins la plage de passé
         $year = substr($ref_date, 0, 4);
         $month = substr($ref_date, 5, 2);
         $day = substr($ref_date, 8, 2);
-        
+
         $start = substr($session->getPast(),11,2);
         $Timeline['start'] = (60/$step)*$start;
         $Timeline['js_date'] = $year.','.($month - 1).','.$day;
-        
+
         $Timeline['start'] = 0;
         $refresh = $session->GetRefresh();
-        
-        // Liste des spoolers pour cette plage        
-/*        
+
+        // Liste des spoolers pour cette plage
+/*
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
-        
+
         $sql = $this->container->get('arii_core.sql');
         $Fields = array (
             '{spooler}'    => 'SPOOLER_ID',
             '{start_time}' => 'START_TIME' );
 
-        $qry = $sql->Select(array('SPOOLER_ID'),'distinct') 
+        $qry = $sql->Select(array('SPOOLER_ID'),'distinct')
                    .$sql->From(array('SCHEDULER_HISTORY'))
                    .$sql->Where($Fields)
                    .$sql->OrderBy(array( 'SPOOLER_ID' ));
@@ -79,13 +79,18 @@ class JobsController extends Controller
         if ($data) {
             $res = $data->sql->query( $qry );
             while ($line = $data->sql->get_next($res)) {
-                array_push( $SPOOLERS,$line['SPOOLER_ID'] ); 
+                array_push( $SPOOLERS,$line['SPOOLER_ID'] );
             }
         }
         $Timeline['spoolers'] = $SPOOLERS;
 */
         return $this->render('AriiJIDBundle:Jobs:index.html.twig', array('refresh' => $refresh, 'Timeline' => $Timeline ) );
     }
+
+
+
+
+
 
     public function toolbarAction()
     {
@@ -141,14 +146,14 @@ class JobsController extends Controller
         $request = Request::createFromGlobals();
         $ordered = $request->get('ordered');
         $stopped = $request->get('stopped');
-        
+
         $folder = 'live';
         // $this->syncAction($folder);
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
    /* On prend l'historique */
         $Fields = array (
-           '{spooler}'    => 'sh.SPOOLER_ID', 
+           '{spooler}'    => 'sh.SPOOLER_ID',
             '{job_name}'   => 'sh.JOB_NAME',
             '{error}'      => 'sh.ERROR',
             '{start_time}' => 'sh.START_TIME',
@@ -162,8 +167,8 @@ class JobsController extends Controller
         $qry = $sql->Select(array('sh.ID','sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR' ))
                 .$sql->From(array('SCHEDULER_HISTORY sh'))
                 .$sql->Where($Fields)
-                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));  
-        
+                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));
+
         $res = $data->sql->query( $qry );
         $Info = array();
         $key_files = array();
@@ -171,39 +176,39 @@ class JobsController extends Controller
             $id  =  $line['ID'];
             $dir = "/".$line['SPOOLER_ID'].'/'.dirname($line['JOB_NAME']);
             if ($line['ERROR']>0) {
-                if (isset($Info[$dir]['errors'])) 
+                if (isset($Info[$dir]['errors']))
                     $Info[$dir]['errors']++;
-                else 
+                else
                     $Info[$dir]['errors']=1;
             }
             // On ccompte les erreurs
             $key_files[$dir] = $dir;
         }
-        
+
         // Prend on en compte les stopped ?
             $Fields = array (
-                '{spooler}'    => 'sh.SPOOLER_ID', 
+                '{spooler}'    => 'sh.SPOOLER_ID',
                 '{job_name}'   => 'sh.PATH',
                 'sh.STOPPED'    => 1 );
             $qry = $sql->Select(array('sh.SPOOLER_ID','sh.PATH' ))
                     .$sql->From(array('SCHEDULER_JOBS sh'))
                     .$sql->Where($Fields)
-                    .$sql->OrderBy(array('sh.SPOOLER_ID','sh.PATH'));  
+                    .$sql->OrderBy(array('sh.SPOOLER_ID','sh.PATH'));
 
               $res = $data->sql->query( $qry );
               while ( $line = $data->sql->get_next($res) ) {
                 $dir = '/'.$line['SPOOLER_ID'].'/'.dirname($line['PATH']);
-                if (isset($Info[$dir]['stopped'])) 
+                if (isset($Info[$dir]['stopped']))
                     $Info[$dir]['stopped']++;
-                else 
+                else
                     $Info[$dir]['stopped']=1;
-                
+
                 // On ccompte les erreurs
                 if ($stopped=='true') {
                     $key_files[$dir] = $dir;
-                }            
+                }
             }
-        
+
         // print_r($Info);
         # On remonte les erreurs
         foreach (array_keys($Info) as $dir) {
@@ -223,31 +228,31 @@ class JobsController extends Controller
                     $dir .= '/'.$p;
                     if (isset($Info[$dir]['total']))
                         $Info[$dir]['total'] += $n;
-                    else 
+                    else
                         $Info[$dir]['total'] = $n;
                 }
-            }            
+            }
         }
         ksort($Info);
         /*
          *     print_r($Info);
             exit();
          */
-        
+
         $tools = $this->container->get('arii_core.tools');
         $tree = $tools->explodeTree($key_files, "/");
-        
+
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml');
         $list = '<?xml version="1.0" encoding="UTF-8"?>';
         $list .= "<tree id='0'>\n";
-        
+
         $list .= $this->Folder2XML( $tree, '', $Info );
         $list .= "</tree>\n";
         $response->setContent( $list );
         return $response;
     }
- 
+
    function Folder2XML( $leaf, $id = '', $Info ) {
             $return = '';
             if (is_array($leaf)) {
@@ -277,8 +282,29 @@ class JobsController extends Controller
             }
             return $return;
     }
-            
-    public function gridAction($history_max=0,$ordered = 0,$stopped=1) {
+
+
+    public function viewAllAction(){
+
+      
+    }
+
+
+
+
+
+    //change les variable de session past et future
+    public function gridDatedAction(Request $request, $date1, $date2){
+      $request->getSession()->set('past', $date1 );
+      $request->getSession()->set('future', $date2 );
+      //return new Response("ok \n future : ".$request->getSession()->get('future') ." \n past : ".$request->getSession()->get('past'));
+      return  $this->redirectToRoute('arii_JID_jobs');
+      //return $this->render('AriiJIDBundle:Jobs:index.html.twig', array('refresh' => $refresh, 'Timeline' => $Timeline ) );
+    }
+
+
+
+    public function gridAction($history_max=0,$ordered = 0,$stopped=1, $bool="false") {
 
         $request = Request::createFromGlobals();
         if ($request->get('history')>0) {
@@ -288,50 +314,62 @@ class JobsController extends Controller
         $stopped = $request->get('only_warning');
 
         $history = $this->container->get('arii_jid.history');
-        $Jobs = $history->Jobs(0, $ordered, $stopped, false);
-        
+
+        //echo "date1 : ".$date1." date2 : ".$date2." ";
+        $Jobs = $history->Jobs(0, $ordered, $stopped, false, $bool);
+
         $tools = $this->container->get('arii_core.tools');
-        
+
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml');
         $list = '<?xml version="1.0" encoding="UTF-8"?>';
         $list .= "<rows>\n";
         $list .= '<head>
-            <afterInit>
-                <call command="clearAll"/>
-            </afterInit>
+        <afterInit>
+        <call command="clearAll"/>
+        </afterInit>
         </head>';
         ksort($Jobs);
+
         foreach ($Jobs as $k=>$job) {
             if (isset($job['runs'])) {
                 $status = $job['runs'][0]['status'];
             }
             else {
                 $status = 'UNKNOW';
-            } 
+            }
             $list .='<row id="'.$job['runs'][0]['dbid'].'" style="background-color: '.$this->ColorStatus[$status].'">';
+            $list .='<cell>'.$job['spooler'].'</cell>';
+            $list .='<cell>'.$job['folder'].'</cell>';
 
-            $list .='<cell>'.$job['spooler'].'</cell>';              
-            $list .='<cell>'.$job['folder'].'</cell>'; 
-            $list .='<cell>'.$job['name'].'</cell>';           
-            $list .='<cell>'.$status.'</cell>'; 
-            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>'; 
+            if($job['chain']){
+              $list .='<cell>'.$job['chain'].'</cell>';
+            }else{
+              $list .='<cell>no chain null </cell>';
+            }
+
+
+
+            $list .='<cell>'.$job['name'].'</cell>';
+            $list .='<cell>'.$status.'</cell>';
+            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>';
             if (isset($job['runs'])) {
-                $list .='<cell>'.$job['runs'][0]['start'].'</cell>'; 
-                $list .='<cell>'.$job['runs'][0]['end'].'</cell>'; 
+                $list .='<cell>'.$job['runs'][0]['start'].'</cell>';
+                $list .='<cell>'.$job['runs'][0]['end'].'</cell>';
                 $list .='<cell>'.$job['runs'][0]['duration'].'</cell>';
                 $list .='<cell>'.$job['runs'][0]['exit'].'</cell>';
-                $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($job['runs'][0]['start'],$job['runs'][0]['end'],$status).'"/>]]></cell>'; 
+                $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($job['runs'][0]['start'],$job['runs'][0]['end'],$status).'"/>]]></cell>';
                 $list .='<cell>'.$job['runs'][0]['pid'].'</cell>';
-                $list .='<cell>'.$this->images.'/'.strtolower($job['runs'][0]['cause']).'.png</cell>'; 
+                $list .='<cell>'.$this->images.'/'.strtolower($job['runs'][0]['cause']).'.png</cell>';
             }
             $list .='</row>';
         }
-        
+
         $list .= "</rows>\n";
         $response->setContent( $list );
         return $response;
     }
+
 
     public function grid2Action($history_max=0,$ordered = 'false',$stopped='false') {
         $color = array (
@@ -370,7 +408,7 @@ class JobsController extends Controller
             '{spooler}'    => 'sh.SPOOLER_ID',
             '{job_name}'   => 'sh.PATH' );
 
-                $qry = $sql->Select(array('sh.SPOOLER_ID','sh.PATH as JOB_NAME','sh.STOPPED','sh.NEXT_START_TIME')) 
+                $qry = $sql->Select(array('sh.SPOOLER_ID','sh.PATH as JOB_NAME','sh.STOPPED','sh.NEXT_START_TIME'))
                         .$sql->From(array('SCHEDULER_JOBS sh'))
                         .$sql->Where($Fields)
                         .$sql->OrderBy(array('sh.SPOOLER_ID','sh.PATH'));
@@ -396,10 +434,10 @@ class JobsController extends Controller
                 <call command="clearAll"/>
             </afterInit>
         </head>';
-        
+
     /* On prend l'historique */
         $Fields = array (
-           '{spooler}'    => 'sh.SPOOLER_ID', 
+           '{spooler}'    => 'sh.SPOOLER_ID',
             '{job_name}'   => 'sh.JOB_NAME',
             '{error}'      => 'sh.ERROR',
             '{start_time}' => 'sh.START_TIME',
@@ -412,7 +450,7 @@ class JobsController extends Controller
                 .$sql->Where($Fields)
 //                .$sql->LeftJoin('SCHEDULER_TASKS st',array('sh.ID','st.TASK_ID'))
 //                .$sql->LeftJoin('SCHEDULER_TASKS st',array('sh.ID','st.TASK_ID'))
-                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));  
+                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));
 
         $res = $data->sql->query( $qry );
         $nb=0;
@@ -430,7 +468,7 @@ class JobsController extends Controller
             if ($H[$id]>$history_max) {
                 continue;
             }
-            
+
             if (isset($Stopped[$id]) and ($Stopped[$id]==1)) {
                 if ($line['END_TIME']=='')
                     $status = 'STOPPING';
@@ -448,33 +486,33 @@ class JobsController extends Controller
             }
             $list .='<row id="'.$line['ID'].'" style="background-color: '.$color[$status].'">';
             // Cas particulier pour les RUNNING
-            $list .='<cell>'.$line['SPOOLER_ID'].'</cell>';              
-            $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>'; 
-            $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';           
-            $list .='<cell>'.$status.'</cell>'; 
-            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>'; 
+            $list .='<cell>'.$line['SPOOLER_ID'].'</cell>';
+            $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>';
+            $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';
+            $list .='<cell>'.$status.'</cell>';
+            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>';
             if ($status=='RUNNING') {
-                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );                                     
-                $list .='<cell>'.$start.'</cell>'; 
-                $list .='<cell/>'; 
+                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );
+                $list .='<cell>'.$start.'</cell>';
+                $list .='<cell/>';
                 $list .='<cell>'.$duration.'</cell>';
             }
             else {
-                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );                                     
-                $list .='<cell>'.$date->ShortDate($start).'</cell>'; 
-                $list .='<cell>'.$date->ShortDate($end).'</cell>'; 
+                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );
+                $list .='<cell>'.$date->ShortDate($start).'</cell>';
+                $list .='<cell>'.$date->ShortDate($end).'</cell>';
                 $list .='<cell>'.$duration.'</cell>';
             }
             $list .='<cell>'.$line['EXIT_CODE'].'</cell>';
-            $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($start,$end,$status).'"/>]]></cell>'; 
+            $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($start,$end,$status).'"/>]]></cell>';
             $list .='<cell>'.$line['PID'].'</cell>';
-            $list .='<cell>'.$this->images.'/'.strtolower($line['CAUSE']).'.png</cell>'; 
+            $list .='<cell>'.$this->images.'/'.strtolower($line['CAUSE']).'.png</cell>';
             $list .='</row>';
         }
-        
+
     /* On prend les taches en file d'attente */
         $Fields = array (
-           '{spooler}'    => 'st.SPOOLER_ID', 
+           '{spooler}'    => 'st.SPOOLER_ID',
             '{job_name}'   => 'st.JOB_NAME',
             '{!(spooler)}' => 'st.JOB_NAME' );
         $qry = $sql->Select(array('st.TASK_ID as ID','st.SPOOLER_ID','st.JOB_NAME','st.START_AT_TIME as START_TIME','st.TASK_XML'))
@@ -482,101 +520,98 @@ class JobsController extends Controller
                 .$sql->Where($Fields)
 //                .$sql->LeftJoin('SCHEDULER_TASKS st',array('sh.ID','st.TASK_ID'))
 //                .$sql->LeftJoin('SCHEDULER_TASKS st',array('sh.ID','st.TASK_ID'))
-                .$sql->OrderBy(array('st.SPOOLER_ID','st.JOB_NAME','st.START_AT_TIME desc'));  
+                .$sql->OrderBy(array('st.SPOOLER_ID','st.JOB_NAME','st.START_AT_TIME desc'));
 
         $res = $data->sql->query( $qry );
         $H = array();
         while ($line = $data->sql->get_next($res)) {
             $nb++;
             $id = $line['SPOOLER_ID'].'/'.$line['JOB_NAME'];
-            
+
             $status = 'QUEUED';
             $list .='<row id="'.$line['ID'].'" style="background-color: '.$color[$status].'">';
             // Cas particulier pour les RUNNING
-            $list .='<cell>'.$line['SPOOLER_ID'].'</cell>';              
-            $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>'; 
-            $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';           
-            $list .='<cell>'.$status.'</cell>'; 
-            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>'; 
-            list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );                                     
-            $list .='<cell>'.$date->ShortDate($start).'</cell>'; 
-            $list .='<cell/>'; 
+            $list .='<cell>'.$line['SPOOLER_ID'].'</cell>';
+            $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>';
+            $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';
+            $list .='<cell>'.$status.'</cell>';
+            $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>';
+            list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );
+            $list .='<cell>'.$date->ShortDate($start).'</cell>';
             $list .='<cell/>';
             $list .='<cell/>';
-            $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt(gmdate("Y-M-d H:i:s"),$start,$status).'"/>]]></cell>'; 
             $list .='<cell/>';
-            $list .='<cell>'.$this->images.'/queue.png</cell>'; 
+            $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt(gmdate("Y-M-d H:i:s"),$start,$status).'"/>]]></cell>';
+            $list .='<cell/>';
+            $list .='<cell>'.$this->images.'/queue.png</cell>';
             $list .='</row>';
         }
 
         if ($nb==0) {
             exit();
         }
-        
+
         $list .= "</rows>\n";
         $response->setContent( $list );
         return $response;
     }
-    
-    public function pieAction($history_max=0,$ordered = 0,$only_warning=1) {        
-        $color = array (
-            'SUCCESS' => '#ccebc5',
-            'RUNNING' => '#ffffcc',
-            'FAILURE' => '#fbb4ae',
-            'STOPPED' => '#FF0000',
-            'QUEUED' => '#AAA',
-            'STOPPING' => '#ffffcc'
-        );
 
-        $request = Request::createFromGlobals();
-        if ($request->get('history')>0) {
-            $history_max = $request->get('history');
-        }
-        $ordered = $request->get('chained');
-        $only_warning = $request->get('only_warning');
+    public function pieAction($history_max=0,$ordered = 0,$only_warning=1) {
+         $color = array (
+             'SUCCESS' => '#ccebc5',
+             'RUNNING' => '#ffffcc',
+             'FAILURE' => '#fbb4ae',
+             'STOPPED' => '#FF0000',
+             'QUEUED' => '#AAA',
+             'STOPPING' => '#ffffcc'
+         );
+         $request = Request::createFromGlobals();
+         if ($request->get('history')>0) {
+             $history_max = $request->get('history');
+         }
+         $ordered = $request->get('chained');
+         $only_warning = $request->get('only_warning');
+         $history = $this->container->get('arii_jid.history');
+         $Jobs = $history->Jobs(0, $ordered, $only_warning, false);
+         $stopped=$success=$failure=$running=0;
+         foreach ($Jobs as $k=>$job) {
+             if (isset($job['stopped'])) {
+                 $stopped += 1;
+             }
+             if (isset($job['runs'][0]['status'])) {
+                 $status = $job['runs'][0]['status'];
+                 switch ($status) {
+                     case 'SUCCESS':
+                         $success += 1;
+                         break;
+                     case 'FAILURE':
+                         if (!$stopped)
+                             $failure += 1;
+                         break;
+                     case 'RUNNING':
+                         $running += 1;
+                         break;
+                 }
+             }
+         }
 
-        $history = $this->container->get('arii_jid.history');
-        $Jobs = $history->Jobs(0, $ordered, $only_warning, false);
-
-        $stopped=$success=$failure=$running=0;
-        foreach ($Jobs as $k=>$job) {
-            if (isset($job['stopped'])) {
-                $stopped += 1; 
-            }
-            if (isset($job['runs'][0]['status'])) {
-                $status = $job['runs'][0]['status'];
-                switch ($status) {
-                    case 'SUCCESS':
-                        $success += 1;
-                        break;
-                    case 'FAILURE':
-                        if (!$stopped)
-                            $failure += 1;
-                        break;
-                    case 'RUNNING':
-                        $running += 1;
-                        break;
-                }
-            }
-        }
-        
-        $pie = '<data>';
-        $pie .= '<item id="SUCCESS"><STATUS>SUCCESS</STATUS><JOBS>'.$success.'</JOBS><COLOR>#ccebc5</COLOR></item>';
-        $pie .= '<item id="FAILURE"><STATUS>FAILURE</STATUS><JOBS>'.$failure.'</JOBS><COLOR>#fbb4ae</COLOR></item>';
-        $pie .= '<item id="STOPPED"><STATUS>STOPPED</STATUS><JOBS>'.$stopped.'</JOBS><COLOR>red</COLOR></item>';
-        $pie .= '<item id="RUNNING"><STATUS>RUNNING</STATUS><JOBS>'.$running.'</JOBS><COLOR>#ffffcc</COLOR></item>';
-        $pie .= '</data>';
-        $response = new Response();
-        $response->headers->set('Content-Type', 'text/xml');
-        $response->setContent( $pie );
-        return $response;
-    }
+         $pie = '<data>';
+         $pie .= '<item id="SUCCESS"><STATUS>SUCCESS</STATUS><JOBS>'.$success.'</JOBS><COLOR>#ccebc5</COLOR></item>';
+         $pie .= '<item id="FAILURE"><STATUS>FAILURE</STATUS><JOBS>'.$failure.'</JOBS><COLOR>#fbb4ae</COLOR></item>';
+         $pie .= '<item id="STOPPED"><STATUS>STOPPED</STATUS><JOBS>'.$stopped.'</JOBS><COLOR>red</COLOR></item>';
+         $pie .= '<item id="RUNNING"><STATUS>RUNNING</STATUS><JOBS>'.$running.'</JOBS><COLOR>#ffffcc</COLOR></item>';
+         $pie .= '</data>';
+         $response = new Response();
+         $response->headers->set('Content-Type', 'text/xml');
+         $response->setContent( $pie );
+         return $response;
+     }
 
     public function barAction()
     {
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
-        
+
         $sql = $this->container->get('arii_core.sql');
         $Fields = array (
             '{spooler}'    => 'SPOOLER_ID',
@@ -589,7 +624,7 @@ class JobsController extends Controller
                 .$sql->OrderBy(array('START_TIME desc'));
 
         $res = $data->sql->query( $qry );
-        // Par jour 
+        // Par jour
         // Attention on est en heure GMT, il y a donc un décalage
         $date = $this->container->get('arii_core.date');
         while ($line = $data->sql->get_next($res)) {
@@ -598,18 +633,18 @@ class JobsController extends Controller
             $Days[$day]=1;
             if ($line['CAUSE']=='order') {
                 if ($line['END_TIME']='') {
-                    if (isset($HRO[$day])) 
+                    if (isset($HRO[$day]))
                         $HRO[$day]++;
                     else $HRO[$day]=1;
                 }
                 else {
                     if ($line['ERROR']==0) {
-                        if (isset($HSO[$day])) 
+                        if (isset($HSO[$day]))
                             $HSO[$day]++;
                         else $HSO[$day]=1;
                     }
                     else {
-                        if (isset($HFO[$day])) 
+                        if (isset($HFO[$day]))
                             $HFO[$day]++;
                         else $HFO[$day]=1;
                     }
@@ -617,18 +652,18 @@ class JobsController extends Controller
             }
             else {
                 if ($line['END_TIME']='') {
-                    if (isset($HR[$day])) 
+                    if (isset($HR[$day]))
                         $HR[$day]++;
                     else $HR[$day]=1;
                 }
                 else {
                     if ($line['ERROR']==0) {
-                        if (isset($HS[$day])) 
+                        if (isset($HS[$day]))
                             $HS[$day]++;
                         else $HS[$day]=1;
                     }
                     else {
-                        if (isset($HF[$day])) 
+                        if (isset($HF[$day]))
                             $HF[$day]++;
                         else $HF[$day]=1;
                     }
@@ -658,14 +693,14 @@ class JobsController extends Controller
         return $response;
     }
 
-    
+
     public function pieFullAction($ordered=0)
     {
         $request = Request::createFromGlobals();
         if ($request->get('ordered')=='true') {
             $ordered = $request->get('ordered');
         }
-       
+
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
 
@@ -677,16 +712,19 @@ class JobsController extends Controller
             '{!(spooler)}' => 'JOB_NAME' );
         if ($ordered!='true') {
             $Fields['{standalone}'] = 'sh.CAUSE';
-        }        
+        }
         $qry = $sql->Select(array('count(ID) as NB','getdate(START_TIME) as START_TIME','getdate(END_TIME) as END_TIME','ERROR'))
         .$sql->From(array('SCHEDULER_HISTORY'))
         .$sql->Where($Fields)
         .$sql->GroupBy(array('getdate(START_TIME)','getdate(END_TIME)','ERROR'));
 
+
+        //echo 'query : ' . $qry;
+
         $res = $data->sql->query( $qry );
         $running = $success = $failure = 0;
         while ($line = $data->sql->get_next($res)) {
-            $nb = $line['NB']; 
+            $nb = $line['NB'];
             if ($line['END_TIME'] == '') {
                 $running+=$nb;
             }
@@ -721,8 +759,8 @@ class JobsController extends Controller
 
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
-        
-        $session =  $this->container->get('arii_core.session'); 
+
+        $session =  $this->container->get('arii_core.session');
         $this->ref_date  =  $session->getRefDate();
         $xml = '<data>';
 
@@ -738,7 +776,7 @@ class JobsController extends Controller
         }
 
         // le passé
-        $qry = $sql->Select(array('ID','SPOOLER_ID','JOB_NAME','START_TIME','END_TIME','ERROR','EXIT_CODE','CAUSE','PID'))  
+        $qry = $sql->Select(array('ID','SPOOLER_ID','JOB_NAME','START_TIME','END_TIME','ERROR','EXIT_CODE','CAUSE','PID'))
                   .$sql->From(array('SCHEDULER_HISTORY'))
                   .$sql->Where($Fields)
                   .$sql->OrderBy(array('SPOOLER_ID','JOB_NAME','START_TIME desc'));
@@ -771,7 +809,7 @@ class JobsController extends Controller
                        $color= 'lightred';
                    }
                    else {
-                        $color='#fbb4ae'; 
+                        $color='#fbb4ae';
                    }
                 }
                 $xml .= '<text>'.$line['JOB_NAME'].' (exit '.$line['EXIT_CODE'].')</text>';
@@ -788,9 +826,27 @@ class JobsController extends Controller
         }
         $xml .= '</data>';
         $response = new Response();
-        $response->headers->set('Content-Type', 'text/xml');        
+        $response->headers->set('Content-Type', 'text/xml');
         $response->setContent( $xml );
-        return $response;    
+        return $response;
+    }
+
+
+    public function detailsAction(){
+      $list = '<?xml version="1.0" encoding="UTF-8"?>';
+      $list .= '<job order="no" stop_on_error="no" title="Checking a DailySchedule with runs in history">
+        <description>
+          <include file="jobs/jobSchedulerCheckDailySchedule.xml"/>
+        </description>
+        <lock.use exclusive="yes" lock="JID"/>
+        <script java_class="com.sos.dailyschedule.job.CheckDailyScheduleJSAdapterClass" java_class_path="" language="java"/>
+        <run_time>
+          <period begin="00:00" end="00:30"/>
+        </run_time>
+      </job>';
+      $response->headers->set('Content-Type', 'text/xml');
+      $response->setContent( $list );
+      return $response;
     }
 
 }

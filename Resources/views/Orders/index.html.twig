@@ -11,18 +11,18 @@ var status;
 var sort="last";
 
 dhtmlxEvent(window,"load",function(){
-    
-    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
-    globalLayout.cells("a").setWidth(350); 
-    globalLayout.cells("a").hideHeader(); 
-    globalLayout.cells("b").hideHeader(); 
-    globalLayout.cells("c").hideHeader(); 
-    
+
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");
+    globalLayout.cells("a").setWidth(350);
+    globalLayout.cells("a").hideHeader();
+    globalLayout.cells("b").hideHeader();
+    globalLayout.cells("c").hideHeader();
+
     globalMenu = globalLayout.cells("a").attachMenu();
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
     globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
 
-    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon = globalLayout.cells("a").attachRibbon();
     myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
     myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
     myRibbon.attachEvent("onStateChange", StateRibbon );
@@ -32,30 +32,30 @@ dhtmlxEvent(window,"load",function(){
     myGridMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
     myGridMenu.renderAsContextMenu();
     myGridMenu.loadStruct("{{ url('xml_JID_orders_grid_menu') }}");
-          
+
     myAccordion = globalLayout.cells("a").attachAccordion();
     myAccordion.addItem("a1", "{{ "Status" | trans }}");
 //    myAccordion.addItem("a2", "{{ "Folders" | trans }}");
 
     myDonut =  myAccordion.cells("a1").attachChart({
-            view:"donut",
-            container:"pie_chart_container",
-            value:"#JOBS#",
-            label:"",
-            tooltip: "#STATUS#",
-            color: "#COLOR#",
-            border:false,
-            pieInnerText: "#JOBS#",
-            shadow: 0,
-            legend:{
-                  width: 0,
-                  template: "#STATUS#",
-                valign:"top",
-                align:"left"
-            } 
+      view:"donut",
+      container:"pie_chart_container",
+      value:"#JOBS#",
+      label:"",
+      tooltip: "#STATUS#",
+      color: "#COLOR#",
+      border:false,
+      pieInnerText: "#JOBS#",
+      shadow: 0,
+      legend:{
+        width: 0,
+        template: "#STATUS#",
+        valign:"top",
+        align:"left"
+      }
     });
     myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning );
-/*             
+/*
     myTree = myAccordion.cells("a2").attachTree();
 //    myTree = globalLayout.cells("a").attachTree();
     myTree.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
@@ -63,7 +63,7 @@ dhtmlxEvent(window,"load",function(){
         globalLayout.cells("a").progressOn();
         GlobalRefresh();
     });
-*/    
+*/
     myGrid = globalLayout.cells("b").attachGrid();
     myGrid.selMultiRows = true;
     myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
@@ -76,9 +76,9 @@ dhtmlxEvent(window,"load",function(){
     myGrid.enableContextMenu(myGridMenu);
     myGrid.attachEvent("onBeforeContextMenu", onShowMenu );
     myGrid.init();
-    myGrid.setColumnHidden(0,true); 
-    myGrid.setColumnHidden(7,true); 
-    myGrid.setColumnHidden(8,true); 
+    myGrid.setColumnHidden(0,true);
+    myGrid.setColumnHidden(7,true);
+    myGrid.setColumnHidden(8,true);
     myGrid.enableSmartRendering(true,50);
     myGrid.load( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
     myGrid.attachEvent("onRowDblClicked",OrderDetail );
@@ -86,7 +86,7 @@ dhtmlxEvent(window,"load",function(){
     myDonut.attachEvent("onItemClick",function(id, value){
         status = id;
         myGrid.filterBy(5, status);
-        myGrid.getFilterElement(5).value = status;        
+        myGrid.getFilterElement(5).value = status;
     });
 
     myGridToolbar = globalLayout.cells("b").attachToolbar();
@@ -122,22 +122,22 @@ dhtmlxEvent(window,"load",function(){
                 myGrid.setColumnHidden(0,!state);
                 break;
             case 'show_time':
-                myGrid.setColumnHidden(7,!state);      
+                myGrid.setColumnHidden(7,!state);
                 myGrid.setColumnHidden(8,!state);
                 break;
             case 'gantt':
-                myGrid.setColumnHidden(5,state);      
-                myGrid.setColumnHidden(6,state);      
-                myGrid.setColumnHidden(7,state);  
-                myGrid.setColumnHidden(8,state);   
-                myGrid.setColumnHidden(9,!state);  
+                myGrid.setColumnHidden(5,state);
+                myGrid.setColumnHidden(6,state);
+                myGrid.setColumnHidden(7,state);
+                myGrid.setColumnHidden(8,state);
+                myGrid.setColumnHidden(9,!state);
                 break;
-            default:       
+            default:
                 alert(itemid);
                 break;
         }
     });
-    
+
     myGridMenu.attachEvent("onClick", function (menuitemId, type) {
         var data = myGrid.contextID.split("_");
         var rId = data[0];
@@ -211,12 +211,12 @@ dhtmlxEvent(window,"load",function(){
                 XMLCommand(rId,menuitemId);
                 break;
             default:
-                alert("inconnu ! "+menuitemId);    
+                alert("inconnu ! "+menuitemId);
         }
         return true;
     });
 
-    globalLayout.cells("c").setHeight(280); 
+    globalLayout.cells("c").setHeight(280);
     var myTabbar = globalLayout.cells("c").attachTabbar();
     myTabbar.addTab("order","{{ "Order" | trans }}","100px", null, true);
     myTabbar.addTab("chain","{{ "Chain" | trans }}","100px" );
@@ -224,23 +224,23 @@ dhtmlxEvent(window,"load",function(){
     myTabbar.addTab("history","{{ "History" | trans }}","100px");
 
     myDetailLayout = myTabbar.cells("order").attachLayout("2U");
-    myDetailLayout.cells("a").hideHeader(); 
-    myDetailLayout.cells("b").hideHeader(); 
-    
+    myDetailLayout.cells("a").hideHeader();
+    myDetailLayout.cells("b").hideHeader();
+
     myForm = myDetailLayout.cells("a").attachForm();
     myForm.loadStruct("{{ url('json_JID_orders_form') }}");
 
     myDetailToolbar = myDetailLayout.cells("a").attachToolbar();
-    myDetailLayout.cells("a").setWidth(650); 
+    myDetailLayout.cells("a").setWidth(650);
     myDetailToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     myDetailToolbar.loadStruct( "{{ url('xml_JID_orders_form_toolbar') }}" , function(){
         GBCalendar = new dhtmlXCalendarObject(myDetailToolbar.getInput('ref_date'));
         GBCalendar.setDateFormat("%Y-%m-%d %H:%i:%s");
-        GBCalendar.setWeekStartDay(1);        
+        GBCalendar.setWeekStartDay(1);
         this.hideItem('resume_order');
         this.hideItem('remove_setback');
     });
-    
+
     myDetailToolbar.attachEvent("onClick",function(itemid){
         Text = '';
         var id = myForm.getItemValue('HISTORY_ID');
@@ -272,11 +272,11 @@ dhtmlxEvent(window,"load",function(){
                 var paramsStr = params.join(",");
                 var start_time = '';
                 start_time = myDetailToolbar.getValue("ref_date");
-                // alert("{{ url('arii_XML_Command') }}?command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&order_id="+id); 
+                // alert("{{ url('arii_XML_Command') }}?command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&order_id="+id);
                 dhtmlx.message({
                 type: "Notice",
                 text: Text });
-                globalLayout.cells("a").progressOn();        
+                globalLayout.cells("a").progressOn();
                 globalLayout.cells("b").progressOn();
                 dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&order_id="+id,function(loader,response){
                     dhtmlx.message({
@@ -285,7 +285,7 @@ dhtmlxEvent(window,"load",function(){
                     width: "500px",
                     text: loader.xmlDoc.responseText });
                     OrderDetail(id);
-                    GlobalRefresh();                    
+                    GlobalRefresh();
                 });
                 break;
             default:
@@ -294,7 +294,7 @@ dhtmlxEvent(window,"load",function(){
         }
         return true;
     });
-    
+
     var myParametersToolbar = myDetailLayout.cells("b").attachToolbar();
     myParametersToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     myParametersToolbar.loadStruct("{{ url('xml_JID_job_params_toolbar') }}");
@@ -341,7 +341,7 @@ dhtmlxEvent(window,"load",function(){
                     expire: 10000,
                     width: "500px",
                     text: loader.xmlDoc.responseText });
-                    globalLayout.progressOn();   
+                    globalLayout.progressOn();
                     GlobalRefresh();
                     if (itemid=='stop_chain') {
                         myChainToolbar.hideItem('stop_chain');
@@ -355,7 +355,7 @@ dhtmlxEvent(window,"load",function(){
                 break;
         }
     });
-    
+
     mySteps = myChainDetail.cells("a").attachGrid();
     mySteps.setHeader("{{ "Step" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Error" | trans }},{{ "Code" | trans }},{{ "Message" | trans }}");
     mySteps.attachHeader("#numeric_filter,#select_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter");
@@ -363,12 +363,12 @@ dhtmlxEvent(window,"load",function(){
     mySteps.setColAlign("right,left,left,right,right,right,right,left");
     mySteps.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro");
     mySteps.setColSorting("int,str,str,date,date,int,str,str");
-    mySteps.setColumnHidden(4,true);  
-    mySteps.setColumnHidden(5,true);  
-    mySteps.setColumnHidden(6,true);  
+    mySteps.setColumnHidden(4,true);
+    mySteps.setColumnHidden(5,true);
+    mySteps.setColumnHidden(6,true);
     mySteps.enableAlterCss("","");
     mySteps.init();
-    
+
     myLog = myTabbar.cells("log").attachGrid();
     myLog.setHeader("{{ "Date" | trans }},{{ "Type" | trans }},{{ "Message" | trans }},{{ "Code" | trans }}");
     myLog.attachHeader("#text_filter,#select_filter,#text_filter,#select_filter");
@@ -389,7 +389,7 @@ dhtmlxEvent(window,"load",function(){
     myHistory.init();
     myHistory.enableSmartRendering(true,50);
     myHistory.enableAlterCss("","");
-    
+
     myParametersToolbar.attachEvent("onClick",function(itemid){
         switch(itemid) {
             case "new":
@@ -411,7 +411,7 @@ function GlobalRefresh() {
 }
 
 function GridRefresh(detail) {
-    clearInterval( autorefresh );    
+    clearInterval( autorefresh );
     detail = typeof detail !== 'undefined' ? detail : 0;
     var currentTime = new Date();
     var hours = currentTime.getHours();
@@ -426,17 +426,17 @@ function GridRefresh(detail) {
     myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     myGrid.load("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function(){
         globalLayout.cells("b").progressOff();
-        myGrid.filterBy(5, status);  
+        myGrid.filterBy(5, status);
         if (detail>0) OrderDetail(id);
         myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning,
             function () {
-                myDonut.refresh();                
+                myDonut.refresh();
             });
             globalLayout.progressOff();
             globalLayout.cells("a").progressOff();
         myGrid.filterByAll();
         autorefresh = setInterval( "GridRefresh()", update*1000 );
-    });    
+    });
 }
 
 function OrderDetail(id) {
@@ -463,12 +463,12 @@ function OrderDetail(id) {
     myParameters.load("{{ url('xml_JID_order_params') }}?id="+id, function() {
         mySteps.clearAndLoad("{{ url('xml_JID_order_steps') }}?id="+id, function() {
             myLog.clearAndLoad("{{ url('xml_JID_order_log') }}?id="+id, function () {
-                myHistory.clearAndLoad("{{ url('xml_JID_order_history') }}?id="+id, function() {                   
+                myHistory.clearAndLoad("{{ url('xml_JID_order_history') }}?id="+id, function() {
                     myChainDetail.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id="+id);
-                    globalLayout.cells("c").progressOff(); 
+                    globalLayout.cells("c").progressOff();
                     autorefresh = setInterval( "GridRefresh()", update*1000 );
-                });  
-            });                           
+                });
+            });
         });
   });
 }
@@ -477,23 +477,23 @@ function onShowMenu(rowId, celInd, grid) {
 
     var status = grid.cells(rowId, 3 ).getValue();
 
-    // si on est operator 
+    // si on est operator
     {% if is_granted('ROLE_OPERATOR') %}
     if (status !=='RUNNING') {
-        myGridMenu.hideItem('kill_task');    
+        myGridMenu.hideItem('kill_task');
     }
     else {
-        myGridMenu.showItem('kill_task');    
+        myGridMenu.showItem('kill_task');
     }
     if (status !=='QUEUED')  {
-        myGridMenu.hideItem('delete_task');    
+        myGridMenu.hideItem('delete_task');
     }
     else {
-        myGridMenu.showItem('delete_task');    
+        myGridMenu.showItem('delete_task');
     }
     // job stoppé
-    if ((grid.cells(rowId, 3).getValue()== 'STOPPED') 
-         || (grid.cells(rowId, 3).getValue()== 'STOPPING') ){    
+    if ((grid.cells(rowId, 3).getValue()== 'STOPPED')
+         || (grid.cells(rowId, 3).getValue()== 'STOPPING') ){
         myGridMenu.hideItem("stop_job");
         myGridMenu.showItem("unstop_job");
     }
@@ -506,9 +506,9 @@ function onShowMenu(rowId, celInd, grid) {
         myGridMenu.hideItem('kill_task');
         myGridMenu.hideItem('stop_job');
         myGridMenu.hideItem('unstop_job');
-        myGridMenu.hideItem('pause_spooler');    
-        myGridMenu.hideItem('continue_spooler');    
-    {% endif %} 
+        myGridMenu.hideItem('pause_spooler');
+        myGridMenu.hideItem('continue_spooler');
+    {% endif %}
  return true;
 }
 </script>

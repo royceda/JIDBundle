@@ -2,7 +2,7 @@
 // src/Arii/JIDBundle/Service/AriiHistory.php
 /*
  * Recupere les données et fournit un tableau pour les composants DHTMLx
- */ 
+ */
 namespace Arii\JIDBundle\Service;
 
 class AriiHistory
@@ -11,9 +11,9 @@ class AriiHistory
     protected $sql;
     protected $date;
     protected $tools;
-    
-    public function __construct (  
-            \Arii\CoreBundle\Service\AriiDHTMLX $db, 
+
+    public function __construct (
+            \Arii\CoreBundle\Service\AriiDHTMLX $db,
             \Arii\CoreBundle\Service\AriiSQL $sql,
             \Arii\CoreBundle\Service\AriiDate $date,
             \Arii\CoreBundle\Service\AriiTools $tools ) {
@@ -26,17 +26,19 @@ class AriiHistory
 /*********************************************************************
  * Informations de connexions
  *********************************************************************/
-   public function Jobs($history_max=0,$ordered = 0,$only_warning= 1,$next=1) {   
+
+   //ajout de la variable bool pour dissocier les jobs avec ou sans chaines
+   public function Jobs($history_max=0,$ordered = 0,$only_warning= 1,$next=1, $bool="false") {
         $data = $this->db->Connector('data');
-     
+
         $sql = $this->sql;
         $date = $this->date;
-        
+
         $Fields = array (
         '{spooler}'    => 'sh.SPOOLER_ID',
         '{job_name}'   => 'sh.PATH' );
 
-        $qry = $sql->Select(array('sh.SPOOLER_ID','sh.PATH as JOB_NAME','sh.STOPPED','sh.NEXT_START_TIME')) 
+        $qry = $sql->Select(array('sh.SPOOLER_ID','sh.PATH as JOB_NAME','sh.STOPPED','sh.NEXT_START_TIME'))
                 .$sql->From(array('SCHEDULER_JOBS sh'))
                 .$sql->Where($Fields)
                 .$sql->OrderBy(array('sh.SPOOLER_ID','sh.PATH'));
@@ -54,20 +56,46 @@ class AriiHistory
 
         /* On prend l'historique */
         $Fields = array (
-           '{spooler}'    => 'sh.SPOOLER_ID', 
+            '{spooler}'    => 'sh.SPOOLER_ID',
             '{job_name}'   => 'sh.JOB_NAME',
             '{error}'      => 'sh.ERROR',
-            '{start_time}' => 'sh.START_TIME',
+            //'{start_time}' => 'sh.START_TIME',
+            '{next_start_time}' => 'sh.START_TIME',
             '{!(spooler)}' => 'sh.JOB_NAME' );
-        if (!$ordered) {
-            $Fields['{standalone}'] = 'sh.CAUSE';
-        }
-        $qry = $sql->Select(array('sh.ID','sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID'))
+
+
+
+
+        if($bool == "true"){
+          $query = $sql->Select(array('sh.ID','sh.SPOOLER_ID','soh.JOB_CHAIN','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID'))
+          .$sql->From(array('SCHEDULER_HISTORY sh'))
+          .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh', array('sh.ID', 'sosh.TASK_ID'))
+          .$sql->Leftjoin('SCHEDULER_ORDER_HISTORY soh', array('sosh.HISTORY_ID', 'soh.HISTORY_ID'))
+          //.$sql->Where(array('{job_name}' => 'sh.JOB_NAME'))
+          .$sql->Where($Fields)
+          .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc '));
+
+
+          //echo "query : ".$query;
+
+          $res = $data->sql->query($query);
+        }else if($bool == "false"){
+
+          if (!$ordered) {
+              $Fields['{standalone}'] = 'sh.CAUSE';
+          }
+
+          $qry = $sql->Select(array('sh.ID','sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID'))
                 .$sql->From(array('SCHEDULER_HISTORY sh'))
                 .$sql->Where($Fields)
-                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));  
+                .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc '));
 
-        $res = $data->sql->query( $qry );
+                //echo "query : ".$qry;
+          $res = $data->sql->query( $qry );
+        }
+
+
+
         $nb=0;
         $H = array();
         $Jobs = array();
@@ -84,7 +112,7 @@ class AriiHistory
             if ($H[$id]>$history_max) {
                 continue;
             }
-            
+
             if (isset($Stopped[$id]) and ($Stopped[$id]==1)) {
                 if ($line['END_TIME']=='')
                     $status = 'STOPPING';
@@ -100,39 +128,51 @@ class AriiHistory
             else {
                 $status = 'SUCCESS';
             }
-            
+
             if (($only_warning) and ($status == 'SUCCESS')) continue;
-            
-            $n = $H[$id];     
+
+            $n = $H[$id];
+
+            if($bool == "true"){
+              $Jobs[$id]['chain'] = $line['JOB_CHAIN'];
+              //$Jobs[$id]['chain'] = "no chain : ".$bool;
+            }else if($bool == "false"){
+              $Jobs[$id]['chain'] = "no chain : ".$bool;
+            }
+
+
+
             $Jobs[$id]['spooler'] = $line['SPOOLER_ID'];
-            $Jobs[$id]['folder'] = dirname($line['JOB_NAME']);
-            $Jobs[$id]['name'] = basename($line['JOB_NAME']);
+            $Jobs[$id]['folder']  = dirname($line['JOB_NAME']);
+            $Jobs[$id]['name']    = basename($line['JOB_NAME']);
             $Jobs[$id]['runs'][$n]['dbid'] = $line['ID'];
             $Jobs[$id]['runs'][$n]['status'] = $status;
-            $Jobs[$id]['runs'][$n]['exit'] = $line['EXIT_CODE'];  
-            $Jobs[$id]['runs'][$n]['pid'] = $line['PID'];  
-            $Jobs[$id]['runs'][$n]['cause'] = $line['CAUSE']; 
+            $Jobs[$id]['runs'][$n]['exit'] = $line['EXIT_CODE'];
+            $Jobs[$id]['runs'][$n]['pid'] = $line['PID'];
+            $Jobs[$id]['runs'][$n]['cause'] = $line['CAUSE'];
             if (isset($Stopped[$id]))
-                $Jobs[$id]['stopped'] = true; 
+                $Jobs[$id]['stopped'] = true;
             if (isset($Next_start[$id]))
-                $Jobs[$id]['next_start'] = $Next_start[$id]; 
-            
+                $Jobs[$id]['next_start'] = $Next_start[$id];
+
             if ($status=='RUNNING') {
-                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );                                     
-                $Jobs[$id]['runs'][$n]['end'] = ''; 
+                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );
+                $Jobs[$id]['runs'][$n]['end'] = '';
             }
             else {
-                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );                                     
-                $Jobs[$id]['runs'][$n]['end'] = $end; 
+                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );
+                $Jobs[$id]['runs'][$n]['end'] = $end;
             }
-            $Jobs[$id]['runs'][$n]['start'] = $start; 
-            $Jobs[$id]['runs'][$n]['next'] = $next; 
-            $Jobs[$id]['runs'][$n]['duration'] = $duration; 
-        }  
+            $Jobs[$id]['runs'][$n]['start'] = $start;
+            $Jobs[$id]['runs'][$n]['next'] = $next;
+            $Jobs[$id]['runs'][$n]['duration'] = $duration;
+        }
         return $Jobs;
    }
 
-   public function Orders($history=0,$nested=false,$only_warning=true,$sort='last') {   
+
+
+   public function Orders($history=0,$nested=false,$only_warning=true,$sort='last') {
         $data = $this->db->Connector('data');
         $sql = $this->sql;
         $date = $this->date;
@@ -141,14 +181,14 @@ class AriiHistory
         $Orders = array();
         $Chains = array();
         $Nodes = array();
-        
+
         // On regarde les chaines stoppés
         // On complete avec les ordres stockés
         $Fields = array (
             '{spooler}'    => 'SPOOLER_ID',
             '{job_chain}'  => 'JOB_CHAIN',
             'STOPPED'  => 1 );
-             
+
         $qry = $sql->Select( array('SPOOLER_ID','PATH as JOB_CHAIN') )
                 .$sql->From( array('SCHEDULER_JOB_CHAINS') )
                 .$sql->Where( $Fields );
@@ -185,7 +225,7 @@ class AriiHistory
             '{spooler}'    => 'soh.SPOOLER_ID',
             '{job_chain}'   => 'soh.JOB_CHAIN',
             '{start_time}' => 'soh.START_TIME' );
-        
+
         switch ($sort) {
             case 'spooler':
                 $Sort = array('soh.spooler','soh.JOB_CHAIN','soh.HISTORY_ID desc','sosh.STEP desc');
@@ -197,8 +237,8 @@ class AriiHistory
                 $Sort = array('soh.HISTORY_ID desc','sosh.STEP desc');
                 break;
         }
-        
-        $qry = $sql->Select(array('soh.HISTORY_ID','soh.TITLE','soh.START_TIME','soh.END_TIME','soh.SPOOLER_ID','soh.ORDER_ID','soh.JOB_CHAIN','soh.STATE','soh.STATE_TEXT','sosh.ERROR'))  
+
+        $qry = $sql->Select(array('soh.HISTORY_ID','soh.TITLE','soh.START_TIME','soh.END_TIME','soh.SPOOLER_ID','soh.ORDER_ID','soh.JOB_CHAIN','soh.STATE','soh.STATE_TEXT','sosh.ERROR'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY soh'))
                 .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
                 .$sql->Where($Fields)
@@ -207,7 +247,7 @@ class AriiHistory
         $res = $data->sql->query( $qry );
         while ($line = $data->sql->get_next($res)) {
             if (!$nested) {
-                if (substr($line['ORDER_ID'],0,1)=='.') continue; 
+                if (substr($line['ORDER_ID'],0,1)=='.') continue;
             }
 
             $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
@@ -217,10 +257,10 @@ class AriiHistory
             }
             else {
                 $Nb[$id]=0;
-            }            
+            }
             if ($Nb[$id]>$history) continue;
-                        
-            $Orders[$id]['DBID'] = $line['HISTORY_ID']; 
+
+            $Orders[$id]['DBID'] = $line['HISTORY_ID'];
             $Orders[$id] = $line;
 
             if (isset($StopChain[$cn]))
@@ -232,23 +272,19 @@ class AriiHistory
             }
             if (isset($SkipNode[$sn]))
                 $Orders[$id]['NODE_SKIPPED'] = true;
-            
-            // Complement
-            $Orders[$id]['FOLDER'] = dirname($line['JOB_CHAIN']);
-            $Orders[$id]['NAME'] = basename($line['JOB_CHAIN']);
-            $Orders[$id]['NEXT_TIME'] = '';
 
+            // Complement
             if ($line['END_TIME']=='') {
                 list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'], gmdate("Y-M-d H:i:s"), '', $line['SPOOLER_ID'], true  );
                 $Orders[$id]['END_TIME'] = '';
             }
-            else { 
+            else {
                 list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'], $line['END_TIME'], '', $line['SPOOLER_ID'], true  );
                 $Orders[$id]['END_TIME'] = $end;
             }
             $Orders[$id]['START_TIME'] = $start;
             $Orders[$id]['DURATION'] = $duration;
-                    
+
         }
 
         // On complete avec les ordres stockés
@@ -257,9 +293,12 @@ class AriiHistory
             '{job_chain}'  => 'JOB_CHAIN',
             '{order_id}'  => 'ID',
 /*          'created_time' => 'CREATED_TIME',
+            '{job_chain}'  => 'JOB_CHAIN',
+            '{order_id}'  => 'ID',
+/*          'created_time' => 'CREATED_TIME',
 */          '{start_time}' => 'MOD_TIME'
                 );
-        
+
         $qry = $sql->Select( array('SPOOLER_ID','JOB_CHAIN','ID as ORDER_ID','PRIORITY','STATE as ORDER_STATE','STATE_TEXT','TITLE','CREATED_TIME','MOD_TIME','ORDERING','INITIAL_STATE','ORDER_XML' ) )
                 .$sql->From( array('SCHEDULER_ORDERS') )
                 .$sql->Where( $Fields )
@@ -271,7 +310,7 @@ class AriiHistory
             $cn = $line['SPOOLER_ID'].'/'.$line['JOB_CHAIN'];
             $on = $cn.','.$line['ORDER_ID'];
             if (!isset($Orders[$on])) continue;
-            
+
             if ($line['ORDER_XML']!=null)
             {
                 if (gettype($line['ORDER_XML'])=='object') {
@@ -291,10 +330,10 @@ class AriiHistory
                     $Orders[$on]['SETBACK_COUNT'] = $order_xml['order_attr']['setback_count'];
                     if (isset($order_xml['order_attr']['setback']))
                         $Orders[$on]['SETBACK_TIME'] = $order_xml['order_attr']['setback'];
-                    else 
+                    else
                         $Orders[$on]['SETBACK_TIME'] = '';
                 }
- 
+
                 if (isset($order_xml['order_attr']['at'])) {
                     $at = $date->Date2Local($order_xml['order_attr']['at'],$line['SPOOLER_ID']);
                     $Orders[$on]['NEXT_TIME'] = $date->Date2Local($order_xml['order_attr']['at'],$line['SPOOLER_ID'],true);
@@ -310,49 +349,49 @@ class AriiHistory
                     $hid = $order_xml['order_attr']['history_id'];
                 }
             }
-            
+
         }
 
         $New = array();
         $Keys = array_keys($Orders);
         // sort($Keys);
 
-        foreach ( $Keys as $on) {            
+        foreach ( $Keys as $on) {
             $line = $Orders[$on];
                     // Calcul du statut
             if (isset($line['SUSPENDED'])) {
-                $status = 'SUSPENDED';     
+                $status = 'SUSPENDED';
             }
             elseif (isset($line['CHAIN_STOPPED'])) {
-                $status = 'CHAIN STOP.';     
+                $status = 'CHAIN STOP.';
             }
             elseif (isset($line['NODE_STOPPED'])) {
-                $status = 'NODE STOP.';     
+                $status = 'NODE STOP.';
             }
             elseif (isset($line['NODE_SKIPPED'])) {
-                $status = 'NODE SKIP.';     
+                $status = 'NODE SKIP.';
             }
             elseif (isset($line['SETBACK'])) {
-                $status = 'SETBACK';     
+                $status = 'SETBACK';
             }
             elseif ($line['END_TIME']=='') {
-                $status = 'RUNNING';     
+                $status = 'RUNNING';
             }
             elseif (substr($line['END_TIME'],0,1)=='!') {
                 $status = 'FATAL';
             }
-            elseif ($line['ERROR']==0) {               
-                $status = 'SUCCESS';     
+            elseif ($line['ERROR']==0) {
+                $status = 'SUCCESS';
             }
             else {
-                $status = 'FAILURE';  
+                $status = 'FAILURE';
             }
             if (($only_warning)and ($status == 'SUCCESS')) continue;
 
-            $Orders[$on]['STATUS'] = $status;   
+            $Orders[$on]['STATUS'] = $status;
             if  ($line['NEXT_TIME']==$line['START_TIME'])
-                $Orders[$on]['NEXT_TIME']='';                
-            
+                $Orders[$on]['NEXT_TIME']='';
+
             $New[$on] = $Orders[$on];
         }
 
