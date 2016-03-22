@@ -401,12 +401,10 @@ dhtmlxEvent(window,"load",function(){
         return true;
     });
 
-//    autorefresh = setInterval( "GridRefresh()", update*1000 );
-    GridRefresh();
+    autorefresh = setInterval( "GlobalRefresh()", update*1000 );
 });
 
 function GlobalRefresh() {
-    clearInterval( autorefresh );
     GridRefresh();
 }
 
