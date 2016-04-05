@@ -2,8 +2,8 @@
 {% extends "AriiJIDBundle::layout.html.twig" %}
 {% block body %}
 <script language="javascript">
-dhtmlxEvent(window,"load",function(){ 
-/*    
+dhtmlxEvent(window,"load",function(){
+/*
     menu = new dhtmlXMenuObject(null);
     menu.setIconsPath( "{{ asset('bundles/ariicore/images/menu/') }}" );
     menu.renderAsContextMenu();
@@ -11,22 +11,22 @@ dhtmlxEvent(window,"load",function(){
     menu.loadStruct("{{ url('xml_JID_spoolers_menu') }}");
 */
     globalLayout = new dhtmlXLayoutObject(document.body,"3L");
-    
+
     globalMenu = globalLayout.cells("a").attachMenu();
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
     globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
 
-    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon = globalLayout.cells("a").attachRibbon();
     myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
     myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
-    
+
     myToolbar = globalLayout.cells("b").attachToolbar();
     myToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     myToolbar.loadStruct("{{ url('xml_JID_spoolers_toolbar') }}");
     myToolbar.attachEvent( "onClick", function(id, value) {
-        switch (id) {            
+        switch (id) {
             case "refresh":
                 globalLayout.cells("b").progressOn();
                 GridRefresh();
@@ -40,7 +40,7 @@ dhtmlxEvent(window,"load",function(){
     globalLayout.cells("b").hideHeader();
     globalLayout.cells("a").setWidth(355);
     globalLayout.cells("c").setHeight(250);
-    
+
     bar =  globalLayout.cells("a").attachChart ({
             view:"stackedBarH",
             container:"bar_container",
@@ -56,10 +56,10 @@ dhtmlxEvent(window,"load",function(){
                     template: "#SPOOLER#"
             },
             xAxis:{
-    /* 
+    /*
                     title:"{{ "Hour" | trans }}",
                     template:"#SPOOLER#",
-                    lines: false                
+                    lines: false
     */
             }
     //        disableItems:true
@@ -87,8 +87,9 @@ dhtmlxEvent(window,"load",function(){
                     }
     });
     bar.load( "{{ url('xml_JID_spoolers_bar') }}" );
-
     
+
+
     myGrid = globalLayout.cells("b").attachGrid();
     myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
     myGrid.setHeader( "{{ "Spooler" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "Hostname" | trans }},{{ "Port" | trans }}" );
@@ -110,10 +111,10 @@ dhtmlxEvent(window,"load",function(){
     });
 
     myTabbar = globalLayout.cells("c").attachTabbar();
-    myTabbar.addTab("spooler","{{ "Spooler" | trans }}","120px",null,true);    
-    myTabbar.addTab("queue","{{ "Queue" | trans }}","120px");    
-    myTabbar.addTab("orders","{{ "Orders" | trans }}","120px");    
-    myTabbar.addTab("jobs","{{ "Jobs" | trans }}","120px");    
+    myTabbar.addTab("spooler","{{ "Spooler" | trans }}","120px",null,true);
+    myTabbar.addTab("queue","{{ "Queue" | trans }}","120px");
+    myTabbar.addTab("orders","{{ "Orders" | trans }}","120px");
+    myTabbar.addTab("jobs","{{ "Jobs" | trans }}","120px");
 
     myForm = myTabbar.cells("spooler").attachForm();
     myForm.loadStruct("{{ url('json_JID_spoolers_form') }}");
@@ -214,10 +215,10 @@ function SpoolerDetail(id) {
         myFormToolbar.hideItem('pause_spooler');
         myFormToolbar.hideItem('continue_spooler');
         if (myForm.getItemValue('IS_PAUSED')) {
-            myFormToolbar.showItem('continue_spooler');        
+            myFormToolbar.showItem('continue_spooler');
         }
         else if (myForm.getItemValue('IS_RUNNING')) {
-            myFormToolbar.showItem('pause_spooler');        
+            myFormToolbar.showItem('pause_spooler');
         }
         myQueue.load("{{ url('xml_JID_spooler_tasks') }}?spooler="+spooler, function() {
             myTabbar.cells("queue").progressOff();
@@ -230,7 +231,7 @@ function SpoolerDetail(id) {
         });
     });
 }
-    
+
 function onShowMenu(rowId,cleInd,grid) {
     var status = grid.cells(rowId,1).getValue();
     if (status == 'PAUSED') {
@@ -266,7 +267,7 @@ function onButtonClick(menuitemId) {
             AbortSpooler(rId);
             break;
         default:
-            alert("test"+menuitemId);    
+            alert("test"+menuitemId);
     }
     return true;
 }
