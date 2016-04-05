@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 class SpoolerController extends Controller
 {
 
-   public function form_toolbarAction()   
+   public function form_toolbarAction()
     {
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml');
@@ -21,31 +21,31 @@ class SpoolerController extends Controller
         $request = Request::createFromGlobals();
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $spooler = $request->query->get( 'spooler' );
-        
+
         $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('TASK_ID','JOB_NAME','ENQUEUE_TIME','START_AT_TIME'))
                 .$sql->From(array('SCHEDULER_TASKS'))
                 .$sql->Where(array('SPOOLER_ID'=>$spooler))
                 .$sql->OrderBy(array('ENQUEUE_TIME desc'));
-                
+
         $data = $dhtmlx->Connector('grid');
-        $data->render_sql($qry,'TASK_ID','JOB_NAME,ENQUEUE_TIME,START_AT_TIME');     
+        $data->render_sql($qry,'TASK_ID','JOB_NAME,ENQUEUE_TIME,START_AT_TIME');
     }
-    
+
     public function ordersAction()
     {
         $request = Request::createFromGlobals();
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $spooler = $request->query->get( 'spooler' );
-        
+
         $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('ORDERING','ID','JOB_CHAIN','STATE','STATE_TEXT','TITLE'))
                 .$sql->From(array('SCHEDULER_ORDERS'))
                 .$sql->Where(array('SPOOLER_ID'=>$spooler))
                 .$sql->OrderBy(array('ORDERING'));
-                
+
         $data = $dhtmlx->Connector('grid');
-        $data->render_sql($qry,'ORDERING','ID,JOB_CHAIN,STATE,STATE_TEXT,TITLE');     
+        $data->render_sql($qry,'ORDERING','ID,JOB_CHAIN,STATE,STATE_TEXT,TITLE');
     }
 
     public function jobsAction()
@@ -53,16 +53,16 @@ class SpoolerController extends Controller
         $request = Request::createFromGlobals();
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $spooler = $request->query->get( 'spooler' );
-        
+
         $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('SPOOLER_ID','PATH','STOPPED','NEXT_START_TIME'))
                 .$sql->From(array('SCHEDULER_JOBS'))
                 .$sql->Where(array('SPOOLER_ID'=>$spooler))
                 .$sql->OrderBy(array('PATH'));
-                
+
         $data = $dhtmlx->Connector('grid');
         $data->event->attach("beforeRender",array( $this,  "render_job" ) );
-        $data->render_sql($qry,'PATH','PATH,STOPPED,NEXT_START_TIME');     
+        $data->render_sql($qry,'PATH','PATH,STOPPED,NEXT_START_TIME');
     }
 
     function render_job($row){
@@ -71,7 +71,7 @@ class SpoolerController extends Controller
             $row->set_row_attribute("style","background-color: #fbb4ae;");
         }
         else {
-            $row->set_row_attribute("style","background-color: #ccebc5;");            
+            $row->set_row_attribute("style","background-color: #ccebc5;");
         }
         $spooler = $row->get_value("SPOOLER_ID");
 	$row->set_value("NEXT_START_TIME", $date->Date2Local( $row->get_value("NEXT_START_TIME"), $spooler ) );
@@ -82,16 +82,16 @@ class SpoolerController extends Controller
         $request = Request::createFromGlobals();
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $id = $request->query->get( 'id' );
-        
+
         $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('TASK_ID','PARAMETERS'))
                 .$sql->From(array('SCHEDULER_TASKS'))
                 .$sql->Where(array('TASK_ID'=>$id));
-                
+
         $data = $dhtmlx->Connector('data');
         $res = $data->sql->query($qry);
         $line = $data->sql->get_next($res);
-        
+
         $params = $line['PARAMETERS'];
         $Parameters = array();
 
@@ -105,15 +105,15 @@ class SpoolerController extends Controller
             $params = substr($params,$end+2);
             if (strpos(" $val",'password')>0) {
                 // a voir avec les connexions
-            } 
+            }
             else {
                 $Parameters[$var] = $val;
             }
         }
-        
+
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml');
-        
+
         $list = '<?xml version="1.0" encoding="UTF-8"?>';
         $list .= "<rows>\n";
         $list .= '<head>
@@ -121,16 +121,16 @@ class SpoolerController extends Controller
                 <call command="clearAll"/>
             </afterInit>
         </head>';
-        
+
         foreach ($Parameters as $vr => $vl)
         {
             $list .= '<row><cell>'.$vr.'</cell><cell>'.$vl.'</cell></row>';
         }
         $list .= '</rows>';
-        
+
         $response->setContent($list);
         return $response;
-        
+
     }
 
     public function deleteAction()
@@ -138,7 +138,7 @@ class SpoolerController extends Controller
         $request = Request::createFromGlobals();
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $id = $request->query->get( 'id' );
-        
+
         $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Delete(array('SCHEDULER_INSTANCES'))
                 .$sql->Where(array('ID'=>$id));
@@ -154,27 +154,27 @@ class SpoolerController extends Controller
     {
         $request = Request::createFromGlobals();
         $id = $request->get('id');
-        $sql = $this->container->get('arii_core.sql');                  
+        $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('ID','SCHEDULER_ID','HOSTNAME','TCP_PORT','UDP_PORT','START_TIME','STOP_TIME','DB_NAME','DB_HISTORY_TABLE_NAME','DB_ORDER_HISTORY_TABLE_NAME','DB_ORDERS_TABLE_NAME','DB_TASKS_TABLE_NAME','DB_VARIABLES_TABLE_NAME','WORKING_DIRECTORY','LIVE_DIRECTORY','LOG_DIR','INCLUDE_PATH','INI_PATH','IS_SERVICE','IS_RUNNING','IS_PAUSED','IS_CLUSTER','IS_AGENT','PARAM','SUPERVISOR_HOSTNAME','SUPERVISOR_TCP_PORT','IS_SOS_COMMAND_WEBSERVICE','JETTY_HTTP_PORT','JETTY_HTTPS_PORT'))
                 .$sql->From(array('SCHEDULER_INSTANCES'))
                 .$sql->Where(array('ID' => $id));
-        
+
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('form');
         $data->render_sql($qry,'ID','ID,SCHEDULER_ID,HOSTNAME,TCP_PORT,UDP_PORT,START_TIME,STOP_TIME,DB_NAME,DB_HISTORY_TABLE_NAME,DB_ORDER_HISTORY_TABLE_NAME,DB_ORDERS_TABLE_NAME,DB_TASKS_TABLE_NAME,DB_VARIABLES_TABLE_NAME,WORKING_DIRECTORY,LIVE_DIRECTORY,LOG_DIR,INCLUDE_PATH,INI_PATH,IS_SERVICE,IS_RUNNING,IS_PAUSED,IS_CLUSTER,IS_AGENT,PARAM,SUPERVISOR_HOSTNAME,SUPERVISOR_TCP_PORT,IS_SOS_COMMAND_WEBSERVICE,JETTY_HTTP_PORT,JETTY_HTTPS_PORT');
     }
-    
+
    // force un update avec un show state
    public function UpdateAction($spooler='',$delay=60,$force=1) {
        $request = Request::createFromGlobals();
        if ($spooler=='')
-            $spooler = $request->get('id');
+          $spooler = $request->get('id');
 
        // on recupere la connection
        // on part du principe qu'on est en JID donc mode simple
        $dhtmlx = $this->container->get('arii_core.dhtmlx');
        $data = $dhtmlx->Connector('data');
-       
+
        $sql = $this->container->get('arii_core.sql');
        $qry = $sql->Select(array('HOSTNAME','TCP_PORT','START_TIME','IS_RUNNING'))
                .$sql->From(array('SCHEDULER_INSTANCES'))
@@ -232,7 +232,7 @@ class SpoolerController extends Controller
         else {
             print '<font color="red">!!!!</font>';
         }
-        
+
         $qry = $sql->Update(array('SCHEDULER_INSTANCES'))
                 .$sql->Set(array(   'START_TIME' => $start,
                                     'IS_RUNNING' => $is_running,

@@ -7,9 +7,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller {
-    
-    protected $images;   
-    
+
+    protected $images;
+
     public function indexAction()
     {
        $request = Request::createFromGlobals();
@@ -18,13 +18,13 @@ class OrderController extends Controller {
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
         $sql = $this->container->get('arii_core.sql');
-        $qry = $sql->Select(array('h.SPOOLER_ID','h.JOB_CHAIN','h.ORDER_ID')) 
+        $qry = $sql->Select(array('h.SPOOLER_ID','h.JOB_CHAIN','h.ORDER_ID'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY h'))
                 .$sql->Where(array('h.HISTORY_ID'=>$id));
         $res = $data->sql->query( $qry );
         $Infos = $data->sql->get_next($res);
 
-        return $this->render('AriiJIDBundle:Order:index.html.twig', 
+        return $this->render('AriiJIDBundle:Order:index.html.twig',
                 array('id' => $id, 'spooler' => $Infos['SPOOLER_ID'], 'chain' => $Infos['JOB_CHAIN'], 'order' => $Infos['ORDER_ID'] ) );
     }
 
@@ -32,17 +32,17 @@ class OrderController extends Controller {
     {
        $request = Request::createFromGlobals();
         $id = $request->query->get( 'id' );
-        
+
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
         $sql = $this->container->get('arii_core.sql');
-        $qry = $sql->Select(array('h.SPOOLER_ID','h.JOB_CHAIN','h.ORDER_ID')) 
+        $qry = $sql->Select(array('h.SPOOLER_ID','h.JOB_CHAIN','h.ORDER_ID'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY h'))
                 .$sql->Where(array('h.HISTORY_ID'=>$id));
         $res = $data->sql->query( $qry );
         $Infos = $data->sql->get_next($res);
-        
-        return $this->render('AriiJIDBundle:Order:history.html.twig', 
+
+        return $this->render('AriiJIDBundle:Order:history.html.twig',
                 array('id' => $id, 'spooler' => $Infos['SPOOLER_ID'], 'chain' => $Infos['JOB_CHAIN'], 'order' => $Infos['ORDER_ID'] ) );
     }
 
@@ -57,10 +57,10 @@ class OrderController extends Controller {
     {
         $request = Request::createFromGlobals();
         $id = $request->get('id');
-        
+
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
-        $sql = $this->container->get('arii_core.sql');                  
-        $date = $this->container->get('arii_core.date');        
+        $sql = $this->container->get('arii_core.sql');
+        $date = $this->container->get('arii_core.date');
 
         $qry = $sql->Select(array(  'soh.SPOOLER_ID','soh.JOB_CHAIN',
                                     'sosh.HISTORY_ID','sosh.STEP','sosh.TASK_ID','sosh.STATE','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_CODE','sosh.ERROR_TEXT'))
@@ -69,7 +69,7 @@ class OrderController extends Controller {
                 .$sql->Where(array('sosh.HISTORY_ID' => $id));
 
         $data = $dhtmlx->Connector('data');
-        
+
         $res = $data->sql->query( $qry );
         $State = array();
         while ($line = $data->sql->get_next($res)) {
@@ -80,16 +80,16 @@ class OrderController extends Controller {
             $State[$state_id] = $line;
             $State[$state_id]['ACTION'] = '';
         }
-        
+
         // Etat des noeuds
         $qry =  $sql->Select(array('SPOOLER_ID','JOB_CHAIN','ORDER_STATE','ACTION'))
-                .$sql->From(array('SCHEDULER_JOB_CHAIN_NODES')) 
+                .$sql->From(array('SCHEDULER_JOB_CHAIN_NODES'))
                 .$sql->Where(array('SPOOLER_ID' => $scheduler_id, 'JOB_CHAIN' => $job_chain ));
 
         $res = $data->sql->query( $qry );
         while ($line = $data->sql->get_next($res)) {
             $step_id = $chain_id.'/'.$line['ORDER_STATE'];
-            // Si non defini 
+            // Si non defini
             if (!isset($State[$step_id])) {
                 $State[$step_id]['STATE']= $line['ORDER_STATE'];
                 $State[$step_id]['TASK_ID']= $line['ORDER_STATE'];
@@ -97,21 +97,21 @@ class OrderController extends Controller {
             }
             $State[$step_id]['ACTION']= $line['ACTION'];
         }
-        
+
         $res = $data->sql->query( $qry );
         while ($line = $data->sql->get_next($res)) {
         }
-        
+
         $xml = "<?xml version='1.0' encoding='utf-8' ?>";
         $xml .= "<rows>";
         $xml .= '<head>
             <afterInit>
                 <call command="clearAll"/>
             </afterInit>
-        </head>';        
-        foreach ($State as $state_id=>$line) { 
+        </head>';
+        foreach ($State as $state_id=>$line) {
             $s = $line['STATE'];
-            
+
             if ($line['ACTION']=='stop') {
                 $color = "red";
                 $status = "STOPPED";
@@ -132,9 +132,9 @@ class OrderController extends Controller {
                 $color = "#ccebc5";
                 $status = "SUCCESS";
             }
-            if (isset($line['ERROR_CODE'])) 
+            if (isset($line['ERROR_CODE']))
                 $line['ERROR_CODE'] = substr($line['ERROR_CODE'],15);
-            else 
+            else
                 $line['ERROR_CODE'] = '';
             $xml .= "<row id='".$line['TASK_ID']."' bgColor='$color'>";
             $xml .= "<cell>".$line['STEP']."</cell>";
@@ -157,19 +157,19 @@ class OrderController extends Controller {
             $xml .= "</row>";
         }
         $xml .= "</rows>";
-        
+
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml');
         $response->setContent( $xml );
-        return $response;        
+        return $response;
     }
-    
+
     // version DHTMLX
     public function steps2Action()
     {
         $request = Request::createFromGlobals();
         $id = $request->get('id');
-        $sql = $this->container->get('arii_core.sql');                  
+        $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('soh.SPOOLER_ID','sosh.HISTORY_ID','sosh.STEP','sosh.TASK_ID','sosh.STATE','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_CODE','sosh.ERROR_TEXT'))
                 .$sql->From(array('SCHEDULER_ORDER_STEP_HISTORY sosh'))
                 .$sql->LeftJoin('SCHEDULER_ORDER_HISTORY soh',array('sosh.HISTORY_ID','soh.HISTORY_ID'))
@@ -182,8 +182,8 @@ class OrderController extends Controller {
     }
 
     function steps_render ($data){
-        $svcdate = $this->container->get('arii_core.date');        
-        $data->set_value('START_TIME', 
+        $svcdate = $this->container->get('arii_core.date');
+        $data->set_value('START_TIME',
                 $svcdate->ShortDate( $svcdate->Date2Local( $data->get_value('START_TIME'), $data->get_value('SPOOLER_ID') ) ) );
         if ($data->get_value('END_TIME')=='') {
             $data->set_row_color("#ffffcc");
@@ -201,8 +201,8 @@ class OrderController extends Controller {
     {
         $request = Request::createFromGlobals();
         $id = $request->get('id');
-        $sql = $this->container->get('arii_core.sql');   
-        
+        $sql = $this->container->get('arii_core.sql');
+
         // Recherche des informations
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $qry = $sql->Select(array('SPOOLER_ID','JOB_CHAIN','ORDER_ID'))
@@ -226,10 +226,10 @@ class OrderController extends Controller {
                 .$sql->Limit(50);
 
         $data2 = $dhtmlx->Connector('grid');
-        $data2->event->attach("beforeRender",array($this,"grid_render"));        
+        $data2->event->attach("beforeRender",array($this,"grid_render"));
         $data2->render_sql($qry,'HISTORY_ID','START_TIME,END_TIME,STATE,ERROR,MESSAGE');
     }
-    
+
     function grid_render ($data){
         if ($data->get_value('ERROR')==0) {
             $data->set_row_color("#ccebc5");
@@ -239,11 +239,11 @@ class OrderController extends Controller {
         }
         if ($data->get_value('STATE_TEXT')!='')
             $msg = '['.$data->get_value('STATE_TEXT').']';
-        else 
+        else
             $msg = '';
         if ($data->get_value('ERROR_TEXT')!='')
             $err = substr($data->get_value('ERROR_TEXT'),15);
-        else 
+        else
             $err = '';
         $data->set_value('MESSAGE', implode(' ', array(  $err, $msg )));
     }
@@ -253,7 +253,7 @@ class OrderController extends Controller {
     {
         $request = Request::createFromGlobals();
         $id = $request->get('id');
-        $sql = $this->container->get('arii_core.sql');                  
+        $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('HISTORY_ID','JOB_CHAIN','ORDER_ID','SPOOLER_ID','TITLE','STATE','STATE_TEXT','START_TIME','END_TIME'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY'))
                .$sql->Where(array('HISTORY_ID' => $id));
@@ -261,9 +261,9 @@ class OrderController extends Controller {
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('form');
         $data->event->attach("beforeRender",array($this,"form_render"));
-        
+
         // Attention, bug avec le 'form'
-        $session = $this->container->get('arii_core.session');     
+        $session = $this->container->get('arii_core.session');
         $db = $session->getDatabase();
         if (($db['driver']=='postgres') or ($db['driver']=='postgre') or ($db['driver']=='pdo_pgsql'))
             $data->render_sql($qry,'"HISTORY_ID"','FOLDER,HISTORY_ID,STATUS,JOB_CHAIN,ORDER_ID,SPOOLER_ID,TITLE,STATE,STATE_TEXT,START_TIME,END_TIME');
@@ -272,21 +272,21 @@ class OrderController extends Controller {
       }
 
     function form_render ($data){
-        $data->set_value('FOLDER',dirname($data->get_value('JOB_CHAIN'))); 
-        $data->set_value('NAME',basename($data->get_value('JOB_CHAIN'))); 
+        $data->set_value('FOLDER',dirname($data->get_value('JOB_CHAIN')));
+        $data->set_value('NAME',basename($data->get_value('JOB_CHAIN')));
         if ($data->get_value('END_TIME')=='') {
             $data->set_value('STATUS','RUNNING');
         }
         elseif (substr($data->get_value('STATE'),0,1)=='!') {
-            $data->set_value('STATUS','FATAL');            
+            $data->set_value('STATUS','FATAL');
         }
         else {
-            $data->set_value('STATUS','SUCCESS');            
+            $data->set_value('STATUS','SUCCESS');
         }
     }
 
     public function paramsAction() {
-        // recherche des infos 
+        // recherche des infos
         $request = Request::createFromGlobals();
         $id = $request->get('id');
 
@@ -327,16 +327,16 @@ class OrderController extends Controller {
         # Il est preferable de connaitre le type de base plutot que le deviner
         $session = $this->container->get('arii_core.session');
         $db = $session->getDatabase();
-        
+
         $request = Request::createFromGlobals();
         $id = $request->get('id');
-        
+
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
-        $sql = $this->container->get('arii_core.sql');  
+        $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('HISTORY_ID','JOB_CHAIN','ORDER_ID','SPOOLER_ID','TITLE','STATE','STATE_TEXT','START_TIME','END_TIME'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY'))
                 .$sql->Where(array('HISTORY_ID' => $id));
-        
+
         $data = $dhtmlx->Connector('data');
         $qry = $sql->Select(array('HISTORY_ID','LOG','END_TIME','SPOOLER_ID','ORDER_ID'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY'))
@@ -348,7 +348,7 @@ class OrderController extends Controller {
             exit();
         }
         $svcdate = $this->container->get('arii_core.date');
-        
+
         $Res = array();
         while ($Infos = $data->sql->get_next($res))
         {
@@ -362,7 +362,7 @@ class OrderController extends Controller {
                 $logs = trim((string)$xml->log);
                 $log = gzdeflate($logs,9);
                 $Res = explode("\n",@gzinflate($log));
-            } 
+            }
             else{
                 switch ($db['driver']) {
                     case 'postgre':
@@ -374,18 +374,18 @@ class OrderController extends Controller {
                     case 'oracle':
                     case 'pdo_oci':
                         $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG']->load(), 10, -8) ));
-                        break;            
+                        break;
                     default:
                         $Res = explode("\n",gzinflate ( mb_substr($Infos['LOG'], 10, -8) ));
                 }
             }
-    
+
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<rows>';
             $xml .= '<head><afterInit><call command="clearAll"/></afterInit></head>';
             foreach ($Res as $l) {
                 if ($l=='') continue;
-                
+
                 $date = substr($l,0,23);
                 $type = rtrim(substr($l,29,8));
                 $info = mb_substr($l,38);
@@ -401,7 +401,7 @@ class OrderController extends Controller {
                     $error = substr($info,10,3);
                     $info = mb_substr($info, 14);
                 }
-                
+
                 // coloration
                 $bgcolor='';
                 if ($type == '[info]') {
@@ -410,7 +410,7 @@ class OrderController extends Controller {
                 elseif ($type == '[ERROR]') {
                     $bgcolor = ' style="background-color: red; color: yellow;"';
                 }
-                
+
                 $xml .= "<row$bgcolor>";
                 $logtime = $svcdate->ShortDate( $svcdate->Date2Local( $date, $spooler ));
                 $xml .= '<cell>'.$logtime.'</cell>';
@@ -422,7 +422,7 @@ class OrderController extends Controller {
                 $xml .= '</row>';
             }
             $xml .= '</rows>';
-            
+
             $response = new Response();
             $response->headers->set('Content-Type', 'text/xml');
             $response->setContent( $xml );
@@ -434,7 +434,7 @@ class OrderController extends Controller {
     {
         $request = Request::createFromGlobals();
         $id = $request->query->get('id');
-        
+
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $sql = $this->container->get('arii_core.sql');
         $data =$dhtmlx->Connector('data');
@@ -444,7 +444,7 @@ class OrderController extends Controller {
 
         $res = $data->sql->query( $qry );
         $Infos = $data->sql->get_next($res);
-        
+
         $spooler_id = $Infos['SPOOLER_ID'];
         $order_id = $Infos['ORDER_ID'];
         $job_chain = $Infos['JOB_CHAIN'];
@@ -457,23 +457,23 @@ class OrderController extends Controller {
                         'soh.ORDER_ID' => $order_id,
                         'soh.JOB_CHAIN' => $job_chain))
                 .$sql->OrderBy(array('soh.START_TIME DESC'));
-        
+
         $chart->event->attach("beforeRender",array( $this, "render_order_chart"));
         $chart->render_sql($qry2,'ID',"START,DURATION,COLOR");
     }
-    
+
     public function render_order_chart($row)
     {
         $start = strtotime($row->get_value("START_TIME"));
 	$end = $row->get_value("END_TIME");
 	$row->set_value("DURATION",strtotime($end)-$start );
-        
+
         $error = $row->get_value("ERROR");
         if($error == 0)
         {
             $row->set_value("COLOR", "#749400");
         }
-        else 
+        else
         {
             $row->set_value("COLOR", "red");
         }
@@ -487,18 +487,18 @@ class OrderController extends Controller {
 
         $request = Request::createFromGlobals();
         $return = 0;
-        
+
         $tmp = sys_get_temp_dir();
         $images = '/bundles/ariigraphviz/images/silk';
         $this->images = $this->get('kernel')->getRootDir().'/../web'.$images;
-        $images_url = $this->container->get('templating.helper.assets')->getUrl($images);        
+        $images_url = $this->container->get('templating.helper.assets')->getUrl($images);
 
         $this->graphviz_dot = $this->container->getParameter('graphviz_dot');
         $session = $this->getRequest()->getSession();
         $id = $request->query->get( 'id' );
 
         if ($id==0) exit();
-        
+
         $file = '.*';
         $rankdir = 'LR';
         $splines = 'polyline';
@@ -512,7 +512,7 @@ class OrderController extends Controller {
         if ($show_params == 'true') {
             $show_params = 'y';
         }
-        else {            
+        else {
             $show_params = 'n';
         }
         if ($request->query->get( 'show_events' ))
@@ -520,20 +520,20 @@ class OrderController extends Controller {
         if ($show_events == 'true') {
             $show_events = 'y';
         }
-        else {            
+        else {
             $show_events = 'n';
         }
-        
+
         if ($request->query->get( 'output' ))
             $output = $request->query->get( 'output' );
         else {
-            $output = "svg";        
+            $output = "svg";
         }
-        
+
         // on commence par recuperer le statut de l'ordre
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
-        
+
         $SOS = $this->container->get('arii_core.sos');
         $sql = $this->container->get('arii_core.sql');
         $date = $this->container->get('arii_core.date');
@@ -543,7 +543,7 @@ class OrderController extends Controller {
         // On construit les donnees
         $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
             'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT'))
-        .$sql->From(array('SCHEDULER_ORDER_HISTORY soh')) 
+        .$sql->From(array('SCHEDULER_ORDER_HISTORY soh'))
         .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
         .$sql->Where(array('soh.HISTORY_ID' => $id ))
         .$sql->OrderBy(array('sosh.STEP'));
@@ -553,30 +553,30 @@ class OrderController extends Controller {
         $job_chain='UNKNOWN ?';
         while ($line = $data->sql->get_next($res)) {
             $scheduler_id = $line['SPOOLER_ID'];
-            $chain_id = $scheduler_id.'/'.$line['JOB_CHAIN'];            
+            $chain_id = $scheduler_id.'/'.$line['JOB_CHAIN'];
 
             $line['START_TIME']=$date->ShortDate( $date->Date2Local($line['START_TIME'],$scheduler_id));
             $line['END_TIME']=$date->ShortDate( $date->Date2Local($line['END_TIME'],$scheduler_id));
-            
+
             // Ordres
             $order = $line['ORDER_ID'];
             $order_id = $chain_id.'/'.$line['ORDER_ID'];
 
-            $step_id = $chain_id.'/'.$line['STATE'];                    
+            $step_id = $chain_id.'/'.$line['STATE'];
             $Steps[$step_id] = $line;
-            
+
             $job_chain = $line['JOB_CHAIN'];
-            $OrderInfo[$order_id] = $line;             
+            $OrderInfo[$order_id] = $line;
         }
-   
+
         // est on en mode splitté ?
         // le mieux serait de reprendre les ordres du xml
         $qry = $sql->Select(array('soh.JOB_CHAIN','soh.ORDER_ID','soh.SPOOLER_ID','soh.TITLE as ORDER_TITLE','soh.STATE as CURRENT_STATE','soh.START_TIME as ORDER_START_TIME','soh.END_TIME as ORDER_END_TIME',
             'sosh.TASK_ID','sosh.STATE','sosh.STEP','sosh.START_TIME','sosh.END_TIME','sosh.ERROR','sosh.ERROR_TEXT'))
-        .$sql->From(array('SCHEDULER_ORDER_HISTORY soh')) 
+        .$sql->From(array('SCHEDULER_ORDER_HISTORY soh'))
         .$sql->LeftJoin('SCHEDULER_ORDER_STEP_HISTORY sosh',array('soh.HISTORY_ID','sosh.HISTORY_ID'))
         .$sql->Where(array(
-                'soh.HISTORY_ID>=' => $id, 
+                'soh.HISTORY_ID>=' => $id,
                 'soh.JOB_CHAIN' => $job_chain,
                 'soh.SPOOLER_ID' => $scheduler_id,
                 'soh.ORDER_ID' => '%:%' ))
@@ -584,24 +584,24 @@ class OrderController extends Controller {
 
         $res = $data->sql->query( $qry );
         while ($line = $data->sql->get_next($res)) {
-            $chain_id = $scheduler_id.'/'.$line['JOB_CHAIN'];            
+            $chain_id = $scheduler_id.'/'.$line['JOB_CHAIN'];
 
             $line['START_TIME']=$date->ShortDate( $date->Date2Local($line['START_TIME'],$scheduler_id));
             $line['END_TIME']=$date->ShortDate( $date->Date2Local($line['END_TIME'],$scheduler_id));
-            
+
             // Ordres
             $order = $line['ORDER_ID'];
             $order_id = $chain_id.'/'.$line['ORDER_ID'];
 
-            $step_id = $chain_id.'/'.$line['STATE'];                    
+            $step_id = $chain_id.'/'.$line['STATE'];
             $Steps[$step_id] = $line;
-            
-            $OrderInfo[$order_id] = $line;             
+
+            $OrderInfo[$order_id] = $line;
         }
 
         // On complete avec l'etat de la chaine
         $qry =  $sql->Select(array('SPOOLER_ID','PATH','STOPPED'))
-                .$sql->From(array('SCHEDULER_JOB_CHAINS')) 
+                .$sql->From(array('SCHEDULER_JOB_CHAINS'))
                 .$sql->Where(array('SPOOLER_ID' => $scheduler_id, 'PATH' => $job_chain, 'STOPPED' => 1 ));
 
         $res = $data->sql->query( $qry );
@@ -612,7 +612,7 @@ class OrderController extends Controller {
 
         // On complete avec l'etat des steps
         $qry =  $sql->Select(array('SPOOLER_ID','JOB_CHAIN','ORDER_STATE','ACTION'))
-                .$sql->From(array('SCHEDULER_JOB_CHAIN_NODES')) 
+                .$sql->From(array('SCHEDULER_JOB_CHAIN_NODES'))
                 .$sql->Where(array('SPOOLER_ID' => $scheduler_id, 'JOB_CHAIN' => $job_chain ));
 
         $res = $data->sql->query( $qry );
@@ -624,38 +624,38 @@ class OrderController extends Controller {
             }
             $Steps[$step_id]['ACTION']= $line['ACTION'];
         }
-        
+
         // On complete avec les infos de l'ordre
         $qry =  $sql->Select(array('SPOOLER_ID','JOB_CHAIN','STATE','STATE_TEXT','TITLE','PAYLOAD','INITIAL_STATE','ORDER_XML'))
-                .$sql->From(array('SCHEDULER_ORDERS')) 
+                .$sql->From(array('SCHEDULER_ORDERS'))
                 .$sql->Where(array('SPOOLER_ID' => $scheduler_id, 'JOB_CHAIN' => $job_chain, 'ID' => $order ));
 
         $res = $data->sql->query( $qry );
-        while ($line = $data->sql->get_next($res)) {            
+        while ($line = $data->sql->get_next($res)) {
             $OrderInfo[$order_id]['ORDER_XML'] = $line['ORDER_XML'];
             $OrderInfo[$order_id]['PAYLOAD'] = $line['PAYLOAD'];
         }
-        
+
         $last = '';
         $Done = array(); // Noeuds traités
 
-        // Schema de base 
+        // Schema de base
         $cache = $tmp.'/'.$scheduler_id.',job_chains,job_commands.'.$scheduler_id.'.xml';
         $I =  @stat( $cache );
         $modif = $I[9];
         $SOS = $this->container->get('arii_jid.sos');
-        if ((time() - $I[9])>300) {            
+        if ((time() - $I[9])>300) {
             $cmd = '<show_state what="job_chains,job_commands"/>';
             $xml = $SOS->Command($scheduler_id,$cmd, 'xml');
             file_put_contents($cache, $xml);
         }
         else {
-            $xml = file_get_contents($cache);          
+            $xml = file_get_contents($cache);
         }
         $result = $SOS->xml2array($xml,1,'value');
-        
+
         if (!isset($result['spooler'])) exit();
-        
+
        $JobChains = $result['spooler']['answer']['state']['job_chains']['job_chain'];
 
        $XMLJobs = $result['spooler']['answer']['state']['jobs']['job'];
@@ -663,7 +663,7 @@ class OrderController extends Controller {
        // On ne conserve que le significatif
        $n=0;
        $Jobs = array();
-       while (isset($XMLJobs[$n]['attr']['job'])) {           
+       while (isset($XMLJobs[$n]['attr']['job'])) {
            $job = $XMLJobs[$n]['attr']['path'];
            // successeurs
            if (isset($XMLJobs[$n]['commands'])) {
@@ -689,9 +689,9 @@ class OrderController extends Controller {
                     }
                     $c++;
                 }
-                $Jobs[$job] = $Commands;               
-           }           
-           // Next ? 
+                $Jobs[$job] = $Commands;
+           }
+           // Next ?
            elseif (substr($XMLJobs[$n]['attr']['job'],0,1)=='_') {
                $Jobs[$job][0]['synchro']=1;
            }
@@ -706,17 +706,17 @@ class OrderController extends Controller {
         $svg .= "node [shape=plaintext,fontname=arial,fontsize=8]\n";
         $svg .= "edge [shape=plaintext,fontname=arial,fontsize=8]\n";
         $svg .= "bgcolor=transparent\n";
-        
+
         // Dessin des étapes
         $last = '';
         $etape=0;
         foreach ($Steps as $step_id=>$line) {
-            
+
             $s='/'.$line['JOB_CHAIN'].'/'.$line['STATE'];
-            
+
             $svg .= $gvz->Node($this->images, $line);
-            $Done[$s]=1; 
-            
+            $Done[$s]=1;
+
             // si on est en split, cest différents
             if ($last !='') {
                 if (($p=strpos($s,':'))>0) {
@@ -725,7 +725,7 @@ class OrderController extends Controller {
                 else {
                     $svg .= "\"$last\" -> \"$s\" [label=$etape,color=$color]\n";
                 }
-            }   
+            }
             // On relie avec le noeud précédent
             // donc la couleur est pour le prochain lien
             if (!isset($line['ERROR'])) {
@@ -733,21 +733,21 @@ class OrderController extends Controller {
             }
             elseif ($line['ERROR']==0 )
                 $color= "green";
-            else 
+            else
                 $color= "red";
-                
+
             $last = $s;
             $etape++;
         }
 
         $svg .= $gvz->Chain($this->images, $scheduler_id, "/$job_chain", $order_id, $Steps, $JobChains, $Jobs  );
-        
+
         foreach ($OrderInfo as $order_id => $Order ) {
             $svg .= $gvz->Order($this->images, $Order);
-            $svg .= '"O.'.$Order['ORDER_ID'].'" -> "/'.$job_chain.'/'.$Order['CURRENT_STATE'].'" [style=dashed]'."\n";  
+            $svg .= '"O.'.$Order['ORDER_ID'].'" -> "/'.$job_chain.'/'.$Order['CURRENT_STATE'].'" [style=dashed]'."\n";
         }
         $svg .= "}\n"; // fin de graph
-        
+
         $tmpfile = $tmp.'/arii.dot';
         file_put_contents($tmpfile, $svg);
 
@@ -771,7 +771,7 @@ print `$cmd`;
 <g id="viewport"';
             $xml .= substr($out,$head+14);
             print str_replace('xlink:href="'.$this->images,'xlink:href="'.$images_url,$xml);
-            
+
         }
         elseif ($output == 'pdf') {
             header('Content-type: application/pdf');
@@ -784,4 +784,121 @@ print `$cmd`;
         exit();
     }
 
+//----------------------NEW --------------------------
+
+
+//NEW
+
+//pour creer le tableau d'Informations
+private function recursive($array){
+  $res = '';
+  foreach($array as $key => $value){
+    //If $value is an array.
+    if(is_array($value)){
+      //We need to loop through it.
+
+      $res .= '<item text="'.$key.'" id="'.$key.'">';
+      //echo $key ,'<br>';
+      $res .= $this->recursive($value);
+      $res .= '</item>';
+    } else{
+      //It is not an array, so print it out.
+      //echo $key .' : '. $value, '<br>';
+      $res .= '<item text="'.strtoupper($key).' : '.str_replace("\"", "&quot;",$value).'" id="'.$key.'"/>';
+      //return 'item type="input" label="state" name="'.$key.'" value="'.$value.'"  \n';
+    }
+  }
+  return $res;
+}
+
+    public function testAction(){
+      $request = Request::createFromGlobals();
+      $dhtmlx = $this->container->get('arii_core.dhtmlx');
+      $sql = $this->container->get('arii_core.sql');
+
+      $qry = $sql->Select(array('h.ORDER_ID','h.JOB_CHAIN', 'h.SPOOLER_ID'))
+              .$sql->From(array('SCHEDULER_ORDER_HISTORY h'));
+          $id = $request->query->get( 'id' );
+          $qry .= $sql->Where(array('h.HISTORY_ID'=>$id));
+
+      $data = $dhtmlx->Connector('data');
+      $res = $data->sql->query( $qry );
+      $Infos = $data->sql->get_next($res);
+
+      $spooler =  $Infos['SPOOLER_ID'];
+      $job_chain = $Infos['JOB_CHAIN'];
+      //$order = $Infos['ORDER_ID'];
+
+      //$spooler =  "formationc2t";
+      //$job =   "sos/dailyschedule/CheckDaysSchedule";
+      //$job_chain = "formationc2t/Jobchain02";
+      //$order = "Order02";
+
+      //echo "ok : ".$job."   ".$spooler;
+
+      $sos = $this->container->get('arii_jid.sos'); //service AriiSos
+
+      $array = $sos->Command($spooler, '<show_job_chain job_chain="'.$job_chain.'" what="source" />'  );
+
+      $xml = '<?xml version="1.0" encoding="iso-8859-1"?><tree id="0"><item text="Lawrence Block" id="t2_lb"><item text="All the Flowers Are Dying" id="lb_1"/><item text="The Burglar on the Prowl" id="lb_2"/><item text="The Plot Thickens" id="lb_3"/><item text="Grifter Game" id="lb_4"/><item text="The Burglar Who Thought He Was Bogart" id="lb_5"/></item><item text="Robert Crais" id="t2_rc" open="1"><item text="The Forgotten Man" id="rc_1"/><item text="Stalking the Angel" id="rc_2"/><item text="Free Fall" id="rc_3"/>       <item text="Sunset Express" id="rc_4"/> <item text="Hostage" id="rc_5"/></item><item text="Dan Brown" id="t2_db">                    <item text="Angels &amp; Demons" id="db_1"/><item text="Deception Point" id="db_2"/><item text="Digital Fortress" id="db_3"/><item text="The Da Vinci Code" id="db_4"/><item text="Deception Point" id="db_5"/></item><item  text="Joss Whedon" id="t2_jw"><item text="Astonishing X-Men" id="jw_1"/><item text="Joss Whedon: The Genius Behind Buffy" id="jw_2"/><item text="Fray" id="jw_3"/><item text="Tales Of The Vampires" id="jw_4"/><item text="The Harvest" id="jw_5"/></item></tree>';
+
+      //$root = array('Job' =>  $array['spooler']['answer']['job']['source']['job']);
+
+
+      $res .= $sos->createTree($array);
+
+      $response = new Response($res);
+      $response->headers->set('Content-Type', 'text/xml');
+
+      //echo print_r($array);
+
+      //return new Response("ok");
+
+      return $response;
+    }
+
+
+
+    public function orderInfoAction(){
+      $request = Request::createFromGlobals();
+      $dhtmlx = $this->container->get('arii_core.dhtmlx');
+      $sql = $this->container->get('arii_core.sql');
+
+      $qry = $sql->Select(array('h.ORDER_ID','h.JOB_CHAIN', 'h.SPOOLER_ID'))
+              .$sql->From(array('SCHEDULER_ORDER_HISTORY h'));
+              $id = $request->query->get( 'id' );
+          $qry .= $sql->Where(array('h.HISTORY_ID'=>$id));
+
+      $data = $dhtmlx->Connector('data');
+      $res = $data->sql->query( $qry );
+      $Infos = $data->sql->get_next($res);
+
+      $spooler =  $Infos['SPOOLER_ID'];
+      $job_chain = $Infos['JOB_CHAIN'];
+      $order = $Infos['ORDER_ID'];
+
+
+      $sos = $this->container->get('arii_jid.sos'); //service AriiSos
+
+      $type = $request->query->get( 'type' );
+      if($type == 'order'){
+        $array = $sos->Command($spooler, '<show_order job_chain="'.$job_chain.'" order="'.$order.'" />' );
+      }else if ($type == 'chain'){
+        $array = $sos->Command($spooler, '<show_job_chain job_chain="'.$job_chain.'" what="source" />'  );
+      }
+
+
+      $xml = '<?xml version="1.0" encoding="iso-8859-1"?><tree id="0"><item text="Lawrence Block" id="t2_lb"><item text="All the Flowers Are Dying" id="lb_1"/><item text="The Burglar on the Prowl" id="lb_2"/><item text="The Plot Thickens" id="lb_3"/><item text="Grifter Game" id="lb_4"/><item text="The Burglar Who Thought He Was Bogart" id="lb_5"/></item><item text="Robert Crais" id="t2_rc" open="1"><item text="The Forgotten Man" id="rc_1"/><item text="Stalking the Angel" id="rc_2"/><item text="Free Fall" id="rc_3"/>       <item text="Sunset Express" id="rc_4"/> <item text="Hostage" id="rc_5"/></item><item text="Dan Brown" id="t2_db">                    <item text="Angels &amp; Demons" id="db_1"/><item text="Deception Point" id="db_2"/><item text="Digital Fortress" id="db_3"/><item text="The Da Vinci Code" id="db_4"/><item text="Deception Point" id="db_5"/></item><item  text="Joss Whedon" id="t2_jw"><item text="Astonishing X-Men" id="jw_1"/><item text="Joss Whedon: The Genius Behind Buffy" id="jw_2"/><item text="Fray" id="jw_3"/><item text="Tales Of The Vampires" id="jw_4"/><item text="The Harvest" id="jw_5"/></item></tree>';
+
+      $res = '<?xml version="1.0" encoding="UTF-8"?>';
+      $res .= '<tree id="0">';
+      $res .= $this->recursive($array);
+      $res .= '</tree>';
+      $response = new Response($res);
+      $response->headers->set('Content-Type', 'text/xml');
+
+      return $response;
+
+
+    }
 }

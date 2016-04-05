@@ -16,10 +16,8 @@ services:
 
     arii_jid.history:
         class: Arii\JIDBundle\Service\AriiHistory
-        arguments: [ "@arii_core.dhtmlx", "@arii_core.sql", "@arii_core.date", "@arii_core.tools"]
+        arguments: [ "@arii_core.dhtmlx", "@arii_core.sql", "@arii_core.date", "@arii_core.tools", "@arii_core.session"]
 
     arii_jid.graphviz:
         class: Arii\JIDBundle\Service\AriiGraphviz
         arguments: [  "@arii_core.tools", "@arii_core.dhtmlx", "@arii_core.sql"  ]
-
-        

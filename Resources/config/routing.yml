@@ -53,7 +53,7 @@ xml_JID_jobs_tree:
     defaults: { _controller: AriiJIDBundle:Jobs:tree }
 
 xml_JID_jobs_grid:
-    pattern:  /jobs/grid.xml/bool={bool}
+    pattern:  /jobs/grid.xml/
     defaults: { _controller: AriiJIDBundle:Jobs:grid }
 
 
@@ -105,10 +105,33 @@ xml_JID_job_details:
   pattern: /jobs/details.xml
   defaults: {_controller: AriiJIDBundle: Jobs:details}
 
+#...........................................................................
+# New
+#...........................................................................
+xml_JID_jobs_grid_chain:
+    pattern:  /jobs/gridChain.xml/bool={bool}
+    defaults: { _controller: AriiJIDBundle:Jobs:gridChain }
+
 
 xml_JID_job_grid_date:
-  pattern: /jobs/grid1.xml/bool={bool}/from={date1}/to={date2}
+  pattern: /jobs/gridDate.xml/from={date1}/to={date2}
   defaults: {_controller: AriiJIDBundle:Jobs:gridDated}
+
+xml_JID_job_grid_all:
+  pattern: /jobs/gridAll.xml/bool={bool}
+  defaults: {_controller: AriiJIDBundle:Jobs:gridAll}
+
+xml_JID_job_date_form:
+  pattern: /jobs/form_date.xml
+  defaults: {_controller: AriiJIDBundle:Jobs:form_date}
+
+xml_JID_job_info:
+  pattern: /jobs/job_info/
+  defaults: {_controller: AriiJIDBundle:Job:jobInfo}
+
+xml_JID_job_test:
+  pattern: /jobs/test/
+  defaults: {_controller: AriiJIDBundle:Job:test}
 
 # --------------------------------------------------------------------------
 # Job
@@ -320,9 +343,25 @@ xml_JID_orders_toolbar_activities:
     pattern:  /orders/activities/toolbar.xml
     defaults: { _controller: AriiJIDBundle:Orders:toolbar_activities }
 
+#------------------------------------------------
+# New
+#-----------------------------------------------
+
+xml_JID_order_info:
+  pattern: /orders/order_info/
+  defaults: {_controller: AriiJIDBundle:Order:OrderInfo}
+
+xml_JID_order_test:
+  pattern: /orders/test/
+  defaults: {_controller: AriiJIDBundle:Order:test}
+
+xml_JID_order_chain_info:
+  pattern: /orders/order_chain_info/
+  defaults: {_controller: AriiJIDBundle:Order:OrderChainInfo}
 
 
 
+#-------------------------------------------------------------
 
 arii_JID_timeline:
     pattern:  /timeline
@@ -370,7 +409,7 @@ arii_JID_history_timeline_toolbar:
 
 
 # --------------------------------------------------------------------------
-# Spoolers
+# spoolers_lists
 # --------------------------------------------------------------------------
 json_JID_spoolers_form:
     pattern:  /spoolers/form.json
@@ -578,6 +617,7 @@ arii_JID_history_purge:
 arii_JID_job_doc:
     pattern:  /history/doc
     defaults: { _controller: AriiJIDBundle:History:doc }
+
 
 # --------------------------------------------------------------------------
 # Planned

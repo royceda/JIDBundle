@@ -284,27 +284,50 @@ class JobsController extends Controller
     }
 
 
-    public function viewAllAction(){
 
-      
+
+//...................................................;;
+// New
+//....................................................
+
+
+
+
+    public function form_dateAction(){
+      $response = new Response();
+      $response->headers->set('Content-Type', 'text/xml');
+      return $this->render('AriiJIDBundle:Jobs:form_date.xml.twig',array(), $response );
     }
 
 
+    public function gridChainAction(Request $request, $bool){
+      $request->getSession()->set('bool', $bool);
+      //echo "bool: ". $request->getSession()->get('bool');
+      //return new Response("bool : ".$request->getSession()->get('bool'));
+      return  $this->redirectToRoute('xml_JID_jobs_grid');
+    }
 
 
+    public function gridAllAction(Request $request, $bool){
+      $request->getSession()->set('viewAll', $bool );
+      // en refresh grid
+      return  $this->redirectToRoute('xml_JID_jobs_grid');
+      //return  $this->redirectToRoute('arii_JID_jobs');
+    }
 
     //change les variable de session past et future
     public function gridDatedAction(Request $request, $date1, $date2){
       $request->getSession()->set('past', $date1 );
       $request->getSession()->set('future', $date2 );
       //return new Response("ok \n future : ".$request->getSession()->get('future') ." \n past : ".$request->getSession()->get('past'));
-      return  $this->redirectToRoute('arii_JID_jobs');
+      return  $this->redirectToRoute('xml_JID_jobs_grid');
+      //return  $this->redirectToRoute('arii_JID_jobs');
       //return $this->render('AriiJIDBundle:Jobs:index.html.twig', array('refresh' => $refresh, 'Timeline' => $Timeline ) );
     }
 
 
 
-    public function gridAction($history_max=0,$ordered = 0,$stopped=1, $bool="false") {
+    public function gridAction($history_max=0,$ordered = 0,$stopped=1) {
 
         $request = Request::createFromGlobals();
         if ($request->get('history')>0) {
@@ -316,7 +339,7 @@ class JobsController extends Controller
         $history = $this->container->get('arii_jid.history');
 
         //echo "date1 : ".$date1." date2 : ".$date2." ";
-        $Jobs = $history->Jobs(0, $ordered, $stopped, false, $bool);
+        $Jobs = $history->Jobs(0, $ordered, $stopped, false);
 
         $tools = $this->container->get('arii_core.tools');
 

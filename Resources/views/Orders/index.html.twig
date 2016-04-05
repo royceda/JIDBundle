@@ -10,13 +10,30 @@ var autorefresh;
 var status;
 var sort="last";
 
+
+var myDonut;
+var myGridToolbar;
+var status;
+
+var myTabbar;
+var calTo;
+var calFrom;
+var myFormDate;
+var details;
+var chainDetails;
+
 dhtmlxEvent(window,"load",function(){
 
-    globalLayout = new dhtmlXLayoutObject(document.body,"3L");
+    globalLayout = new dhtmlXLayoutObject(document.body,"3U");
     globalLayout.cells("a").setWidth(350);
+    //globalLayout.cells("a").setHeight(100);
+    globalLayout.cells("c").setHeight(600);
     globalLayout.cells("a").hideHeader();
     globalLayout.cells("b").hideHeader();
     globalLayout.cells("c").hideHeader();
+    //globalLayout.cells("c").hideHeader();
+
+
 
     globalMenu = globalLayout.cells("a").attachMenu();
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
@@ -28,53 +45,84 @@ dhtmlxEvent(window,"load",function(){
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
 
+
     myGridMenu = new dhtmlXMenuObject(null);
     myGridMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
     myGridMenu.renderAsContextMenu();
     myGridMenu.loadStruct("{{ url('xml_JID_orders_grid_menu') }}");
 
-    myAccordion = globalLayout.cells("a").attachAccordion();
-    myAccordion.addItem("a1", "{{ "Status" | trans }}");
-//    myAccordion.addItem("a2", "{{ "Folders" | trans }}");
 
-    myDonut =  myAccordion.cells("a1").attachChart({
-      view:"donut",
-      container:"pie_chart_container",
-      value:"#JOBS#",
-      label:"",
-      tooltip: "#STATUS#",
-      color: "#COLOR#",
-      border:false,
-      pieInnerText: "#JOBS#",
-      shadow: 0,
-      legend:{
-        width: 0,
-        template: "#STATUS#",
-        valign:"top",
-        align:"left"
+    myFormDate = globalLayout.cells("a").attachForm();
+    myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");
+
+
+    myFormDate.attachEvent("onXLE", function (name, value){
+      calFrom = myFormDate.getCalendar("start_date");
+      calTo = myFormDate.getCalendar("end_date");
+      var date2 = calTo.getFormatedDate();
+      var date1 = calFrom.getFormatedDate();
+      calTo.setSensitiveRange(date1, null);
+      calFrom.setSensitiveRange(null, date2);
+    });
+
+
+    myFormDate.attachEvent("onChange", function (name, value){
+      calFrom = myFormDate.getCalendar("start_date");
+      calTo = myFormDate.getCalendar("end_date");
+      var date2 = calTo.getFormatedDate();
+      var date1 = calFrom.getFormatedDate();
+      calTo.setSensitiveRange(date1, null);
+      calFrom.setSensitiveRange(null, date2);
+    });
+
+
+    myFormDate.attachEvent("onButtonClick",function(id){
+      switch (id) {
+        case 'proceed':
+           globalLayout.cells("c").progressOn();
+           calFrom = myFormDate.getCalendar("start_date");
+           calTo = myFormDate.getCalendar("end_date");
+           var date2 = calTo.getFormatedDate();
+           var date1 = calFrom.getFormatedDate();
+           DateRefresh(date1, date2);
+           break;
+        default:
+           alert(id);
+           break;
       }
     });
-    myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning );
-/*
-    myTree = myAccordion.cells("a2").attachTree();
-//    myTree = globalLayout.cells("a").attachTree();
+
+
+    //myAccordion = globalLayout.cells("a").attachAccordion();
+
+
+    /*//myAccordion.addItem("a1", "{{ "Status" | trans }}");
+    // myAccordion.addItem("a2", "{{ "Folders" | trans }}");
+
+    /*    myTree = myAccordion.cells("a2").attachTree();
+    //    myTree = globalLayout.cells("a").attachTree();
     myTree.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
     myTree.attachEvent("onDblClick", function(id){
-        globalLayout.cells("a").progressOn();
-        GlobalRefresh();
-    });
-*/
-    myGrid = globalLayout.cells("b").attachGrid();
+    globalLayout.cells("a").progressOn();
+    GlobalRefresh();
+  });
+  */
+
+    myGrid = globalLayout.cells("c").attachGrid();
     myGrid.selMultiRows = true;
     myGrid.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
     myGrid.setHeader("{{ "Spooler" | trans }},{{ "Folder" | trans }},{{ "Chain" | trans }},{{ "Order" | trans }},{{ "State" | trans }},{{ "Status" | trans }},{{ "Begin" | trans }},{{ "End" | trans }},{{ "Next" | trans }},{{ "Information" | trans }}");
     myGrid.attachHeader("#select_filter,#text_filter,#text_filter,#text_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter");
-    myGrid.setInitWidths("120,*,180,160,160,150,160,160,160,*");
+
+    myGrid.enableColumnAutoSize(true);
+    myGrid.setInitWidths("150,280,180,300,170,150,160,160,160,200");
     myGrid.setColAlign("left,left,left,left,left,center,right,right,right,left");
     myGrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");
     myGrid.setColSorting("str,str,str,str,str,str,date,date,date,str");
     myGrid.enableContextMenu(myGridMenu);
     myGrid.attachEvent("onBeforeContextMenu", onShowMenu );
+
+
     myGrid.init();
     myGrid.setColumnHidden(0,true);
     myGrid.setColumnHidden(7,true);
@@ -83,19 +131,20 @@ dhtmlxEvent(window,"load",function(){
     myGrid.load( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
     myGrid.attachEvent("onRowDblClicked",OrderDetail );
 
-    myDonut.attachEvent("onItemClick",function(id, value){
-        status = id;
-        myGrid.filterBy(5, status);
-        myGrid.getFilterElement(5).value = status;
-    });
 
-    myGridToolbar = globalLayout.cells("b").attachToolbar();
+
+
+
+
+
+
+    myGridToolbar = globalLayout.cells("c").attachToolbar();
     myGridToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
     myGridToolbar.loadStruct( "{{ url('xml_JID_orders_grid_toolbar') }}");
     myGridToolbar.attachEvent("onClick",function(itemid){
          switch (itemid) {
             case 'refresh':
-                globalLayout.cells("b").progressOn();
+                globalLayout.cells("c").progressOn();
                 GlobalRefresh();
                 break;
             case "print":
@@ -107,7 +156,7 @@ dhtmlxEvent(window,"load",function(){
             default:
                 if (itemid.substr(0,5)==='sort_') {
                     sort = itemid.substr(5);
-                    globalLayout.cells("b").progressOn();
+                    globalLayout.cells("c").progressOn();
                     GlobalRefresh();
                 }
                 else {
@@ -216,14 +265,65 @@ dhtmlxEvent(window,"load",function(){
         return true;
     });
 
-    globalLayout.cells("c").setHeight(280);
-    var myTabbar = globalLayout.cells("c").attachTabbar();
+    globalLayout.cells("b").setHeight(280);
+    var myTabbar = globalLayout.cells("b").attachTabbar();
     myTabbar.addTab("order","{{ "Order" | trans }}","100px", null, true);
     myTabbar.addTab("chain","{{ "Chain" | trans }}","100px" );
     myTabbar.addTab("log","{{ "Log" | trans }}","100px");
     myTabbar.addTab("history","{{ "History" | trans }}","100px");
+    myTabbar.addTab("status","{{"Status" | trans}}", "100px");
 
-    myDetailLayout = myTabbar.cells("order").attachLayout("2U");
+    myTabbar.addTab("Detail1","{{"Order detail" | trans}}", "150px");
+    myTabbar.addTab("Detail2","{{"Chain detail" | trans}}", "150px");
+
+
+
+    details = myTabbar.cells("Detail1").attachTree();
+    details.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    //details.load("{{ url('xml_JID_order_test') }}");
+    details.attachEvent("onXLE", function(){
+      details.openAllItems("spooler");
+    });
+
+
+    chainDetails = myTabbar.cells("Detail2").attachTree();
+    chainDetails.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    //chainDetails.load("{{ url('xml_JID_order_test') }}+?id=325686");
+    chainDetails.attachEvent("onXLE", function(){
+      chainDetails.openAllItems("spooler");
+    });
+
+
+
+
+
+    myDonut =  myTabbar.cells("status").attachChart({
+      view:"donut",
+      container:"pie_chart_container",
+      value:"#JOBS#",
+      label:"",
+      tooltip: "#STATUS#",
+      color: "#COLOR#",
+      border:false,
+      pieInnerText: "#JOBS#",
+      shadow: 0,
+      legend:{
+        width: 0,
+        template: "#STATUS#",
+        valign:"top",
+        align:"left"
+      }
+    });
+    myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning );
+
+    myDonut.attachEvent("onItemClick",function(id, value){
+        status = id;
+        myGrid.filterBy(5, status);
+        myGrid.getFilterElement(5).value = status;
+    });
+
+
+    var myDetailLayout = myTabbar.cells("order").attachLayout("2U");
     myDetailLayout.cells("a").hideHeader();
     myDetailLayout.cells("b").hideHeader();
 
@@ -277,7 +377,7 @@ dhtmlxEvent(window,"load",function(){
                 type: "Notice",
                 text: Text });
                 globalLayout.cells("a").progressOn();
-                globalLayout.cells("b").progressOn();
+                globalLayout.cells("c").progressOn();
                 dhx4.ajax.post("{{ url('arii_XML_Command') }}","command="+itemid+"&params="+encodeURIComponent(params)+"&time="+start_time+"&order_id="+id,function(loader,response){
                     dhtmlx.message({
                     type: "Notice",
@@ -404,11 +504,70 @@ dhtmlxEvent(window,"load",function(){
     autorefresh = setInterval( "GlobalRefresh()", update*1000 );
 });
 
-function GlobalRefresh() {
-    GridRefresh();
+
+function DateRefresh(date1, date2){
+  //alert("from "+date1+" to "+date2);
+  var tmp = "true"
+  var route = "{{ url('xml_JID_job_grid_date', {'date1' : 'date1', 'date2':'date2'}) }}";
+  route = route.replace("date1", date1);
+  route = route.replace("date2", date2);
+  //alert(route);
+
+
+  //a changer car duplication de code de refresh
+  globalLayout.cells("c").progressOn();
+
+
+
+
+
+  myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
+  myGrid.load("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function(){
+      globalLayout.cells("b").progressOff();
+      myGrid.filterBy(5, status);
+      if (detail>0) OrderDetail(id);
+      myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning,
+          function () {
+              myDonut.refresh();
+          });
+          globalLayout.progressOff();
+          globalLayout.cells("a").progressOff();
+      myGrid.filterByAll();
+      autorefresh = setInterval( "GridRefresh()", update*1000 );
+  });
+
+/*
+  myGrid.load(route,function(){
+    globalLayout.cells("c").progressOff();
+    myGrid.refreshFilters();
+    myGrid.filterByAll();
+    myGrid.filterBy(4, status);
+
+
+    myGrid.load("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function () {
+      myDonut.refresh();
+      globalLayout.cells("b").progressOff();
+
+
+
+
+      myTabbar.cells("b4").progressOff();
+      //myTree.smartRefreshBranch(0,"{{ url('xml_JID_jobs_tree') }}?chained="+chained+"&only_warning="+only_warning);
+    });
+  });
+*/
+  //document.location = route;
+  //execute(route);
 }
 
+
+function GlobalRefresh() {
+  GridRefresh();
+}
+
+
 function GridRefresh(detail) {
+  
     clearInterval( autorefresh );
     detail = typeof detail !== 'undefined' ? detail : 0;
     var currentTime = new Date();
@@ -416,31 +575,49 @@ function GridRefresh(detail) {
     var minutes = currentTime.getMinutes();
     var seconds = currentTime.getSeconds();
     if (minutes < 10){
-    minutes = "0" + minutes;
+      minutes = "0" + minutes;
     }
     if (seconds < 10){
-    seconds = "0" + seconds;
+      seconds = "0" + seconds;
     }
     myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
     myGrid.load("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function(){
-        globalLayout.cells("b").progressOff();
-        myGrid.filterBy(5, status);
-        if (detail>0) OrderDetail(id);
-        myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning,
-            function () {
-                myDonut.refresh();
-            });
-            globalLayout.progressOff();
-            globalLayout.cells("a").progressOff();
-        myGrid.filterByAll();
-        autorefresh = setInterval( "GridRefresh()", update*1000 );
+      globalLayout.cells("c").progressOff();
+      myGrid.filterBy(5, status);
+      if (detail>0) OrderDetail(id);
+      myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning,
+      function () {
+        myDonut.refresh();
+      });
+      globalLayout.progressOff();
+      globalLayout.cells("a").progressOff();
+      myGrid.filterByAll();
+      autorefresh = setInterval( "GridRefresh()", update*1000 );
     });
-}
+  }
 
-function OrderDetail(id) {
+  function OrderDetail(id) {
     clearInterval( autorefresh );
-    globalLayout.cells("c").progressOn();
+    globalLayout.cells("b").progressOff(); //car ne se desactive pas
     myForm.load("{{ url('xml_JID_order_form') }}?id="+id);
+
+
+    //details = myTabbar.cells("Detail1").attachTree();
+    details.deleteChildItems(0);
+    details.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    details.load("{{ url('xml_JID_order_info')}}?id="+id+"&type=order" , function(id){
+      globalLayout.cells("b").progressOff();
+    });
+
+    //details = myTabbar.cells("Detail1").attachTree();
+    chainDetails.deleteChildItems(0);
+    chainDetails.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    chainDetails.load("{{ url('xml_JID_order_info')}}?id="+id+"&type=chain" , function(id){
+      globalLayout.cells("b").progressOff();
+    });
+
+
+
     // mise a jour de la toolbar
     var status = myGrid.cells(id, 5 ).getValue();
     myDetailToolbar.showItem('add_order');
@@ -462,8 +639,8 @@ function OrderDetail(id) {
         mySteps.clearAndLoad("{{ url('xml_JID_order_steps') }}?id="+id, function() {
             myLog.clearAndLoad("{{ url('xml_JID_order_log') }}?id="+id, function () {
                 myHistory.clearAndLoad("{{ url('xml_JID_order_history') }}?id="+id, function() {
-                    myChainDetail.cells("b").attachURL("{{ url('svg_JID_process_steps') }}?id="+id);
-                    globalLayout.cells("c").progressOff();
+                    myChainDetail.cells("c").attachURL("{{ url('svg_JID_process_steps') }}?id="+id);
+                    globalLayout.cells("b").progressOff();
                     autorefresh = setInterval( "GridRefresh()", update*1000 );
                 });
             });
