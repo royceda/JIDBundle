@@ -313,7 +313,7 @@ class JobController extends Controller
     }
 
 
-    //NEW
+  /*  //NEW
 
     //pour creer le tableau d'Informations
     private function recursive($array){
@@ -335,36 +335,76 @@ class JobController extends Controller
         }
       }
       return $res;
-    }
+    }*/
 
 
-    public function testAction(){
-      $spooler =  "jsapp";
-      $job =   "sos/dailyschedule/CheckDaysSchedule";
+    public function testAction(Request $req){
+      $request = Request::createFromGlobals();
 
-      $sos = $this->container->get('arii_jid.sos');
+      $id      = $request->query->get('id');
+      $job     = $request->query->get('job');
+      $spooler = $request->query->get('spooler');
 
-      $array = $sos->Command($spooler, '<show_job job="'.$job.'" what="source"/>');
+      $begin   = $request->query->get('from');
+      $to      = $request->query->get('to');
 
-      $xml = '<?xml version="1.0" encoding="iso-8859-1"?><tree id="0"><item text="Lawrence Block" id="t2_lb"><item text="All the Flowers Are Dying" id="lb_1"/><item text="The Burglar on the Prowl" id="lb_2"/><item text="The Plot Thickens" id="lb_3"/><item text="Grifter Game" id="lb_4"/><item text="The Burglar Who Thought He Was Bogart" id="lb_5"/></item><item text="Robert Crais" id="t2_rc" open="1"><item text="The Forgotten Man" id="rc_1"/><item text="Stalking the Angel" id="rc_2"/><item text="Free Fall" id="rc_3"/>       <item text="Sunset Express" id="rc_4"/> <item text="Hostage" id="rc_5"/></item><item text="Dan Brown" id="t2_db">                    <item text="Angels &amp; Demons" id="db_1"/><item text="Deception Point" id="db_2"/><item text="Digital Fortress" id="db_3"/><item text="The Da Vinci Code" id="db_4"/><item text="Deception Point" id="db_5"/></item><item  text="Joss Whedon" id="t2_jw"><item text="Astonishing X-Men" id="jw_1"/><item text="Joss Whedon: The Genius Behind Buffy" id="jw_2"/><item text="Fray" id="jw_3"/><item text="Tales Of The Vampires" id="jw_4"/><item text="The Harvest" id="jw_5"/></item></tree>';
+      $attr = array('id' => true,'job'=> true, 'spooler' => true);
+
+      if($id == null){
+        $attr['id'] = false;
+        if($job == null){
+          echo "pas assez d'info\n";
+        }
+      }
+
+      if($job == null){
+        $attr['job'] = false;
+      }
+
+      if($spooler == null){
+        $attr['spooler'] = false;
+      }
+
+      if($begin == null){
+        $begin = date('d/m/Y h:m', time()-3600*24*1);
+      }
+
+      if($to == null){
+        $to = date('d/m/Y h:m', time());
+      }
 
 
+      //search in db !! utilise var session
+      $dhtmlx = $this->container->get('arii_core.dhtmlx');
+      $sql = $this->container->get('arii_core.sql');
+      $qry = $sql->Select(array('h.SPOOLER_ID','h.JOB_NAME'))
+            .$sql->From(array('SCHEDULER_HISTORY h'));
+            $id = $request->query->get('id');
+            $qry .= $sql->Where(array('h.ID'=>$id));
 
-      $res = '<?xml version="1.0" encoding="UTF-8"?>';
-      $res .= '<tree id="0">';
-      $res .= $sos->createTree($array);
-      $res .= '</tree>';
-      $response = new Response($res);
-      $response->headers->set('Content-Type', 'text/xml');
+      $data  = $dhtmlx->Connector('data');
+      $res   = $data->sql->query( $qry );
+      $Infos = $data->sql->get_next($res);
 
-      //echo print_r($array);
 
+      $spooler =  $Infos['SPOOLER_ID'];
+      $job     =  $Infos['JOB_NAME'];
+
+
+      echo $id."\n";
+      echo $job."\n";
+      echo $spooler."\n";
+    //  echo $begin."\n";
+    //  echo $to."\n";
+
+
+      $response = new Response("ok");
       return $response;
     }
 
 
 
-    // **********************new*******************************
+    // **********************New*******************************
     public function jobInfoAction(){
       $request = Request::createFromGlobals();
       $dhtmlx = $this->container->get('arii_core.dhtmlx');
@@ -381,8 +421,6 @@ class JobController extends Controller
       $spooler =  $Infos['SPOOLER_ID'];
       $job =      $Infos['JOB_NAME'];
 
-      //echo "ok : ".$job."   ".$spooler;
-
       $sos = $this->container->get('arii_jid.sos');
 
       $array = $sos->Command($spooler, '<show_job job="'.$job.'" what="source"/>');
@@ -391,15 +429,9 @@ class JobController extends Controller
 
       //$root = array('Job' =>  $array['spooler']['answer']['job']['source']['job']);
 
-
       $res = $sos->createTree($array);
-    
       $response = new Response($res);
       $response->headers->set('Content-Type', 'text/xml');
-
-      //echo print_r($array);
-
-      //return new Response("ok");
 
       return $response;
     }

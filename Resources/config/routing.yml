@@ -133,6 +133,7 @@ xml_JID_job_test:
   pattern: /jobs/test/
   defaults: {_controller: AriiJIDBundle:Job:test}
 
+
 # --------------------------------------------------------------------------
 # Job
 # --------------------------------------------------------------------------
@@ -691,7 +692,7 @@ ical_JID_planned:
 # --------------------------------------------------------------------------
 arii_JID_spoolers:
     pattern:  /spoolers
-    defaults: { _controller: AriiJIDBundle:Spoolers:index }
+    defaults: { _controller: AriiJIDBundle:Spoolers:index}
 
 arii_JID_spoolers_list:
     pattern:  /spoolers/list

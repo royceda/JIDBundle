@@ -26,8 +26,7 @@ dhtmlxEvent(window,"load",function(){
 
     globalLayout = new dhtmlXLayoutObject(document.body,"3U");
     globalLayout.cells("a").setWidth(350);
-    //globalLayout.cells("a").setHeight(100);
-    globalLayout.cells("c").setHeight(600);
+    globalLayout.cells("c").setHeight(616);
     globalLayout.cells("a").hideHeader();
     globalLayout.cells("b").hideHeader();
     globalLayout.cells("c").hideHeader();
@@ -115,7 +114,7 @@ dhtmlxEvent(window,"load",function(){
     myGrid.attachHeader("#select_filter,#text_filter,#text_filter,#text_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter");
 
     myGrid.enableColumnAutoSize(true);
-    myGrid.setInitWidths("150,280,180,300,170,150,160,160,160,200");
+    myGrid.setInitWidths("150,280,280,350,170,150,160,160,160,200");
     myGrid.setColAlign("left,left,left,left,left,center,right,right,right,left");
     myGrid.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");
     myGrid.setColSorting("str,str,str,str,str,str,date,date,date,str");
@@ -265,7 +264,7 @@ dhtmlxEvent(window,"load",function(){
         return true;
     });
 
-    globalLayout.cells("b").setHeight(280);
+
     var myTabbar = globalLayout.cells("b").attachTabbar();
     myTabbar.addTab("order","{{ "Order" | trans }}","100px", null, true);
     myTabbar.addTab("chain","{{ "Chain" | trans }}","100px" );
@@ -567,7 +566,7 @@ function GlobalRefresh() {
 
 
 function GridRefresh(detail) {
-  
+
     clearInterval( autorefresh );
     detail = typeof detail !== 'undefined' ? detail : 0;
     var currentTime = new Date();

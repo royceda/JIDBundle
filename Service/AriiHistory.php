@@ -90,7 +90,6 @@ class AriiHistory
       //echo "query : ".$query;
       $res = $data->sql->query($query);
     }else if($bool == "false"){
-
       if (!$ordered) {
         $Fields['{standalone}'] = 'sh.CAUSE';
       }
@@ -98,11 +97,10 @@ class AriiHistory
       $qry = $sql->Select(array('sh.ID','sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID'))
             .$sql->From(array('SCHEDULER_HISTORY sh'))
             .$sql->Where($Fields)
-            .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc '));
+            .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));
       //echo "query : ".$qry;
       $res = $data->sql->query( $qry );
     }
-
     //echo "bool : ".$this->session->get('viewAll');
 
     //Traitement

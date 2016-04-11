@@ -319,8 +319,6 @@ class AriiSOS
                return array($protocol,$hostname,$port,$path);
            }
            // sinon on regarde dans les parametres
-
-
            // return array('http','localhost','4444','/');
        }
 
