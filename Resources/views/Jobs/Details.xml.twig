@@ -1,0 +1,10 @@
+<job order="no" stop_on_error="no" title="Checking a DailySchedule with runs in history">
+  <description>
+    <include file="jobs/jobSchedulerCheckDailySchedule.xml"/>
+  </description>
+  <lock.use exclusive="yes" lock="JID"/>
+  <script java_class="com.sos.dailyschedule.job.CheckDailyScheduleJSAdapterClass" java_class_path="" language="java"/>
+  <run_time>
+    <period begin="00:00" end="00:30"/>
+  </run_time>
+</job>

@@ -1,6 +1,6 @@
 <?php
 // src/Arii/JIDBundle/Service/AriiSOS.php
- 
+
 namespace Arii\JIDBundle\Service;
 
 class AriiSOS
@@ -11,11 +11,11 @@ class AriiSOS
     protected $audit;
     protected $log;
 
-    public function __construct ( 
-            \Arii\CoreBundle\Service\AriiSession $session, 
-            \Arii\CoreBundle\Service\AriiDHTMLX $db, 
+    public function __construct (
+            \Arii\CoreBundle\Service\AriiSession $session,
+            \Arii\CoreBundle\Service\AriiDHTMLX $db,
             \Arii\CoreBundle\Service\AriiSQL $sql,
-            \Arii\CoreBundle\Service\AriiAudit $audit,  
+            \Arii\CoreBundle\Service\AriiAudit $audit,
             \Arii\CoreBundle\Service\AriiLog $log
             ) {
         $this->session =    $session;
@@ -25,16 +25,18 @@ class AriiSOS
         $this->log =        $log;
     }
 
+
+
     // Nouvelle fonction pour les futures méthodes de connexion
     // Utilisation de la command Jid au lieu de XMLCommandCore
-    public function Command($spooler,$cmd, $priority = 'tag')
-    {   
+    public function Command($spooler,$cmd, $priority = 'tag', $return = false)
+    {
         // Ne devrait pas arriver
         if ($spooler=='') {
             print "Spooler ?!";
             exit();
         }
-                
+
         // Informations du spooler
         // pour l'instant on ne gère pas la haute dispo
         // Pour le REST
@@ -49,9 +51,10 @@ class AriiSOS
             $port = $engine[0]['rest']['port'];
             $method = 'CURL';
         }
-        
+
         // Nouveauté 1.7
-        $url = $protocol."://".$host.":".$port;        
+        $url = $protocol."://".$host.":".$port;
+        //echo 'url: '.$url;
         if ($method=='CURL') {
             $ch = curl_init();
 
@@ -76,8 +79,8 @@ class AriiSOS
 
             if ($priority=='xml') {
                 return $content;
-            }
-            
+              }
+
         }
         else {
             if ($this->method=='POST') {
@@ -85,19 +88,19 @@ class AriiSOS
                         'http' => array (
                           'method' => "POST",
                           'header'=>"Content-Type: text/xml\r\n",
-                          'content' => $cmd          
+                          'content' => $cmd
                 //             'header' => $auth,
                 //            'user_agent' => RESTClient :: USER_AGENT,
                         )
                 );
                 $context = stream_context_create($opts);
                 $fp = @fopen($url,'r', false, $context);
-            } 
+            }
             else {
                 $url .= $path.\rawurlencode($cmd);
                 $fp = @fopen($url,'r');
             }
-            
+
             if (!$fp)
             {
                 $this->audit->AuditLog($host, $cmd, "ERROR","JID", "!ERROR: Can not Open URL: ".$url);
@@ -113,7 +116,7 @@ class AriiSOS
                 return $content;
             }
         }
-        
+
         // probleme de trim
         if ($content=='') return '';
         $msg = '';
@@ -124,11 +127,15 @@ class AriiSOS
             $msg = "...";
         }
         $this->audit->AuditLog($host, $cmd, "SUCCESS","JID", $msg);
-        
+
+        //echo "content : ".$content;
         $result = $this->xml2array($content, 1, $priority);
         if ($result != null)
         {
+          if(!$return)
             return $result;
+          else
+            return $content;
         }
     }
 
@@ -136,10 +143,10 @@ class AriiSOS
  * Informations de connexions
  *********************************************************************/
 
-   public function getJobInfos($job_id) {   
+   public function getJobInfos($job_id) {
         $dhtmlx = $this->db;
         $data = $dhtmlx->Connector('data');
-       
+
         // le job_id peut avoir une tâche
         if (($p = strpos($job_id,'#'))>0) {
             $job_id = substr($job_id,0,$p);
@@ -151,13 +158,13 @@ class AriiSOS
         $res = $data->sql->query( $qry );
         $line = $data->sql->get_next($res);
 
-        return array($line['SPOOLER_ID'],$line['JOB_NAME'],$line['PARAMETERS']);        
+        return array($line['SPOOLER_ID'],$line['JOB_NAME'],$line['PARAMETERS']);
    }
 
-   public function getTaskInfos($job_id) {   
+   public function getTaskInfos($job_id) {
         $dhtmlx = $this->db;
         $data = $dhtmlx->Connector('data');
-       
+
         // le job_id peut avoir une tâche
         if (($p = strpos($job_id,'#'))>0) {
             $job_id = substr($job_id,0,$p);
@@ -169,15 +176,15 @@ class AriiSOS
         $res = $data->sql->query( $qry );
         $line = $data->sql->get_next($res);
 
-        return array($line['SPOOLER_ID'],$line['JOB_NAME'],$line['PARAMETERS']);        
+        return array($line['SPOOLER_ID'],$line['JOB_NAME'],$line['PARAMETERS']);
    }
 
-   public function getOrderInfos($id) {   
+   public function getOrderInfos($id) {
        // Si on commence par !, c'est activé mais non historisé
        if (substr($id,0,1)=='!') {
            return $this->getJobChainInfos(substr($id,1));
        }
-       
+
        $dhtmlx = $this->db;
        $data = $dhtmlx->Connector('data');
 
@@ -197,18 +204,18 @@ class AriiSOS
             $job_chain = implode('/',$Infos);
             return array($spooler,$order,$job_chain,'');
         }
-        
+
         $sql = $this->sql;
         $qry = $sql->Select(array('JOB_CHAIN','SPOOLER_ID','ORDER_ID'))
                 .$sql->From(array('SCHEDULER_ORDER_HISTORY'))
                 .$sql->Where(array('HISTORY_ID' => $id));
-        
+
         $res = $data->sql->query( $qry );
         $line = $data->sql->get_next($res);
         return array($line['SPOOLER_ID'],$line['ORDER_ID'],$line['JOB_CHAIN']);
    }
 
-   public function getJobChainInfos($id) {   
+   public function getJobChainInfos($id) {
         $dhtmlx = $this->db;
         $data = $dhtmlx->Connector('data');
 
@@ -222,7 +229,7 @@ class AriiSOS
         return array($line['SPOOLER_ID'],$line['JOB_CHAIN'],$line['ORDER_ID']);
    }
 
-   public function getStateInfos($id) {   
+   public function getStateInfos($id) {
         $dhtmlx = $this->db;
         $data = $dhtmlx->Connector('data');
 
@@ -234,12 +241,12 @@ class AriiSOS
             $job_chain = implode('/',$Infos);
             return array($spooler,'',$job_chain,$state);
         }
-        
+
         $sql = $this->sql;
         $qry = $sql->Select(array('sosh.STATE','soh.JOB_CHAIN','soh.SPOOLER_ID','soh.ORDER_ID'))
                 .$sql->From(array('SCHEDULER_ORDER_STEP_HISTORY sosh'))
                 .$sql->LeftJoin('SCHEDULER_ORDER_HISTORY soh',array('sosh.HISTORY_ID','soh.HISTORY_ID'))
-                .$sql->Where(array('sosh.TASK_ID'=>$id)); 
+                .$sql->Where(array('sosh.TASK_ID'=>$id));
         $res = $data->sql->query( $qry );
         $line = $data->sql->get_next($res);
         return array($line['SPOOLER_ID'],$line['ORDER_ID'],$line['JOB_CHAIN'],$line['STATE']);
@@ -247,17 +254,17 @@ class AriiSOS
 
    public function getConnectInfos($spooler) {
         $engine = $this->session->getSpoolerByName($spooler);
-        
+
         // Pas de haute dispo pour l'instant
-        return array($protocol,$hostname,$port,$path); 
-        
+        return array($protocol,$hostname,$port,$path);
+
         // on cherche le scheduler dans la base de données
         // obsolete ! Le job sos berlin n'est pas assez précis
         // un host local ne permet pas de retrouver une interface.
-        /* 
+        /*
             $dhtmlx = $this->db;
             $data = $dhtmlx->Connector('data');
-         * 
+         *
             $sql = $this->sql;
             $qry = $sql->Select(array('SCHEDULER_ID as SPOOLER_ID','HOSTNAME','TCP_PORT','IS_RUNNING','IS_PAUSED','START_TIME'))
                     .$sql->From(array('SCHEDULER_INSTANCES'))
@@ -275,22 +282,22 @@ class AriiSOS
                 if ($line['IS_RUNNING']!=1) {
                     // on tente un update ?
                 }
-                return array($protocol,$hostname,$port,$path);  
+                return array($protocol,$hostname,$port,$path);
             }
         */
    }
-   
+
    // a voir pour le mode multi-entreprise
    // doit etre pris en charge directement dans la session
    public function getConnectInfos2($spooler) {
         $session = $this->container->get('arii_core.session');
 	$enterprise_id = $session->getEnterpriseId(); // get the enterprise id from the session
-		
+
        // si il n'existe pas d'entreprise
        if ($enterprise_id<0) {
            $dhtmlx = $this->db;
            $data = $dhtmlx->Connector('data');
-           
+
            // on cherche le scheduler dans la base de données
            $sql = $this->sql;
            $qry = $sql->Select(array('SCHEDULER_ID as SPOOLER_ID','HOSTNAME','TCP_PORT','IS_RUNNING','IS_PAUSED','START_TIME'))
@@ -309,22 +316,20 @@ class AriiSOS
                if ($line['IS_RUNNING']!=1) {
                    // on tente un update ?
                }
-               return array($protocol,$hostname,$port,$path);  
+               return array($protocol,$hostname,$port,$path);
            }
            // sinon on regarde dans les parametres
-           
-           
            // return array('http','localhost','4444','/');
        }
-       
+
        // sinon on retrouve le spooler dans la base de données
-       $qry = "SELECT ac.interface as HOSTNAME,ac.port as TCP_PORT,ac.path,an.protocol 
+       $qry = "SELECT ac.interface as HOSTNAME,ac.port as TCP_PORT,ac.path,an.protocol
         from ARII_SPOOLER asp
         LEFT JOIN ARII_CONNECTION ac
         ON asp.connection_id=ac.id
         LEFT JOIN ARII_NETWORK an
         ON ac.network_id=an.id
-        where asp.name='".$spooler."' 
+        where asp.name='".$spooler."'
         and asp.site_id in (select site.id from ARII_SITE site where site.enterprise_id='$enterprise_id')"; // we should use ac.interface as HOSTNAME
 
         if ($line['protocol'] == "osjs")
@@ -464,6 +469,40 @@ class AriiSOS
         }
 
         return($xml_array);
-    } 
+    }
+
+    // --------------------New
+
+private function recursive($array){
+  $res = '';
+  foreach($array as $key => $value){
+    //If $value is an array.
+    if(is_array($value)){
+      //We need to loop through it.
+
+      $res .= '<item text="'.$key.'" id="'.$key.'">';
+      //echo $key ,'<br>';
+      $res .= $this->recursive($value);
+      $res .= '</item>';
+    } else{
+      //It is not an array, so print it out.
+      //echo $key .' : '. $value, '<br>';
+      $res .= '<item text="'.strtoupper($key).' : '.str_replace("\"", "&quot;",$value).'" id="'.$key.'"/>';
+      //return 'item type="input" label="state" name="'.$key.'" value="'.$value.'"  \n';
+    }
+  }
+  return $res;
+}
+
+
+    //pour creer le tableau d'Informations
+    public function createTree($array){
+      $res = '<?xml version="1.0" encoding="UTF-8"?>';
+      $res .= '<tree id="0">';
+      $res .= $this->recursive($array);
+      $res .= '</tree>';
+      return $res;
+    }
+
 
 }

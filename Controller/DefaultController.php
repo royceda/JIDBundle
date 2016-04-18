@@ -16,12 +16,12 @@ class DefaultController extends Controller
     protected $TZSpooler;
     protected $TZOffset;
     protected $CurrentDate;
-    
+
     public function __construct( )
     {
           $request = Request::createFromGlobals();
           $this->images = $request->getUriForPath('/../arii/images/wa');
-          
+
           $this->CurrentDate = date('Y-m-d');
     }
 
@@ -44,7 +44,7 @@ class DefaultController extends Controller
                 }
             }
         }
-        
+
         // On recupere la liste des base de données
         // si il y en a plus d'une, pour ats, on cree une liste de choix
         $session = $this->container->get('arii_core.session');
@@ -56,7 +56,7 @@ class DefaultController extends Controller
             $d['id'] = "DB$n";
             array_push($Databases,$d);
         }
-        
+
         // Est ce que la database par defaut est en osjs
         $database = $session->getDatabase();
         if ($database['type']!='osjs')
@@ -64,7 +64,7 @@ class DefaultController extends Controller
 
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');
-        
+
         return $this->render('AriiJIDBundle:Default:ribbon.json.twig',array('Databases' => $Databases, 'Requests' => $Requests ), $response );
     }
 
@@ -73,10 +73,10 @@ class DefaultController extends Controller
         return $this->render('AriiJIDBundle:Default:readme.html.twig');
     }
 
-    public function indexAction()   
+    public function indexAction()
     {
         $session = $this->container->get('arii_core.session');
-        
+
         // Une date peut etre passe en get
         $request = Request::createFromGlobals();
         if ($request->query->get( 'ref_date' )) {
@@ -86,39 +86,39 @@ class DefaultController extends Controller
             $ref_date   = $session->getRefDate();
         }
         $Timeline['ref_date'] = $ref_date;
-        
+
         $past   = $session->getRefPast();
         $future = $session->getRefFuture();
-        
+
         // On prend 24 fuseaux entre maintenant et le passe
         // on trouve le step en minute
         $step = ($future-$past)*2.5; // heure * 60 minutes / 24 fuseaux
         if ($step == 0) $step = 1;
         $Timeline['step'] = $step;
-    
-        // on recalcule la date courante moins la plage de passé 
+
+        // on recalcule la date courante moins la plage de passé
         $year = substr($ref_date, 0, 4);
         $month = substr($ref_date, 5, 2);
         $day = substr($ref_date, 8, 2);
-        
+
         $start = substr($session->getPast(),11,2);
         $Timeline['start'] = (60/$step)*$start;
         $Timeline['js_date'] = $year.','.($month - 1).','.$day;
-        
+
         $refresh = $session->GetRefresh();
-        
+
         // Liste des spoolers pour cette plage
-        
+
         $dhtmlx = $this->container->get('arii_core.dhtmlx');
         $data = $dhtmlx->Connector('data');
-        
+
         $sql = $this->container->get('arii_core.sql');
         $Fields = array (
             '{spooler}'    => 'SPOOLER_ID',
             '{start_time}' => 'START_TIME',
             '{end_time}'   => 'END_TIME' );
 
-    $qry = $sql->Select(array('SPOOLER_ID'),'distinct') 
+    $qry = $sql->Select(array('SPOOLER_ID'),'distinct')
                .$sql->From(array('SCHEDULER_HISTORY'))
                .$sql->Where($Fields)
                .$sql->OrderBy(array( 'SPOOLER_ID' ));
@@ -127,13 +127,13 @@ class DefaultController extends Controller
         if ($data) {
             $res = $data->sql->query( $qry );
             while ($line = $data->sql->get_next($res)) {
-                array_push( $SPOOLERS,$line['SPOOLER_ID'] ); 
+                array_push( $SPOOLERS,$line['SPOOLER_ID'] );
             }
         }
         $Timeline['spoolers'] = $SPOOLERS;
         return $this->render('AriiJIDBundle:Default:index.html.twig', array('refresh' => $refresh, 'Timeline' => $Timeline ) );
     }
-    
+
     public function lastAction()
     {
         return $this->render('AriiJIDBundle:Default:activities.html.twig' );
@@ -141,11 +141,11 @@ class DefaultController extends Controller
 
     public function plannedAction()
     {
-        return $this->render('AriiJIDBundle:Default:planned.html.twig', 
+        return $this->render('AriiJIDBundle:Default:planned.html.twig',
                 array(  'refresh'=>$this->getRefresh() )
                 );
     }
-    
+
     public function planned_pieAction()
     {
         return $this->render('AriiJIDBundle:Default:planned_pie.html.twig' );
@@ -170,7 +170,7 @@ class DefaultController extends Controller
     {
         return $this->render('AriiJIDBundle:Default:messages.html.twig');
     }
-    
+
     public function spoolersAction()
     {
         return $this->render('AriiJIDBundle:Default:spoolers.html.twig');
@@ -234,7 +234,7 @@ class DefaultController extends Controller
 
     /* On prend l'historique */
         $Fields = array (
-           '{spooler}'    => 'sh.SPOOLER_ID', 
+           '{spooler}'    => 'sh.SPOOLER_ID',
             '{job_name}'   => 'sh.JOB_NAME',
             '{error}'      => 'sh.ERROR',
             '{start_time}' => 'sh.START_TIME',
@@ -245,8 +245,8 @@ class DefaultController extends Controller
         $qry = $sql->Select(array('sh.ID','sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID'))
                 .$sql->From(array('SCHEDULER_HISTORY sh'))
                 .$sql->Where($Fields)
-                .$sql->OrderBy(array('sh.START_TIME desc','sh.END_TIME desc'));  
-    
+                .$sql->OrderBy(array('sh.START_TIME desc','sh.END_TIME desc'));
+
         $response = new Response();
         $response->headers->set('Content-Type', 'text/xml');
         $list = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -256,7 +256,7 @@ class DefaultController extends Controller
                 <call command="clearAll"/>
             </afterInit>
         </head>';
-        
+
         $res = $data->sql->query( $qry );
         $nb=0;
         $H = array();
@@ -283,37 +283,37 @@ class DefaultController extends Controller
             }
             $list .='<row id="'.$line['ID'].'" style="background-color: '.$color[$status].'">';
             // Cas particulier pour les RUNNING
-            $list .='<cell>'.$line['SPOOLER_ID'].'</cell>';              
-            $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>'; 
-            $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';           
-            $list .='<cell>'.$status.'</cell>'; 
-            $list .='<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($status).'.png"/>]]></cell>'; 
+            $list .='<cell>'.$line['SPOOLER_ID'].'</cell>';
+            $list .='<cell>'.dirname($line['JOB_NAME']).'</cell>';
+            $list .='<cell>'.basename($line['JOB_NAME']).'</cell>';
+            $list .='<cell>'.$status.'</cell>';
+            $list .='<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($status).'.png"/>]]></cell>';
             if ($status=='RUNNING') {
-                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );                                     
-                $list .='<cell>'.$start.'</cell>'; 
-                $list .='<cell/>'; 
+                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],gmdate("Y-M-d H:i:s"),'', $line['SPOOLER_ID'], false  );
+                $list .='<cell>'.$start.'</cell>';
+                $list .='<cell/>';
                 $list .='<cell>'.$duration.'</cell>';
             }
             else {
-                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );                                     
-                $list .='<cell>'.$date->ShortDate($start).'</cell>'; 
-                $list .='<cell>'.$date->ShortDate($end).'</cell>'; 
+                list($start,$end,$next,$duration) = $date->getLocaltimes( $line['START_TIME'],$line['END_TIME'],'', $line['SPOOLER_ID'], false  );
+                $list .='<cell>'.$date->ShortDate($start).'</cell>';
+                $list .='<cell>'.$date->ShortDate($end).'</cell>';
                 $list .='<cell>'.$duration.'</cell>';
             }
             $list .='<cell>'.$line['EXIT_CODE'].'</cell>';
-            $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($start,$end,$status).'"/>]]></cell>'; 
-            $list .='<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($line['CAUSE']).'.png"/>]]></cell>'; 
+            $list .='<cell><![CDATA[<img src="'.$this->generateUrl('png_JID_gantt').'?'.$tools->Gantt($start,$end,$status).'"/>]]></cell>';
+            $list .='<cell><![CDATA[<img src="'.$this->images.'/'.strtolower($line['CAUSE']).'.png"/>]]></cell>';
             $list .='</row>';
         }
-        
+
         if ($nb==0) {
             exit();
         }
-        
+
         $list .= "</rows>\n";
         $response->setContent( $list );
         return $response;
     }
-        
+
     }
 }
