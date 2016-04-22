@@ -25,8 +25,8 @@ var chainDetails;
 dhtmlxEvent(window,"load",function(){
 
     globalLayout = new dhtmlXLayoutObject(document.body,"3U");
+    globalLayout.cells("c").setHeight(680);
     globalLayout.cells("a").setWidth(350);
-    globalLayout.cells("c").setHeight(616);
     globalLayout.cells("a").hideHeader();
     globalLayout.cells("b").hideHeader();
     globalLayout.cells("c").hideHeader();
@@ -38,11 +38,28 @@ dhtmlxEvent(window,"load",function(){
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
     globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
 
-    myRibbon = globalLayout.cells("a").attachRibbon();
+
+    myTabs = globalLayout.cells("a").attachTabbar();
+    myTabs.addTab("a1","{{ "Welcome" | trans }}","100px", null, true);
+    myTabs.addTab("a2","{{ "Advanced" | trans }}","100px", null, true);
+
+    myFormDate = myTabs.cells("a2").attachForm();
+    myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");
+
+    myRibbon = myTabs.cells("a1").attachRibbon();
+    myTabs.cells("a1").setActive();
     myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
     myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
+
+
+/*
+    myRibbon = globalLayout.cells("a").attachRibbon();
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );*/
 
 
     myGridMenu = new dhtmlXMenuObject(null);
@@ -51,8 +68,8 @@ dhtmlxEvent(window,"load",function(){
     myGridMenu.loadStruct("{{ url('xml_JID_orders_grid_menu') }}");
 
 
-    myFormDate = globalLayout.cells("a").attachForm();
-    myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");
+    /*myFormDate = globalLayout.cells("a").attachForm();
+    myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");*/
 
 
     myFormDate.attachEvent("onXLE", function (name, value){
@@ -126,14 +143,9 @@ dhtmlxEvent(window,"load",function(){
     myGrid.setColumnHidden(0,true);
     myGrid.setColumnHidden(7,true);
     myGrid.setColumnHidden(8,true);
-    myGrid.enableSmartRendering(true,50);
+    myGrid.enableSmartRendering(true,15);
     myGrid.load( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
     myGrid.attachEvent("onRowDblClicked",OrderDetail );
-
-
-
-
-
 
 
 

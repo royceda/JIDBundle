@@ -242,7 +242,7 @@ class AriiHistory
        $Fields = array (
            '{spooler}'    => 'soh.SPOOLER_ID',
            '{job_chain}'   => 'soh.JOB_CHAIN',
-           '{start_time}' => 'soh.START_TIME' );
+           '{next_start_time}' => 'soh.START_TIME' );
 
        switch ($sort) {
            case 'spooler':

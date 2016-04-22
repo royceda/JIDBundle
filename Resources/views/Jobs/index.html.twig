@@ -20,25 +20,30 @@ var details;
 
 dhtmlxEvent(window,"load",function(){
     globalLayout = new dhtmlXLayoutObject(document.body,"3U");
+    globalLayout.cells("c").setHeight(680);
+
     globalLayout.cells("a").setWidth(350);
     globalLayout.cells("a").hideHeader();
     globalLayout.cells("b").hideHeader();
-    globalLayout.cells("c").setHeight(618);
+
 
     globalMenu = globalLayout.cells("a").attachMenu();
     globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
     globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
 
-    myRibbon = globalLayout.cells("a").attachRibbon();
+
+    myTabs = globalLayout.cells("a").attachTabbar();
+    myTabs.addTab("a1","{{ "Welcome" | trans }}","100px", null, true);
+    myTabs.addTab("a2","{{ "Advanced" | trans }}","100px", null, true);
+
+    myRibbon = myTabs.cells("a1").attachRibbon();
     myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
     myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
-
-
-    myFormDate = globalLayout.cells("a").attachForm();
+    myTabs.cells("a1").setActive();
+    myFormDate = myTabs.cells("a2").attachForm();
     myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");
-
 
     myFormDate.attachEvent("onXLE", function (name, value){
       calFrom = myFormDate.getCalendar("start_date");
@@ -94,12 +99,12 @@ dhtmlxEvent(window,"load",function(){
     myGrid.enableColumnAutoSize(true);
     myGrid.setColAlign("left,left,left,left,center,center,right,right,right,right,right,right,center");
     myGrid.setColTypes("ro,ro,ro,ro,ro,img,ro,ro,ro,ro,ro,ro,img");
-    myGrid.setColSorting("str,str,str,str,str,str,date,date,str,str,str,int,str");
+    //myGrid.setColSorting("str,str,str,str,str,str,date,date,str,str,str,int,str");
     myGrid.enableContextMenu(myGridMenu);
     myGrid.attachEvent("onBeforeContextMenu", onShowMenu );
     myGrid.init();
-    myGrid.enableSmartRendering(true);
-//    myGrid.splitAt(1);
+    myGrid.enableSmartRendering(true,15);
+    //    myGrid.splitAt(1);
 
     myGrid.setColumnHidden(9,true);
     myGrid.setColumnHidden(7,true);
