@@ -371,8 +371,6 @@ class JobsController extends Controller
               $list .='<cell>no chain null </cell>';
             }
 
-
-
             $list .='<cell>'.$job['name'].'</cell>';
             $list .='<cell>'.$status.'</cell>';
             $list .='<cell>'.$this->images.'/'.strtolower($status).'.png</cell>';

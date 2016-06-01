@@ -18,7 +18,7 @@ var status;
 var myTabbar;
 var calTo;
 var calFrom;
-var myFormDate;
+//var myFormDate;
 var details;
 var chainDetails;
 
@@ -53,24 +53,8 @@ dhtmlxEvent(window,"load",function(){
     myRibbon.attachEvent("onStateChange", StateRibbon );
     myRibbon.attachEvent("onClick", ClickRibbon );
 
-
-/*
-    myRibbon = globalLayout.cells("a").attachRibbon();
-    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
-    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
-    myRibbon.attachEvent("onStateChange", StateRibbon );
-    myRibbon.attachEvent("onClick", ClickRibbon );*/
-
-
-    myGridMenu = new dhtmlXMenuObject(null);
-    myGridMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
-    myGridMenu.renderAsContextMenu();
-    myGridMenu.loadStruct("{{ url('xml_JID_orders_grid_menu') }}");
-
-
-    /*myFormDate = globalLayout.cells("a").attachForm();
-    myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");*/
-
+    myFormDate = myTabs.cells("a2").attachForm();
+    myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");
 
     myFormDate.attachEvent("onXLE", function (name, value){
       calFrom = myFormDate.getCalendar("start_date");
@@ -107,6 +91,57 @@ dhtmlxEvent(window,"load",function(){
            break;
       }
     });
+
+
+  /*  myRibbon = globalLayout.cells("a").attachRibbon();
+    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}" , function() {
+      myCalendarFrom = new dhtmlXCalendarObject(myRibbon.getInput("calendar_from"));
+      myCalendarFrom.setDateFormat("%Y-%m-%d %H:%i:%s");
+      myCalendarFrom.setWeekStartDay(1);
+      myRibbon.setValue("calendar_from", myCalendarFrom.getFormatedDate());
+
+      myCalendarTo = new dhtmlXCalendarObject(myRibbon.getInput("calendar_to"));
+      myCalendarTo.setDateFormat("%Y-%m-%d %H:%i:%s");
+      myCalendarTo.setWeekStartDay(1);
+      myRibbon.setValue("calendar_to", myCalendarTo.getFormatedDate());
+
+      var date2 = myCalendarTo.getFormatedDate();
+      var date1 = myCalendarFrom.getFormatedDate();
+      myCalendarTo.setSensitiveRange(date1, null);
+      myCalendarFrom.setSensitiveRange(null, date2);
+
+      myCalendarFrom.attachEvent("onStateChange",function (name, value){
+        var date2 = myCalendarTo.getFormatedDate();
+        var date1 = myCalendarFrom.getFormatedDate();
+        myCalendarTo.setSensitiveRange(date1, null);
+        myCalendarFrom.setSensitiveRange(null, date2);
+      });
+
+      myCalendarTo.attachEvent("onStateChange",function (name, value){
+        var date2 = myCalendarTo.getFormatedDate();
+        var date1 = myCalendarFrom.getFormatedDate();
+        myCalendarTo.setSensitiveRange(date1, null);
+        myCalendarFrom.setSensitiveRange(null, date2);
+      });
+    });
+
+
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
+*/
+
+
+
+    myGridMenu = new dhtmlXMenuObject(null);
+    myGridMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/wa/') }}" );
+    myGridMenu.renderAsContextMenu();
+    myGridMenu.loadStruct("{{ url('xml_JID_orders_grid_menu') }}");
+
+
+
+
+
 
 
     //myAccordion = globalLayout.cells("a").attachAccordion();
@@ -527,25 +562,20 @@ function DateRefresh(date1, date2){
 
   //a changer car duplication de code de refresh
   globalLayout.cells("c").progressOn();
-
-
-
-
-
-  myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-  myGrid.load("{{ url('xml_JID_orders_grid') }}?time="+seconds+"&history="+max_history+"&chained="+chained+"&only_warning="+only_warning+"&sort="+sort, function(){
-      globalLayout.cells("b").progressOff();
-      myGrid.filterBy(5, status);
-      if (detail>0) OrderDetail(id);
-      myDonut.load( "{{ url('xml_JID_orders_pie') }}?chained="+chained+"&only_warning="+only_warning,
-          function () {
-              myDonut.refresh();
-          });
-          globalLayout.progressOff();
-          globalLayout.cells("a").progressOff();
-      myGrid.filterByAll();
-      autorefresh = setInterval( "GridRefresh()", update*1000 );
+  myGrid.load(route,function(){
+    globalLayout.cells("c").progressOff();
+    myGrid.refreshFilters();
+    myGrid.filterByAll();
+    myGrid.filterBy(4, status);
+    myDonut.load( "{{ url('xml_JID_jobs_pie') }}?chained="+chained+"&only_warning="+only_warning, function () {
+      myDonut.refresh();
+      globalLayout.progressOff();
+      myTabbar.cells("b4").progressOff();
+      myTree.smartRefreshBranch(0,"{{ url('xml_JID_jobs_tree') }}?chained="+chained+"&only_warning="+only_warning);
+    });
   });
+
+
 
 /*
   myGrid.load(route,function(){

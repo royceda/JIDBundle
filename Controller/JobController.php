@@ -268,8 +268,8 @@ class JobController extends Controller
         $sql = $this->container->get('arii_core.sql');
         $qry = $sql->Select(array('h.SPOOLER_ID','h.JOB_NAME'))
                 .$sql->From(array('SCHEDULER_HISTORY h'));
-            $id = $request->query->get( 'id' );
-            $qry .= $sql->Where(array('h.ID'=>$id));
+        $id = $request->query->get( 'id' );
+        $qry .= $sql->Where(array('h.ID'=>$id));
 
         $data = $dhtmlx->Connector('data');
         $res = $data->sql->query( $qry );
@@ -434,6 +434,12 @@ class JobController extends Controller
       $response->headers->set('Content-Type', 'text/xml');
 
       return $response;
+    }
+
+
+    public function testChartAction(){
+      $content = $this->get('templating')->render('AriiJIDBundle:Jobs:testChart.html.twig');
+      return new Response($content);
     }
 
 

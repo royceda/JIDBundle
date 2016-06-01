@@ -1,6 +1,7 @@
 {# src/Arii/JIDBundle/Resources/views/Default/history.html.twig #}
 {% extends "AriiJIDBundle::layout.html.twig" %}
 {% block body %}
+
 <script type="text/javascript">
 var max_history = 0; // pas d'historique
 var chained = 0; // que des standalone
@@ -14,39 +15,43 @@ var status;
 var myTabbar;
 var calTo;
 var calFrom;
+
+var myCalendarFrom;
+var myCalendarTo;
 var myFormDate;
 var details;
 
 
 dhtmlxEvent(window,"load",function(){
-    globalLayout = new dhtmlXLayoutObject(document.body,"3U");
-    globalLayout.cells("c").setHeight(680);
+  globalLayout = new dhtmlXLayoutObject(document.body,"3U");
+  globalLayout.cells("c").setHeight(680);
 
-    globalLayout.cells("a").setWidth(350);
-    globalLayout.cells("a").hideHeader();
-    globalLayout.cells("b").hideHeader();
-
-
-    globalMenu = globalLayout.cells("a").attachMenu();
-    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
-    globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
+  globalLayout.cells("a").setWidth(350);
+  globalLayout.cells("a").hideHeader();
+  globalLayout.cells("b").hideHeader();
 
 
-    myTabs = globalLayout.cells("a").attachTabbar();
-    myTabs.addTab("a1","{{ "Welcome" | trans }}","100px", null, true);
-    myTabs.addTab("a2","{{ "Advanced" | trans }}","100px", null, true);
+  globalMenu = globalLayout.cells("a").attachMenu();
+  globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+  globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
 
-    myRibbon = myTabs.cells("a1").attachRibbon();
-    myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
-    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
-    myRibbon.attachEvent("onStateChange", StateRibbon );
-    myRibbon.attachEvent("onClick", ClickRibbon );
-    myTabs.cells("a1").setActive();
-    myFormDate = myTabs.cells("a2").attachForm();
-    myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");
 
-    myFormDate.attachEvent("onXLE", function (name, value){
-      calFrom = myFormDate.getCalendar("start_date");
+  myTabs = globalLayout.cells("a").attachTabbar();
+  myTabs.addTab("a1","{{ "Welcome" | trans }}","100px", null, true);
+  myTabs.addTab("a2","{{ "Advanced" | trans }}","100px", null, true);
+
+  myRibbon = myTabs.cells("a1").attachRibbon();
+  myRibbon.setIconPath( "{{ asset('bundles/ariicore/images/ribbon/') }}" );
+  myRibbon.loadStruct("{{ url('json_JID_ribbon') }}");
+  myRibbon.attachEvent("onStateChange", StateRibbon );
+  myRibbon.attachEvent("onClick", ClickRibbon );
+  myTabs.cells("a1").setActive();
+  myFormDate = myTabs.cells("a2").attachForm();
+  myFormDate.loadStruct("{{url('xml_JID_job_date_form')}}");
+
+
+  myFormDate.attachEvent("onXLE", function (name, value){
+    calFrom = myFormDate.getCalendar("start_date");
       calTo = myFormDate.getCalendar("end_date");
       var date2 = calTo.getFormatedDate();
       var date1 = calFrom.getFormatedDate();
@@ -79,6 +84,74 @@ dhtmlxEvent(window,"load",function(){
            break;
       }
     });
+
+
+/*
+    myRibbon = globalLayout.cells("a").attachRibbon();
+    myRibbon.setIconPath( "/bundles/ariicore/images/ribbon/" );
+    myRibbon.loadStruct("{{ url('json_JID_ribbon') }}", function() {
+      var myCalendarFrom = new dhtmlXCalendarObject(myRibbon.getInput("calendar_from"));
+      myCalendarFrom.setDateFormat("%Y-%m-%d %H:%i:%s");
+      myCalendarFrom.setWeekStartDay(1);
+      myRibbon.setValue("calendar_from", myCalendarFrom.getFormatedDate());
+
+
+      var myCalendarTo = new dhtmlXCalendarObject(myRibbon.getInput("calendar_to"));
+      myCalendarTo.setDateFormat("%Y-%m-%d %H:%i:%s");
+      myCalendarTo.setWeekStartDay(1);
+      myRibbon.setValue("calendar_to", myCalendarTo.getFormatedDate());
+
+      var date1 = myCalendarFrom.getFormatedDate();
+      var date2 = myCalendarTo.getFormatedDate();
+      myCalendarTo.setSensitiveRange(date1, null);
+      myCalendarFrom.setSensitiveRange(null, date2);
+
+      myRibbon.attachEvent("onStateChange",function (name, value){
+        alert("change");
+        var date1 = myCalendarFrom.getFormatedDate();
+        var date2 = myCalendarTo.getFormatedDate();
+        myCalendarTo.setSensitiveRange(date1, null);
+        myCalendarFrom.setSensitiveRange(null, date2);
+      });
+
+     myCalendarFrom.attachEvent("onStateChange",function (name, value){
+       aler("ok");
+        var date1 = myCalendarFrom.getFormatedDate();
+        var date2 = myCalendarTo.getFormatedDate();
+        myCalendarTo.setSensitiveRange(date1, null);
+        myCalendarFrom.setSensitiveRange(null, date2);
+      });
+
+      myCalendarTo.attachEvent("onStateChange",function (name, value){
+        var date1 = myCalendarFrom.getFormatedDate();
+        var date2 = myCalendarTo.getFormatedDate();
+        myCalendarTo.setSensitiveRange(date1, null);
+        myCalendarFrom.setSensitiveRange(null, date2);
+      });
+
+      //myRibbon.attachEvent("onClick", ClickRibbon );
+      myRibbon.attachEvent("onStateChange", StateRibbon );
+
+      myRibbon.attachEvent("onClick",function(id){
+        switch (id) {
+          case 'menu_range':
+          globalLayout.cells("c").progressOn();
+          calFrom = myRibbon.getInput("calendar_from");
+          calTo = myRibbon.getInput("calendar_to");
+          var date1 = myCalendarFrom.getFormatedDate();
+          var date2 = myCalendarTo.getFormatedDate();
+          DateRefresh(date1, date2);
+          break;
+
+          default:
+          ClickRibbon(id);
+          break;
+        }
+      });
+    });
+*/
+
+
 
 
     myGridMenu = new dhtmlXMenuObject(null);
@@ -285,6 +358,8 @@ dhtmlxEvent(window,"load",function(){
     myTabbar.addTab("b4","{{ "Statut" | trans }}","100px");
     myTabbar.addTab("b5","{{ "Folders" | trans }}","100px");
     myTabbar.addTab("b6","{{ "Details" | trans }}","100px");
+    //myTabbar.addTab("b7","{{ "Test Chart" | trans }}","100px");
+
 
     details = myTabbar.cells("b6").attachTree();
     details.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
@@ -294,6 +369,14 @@ dhtmlxEvent(window,"load",function(){
     details.attachEvent("onXLE", function(){
       details.openAllItems("spooler");
     });
+
+
+
+
+
+    //myDonut2 = myTabbar.cells("b7").attachURL("{{url('test_chart')}}");
+
+
 
 
     myDonut =  myTabbar.cells("b4").attachChart({
@@ -560,8 +643,6 @@ function GridRefresh(bool) {
     seconds = "0" + seconds;
     }
     myRibbon.setItemText( "refresh", hours + ":" + minutes + ":" +  seconds );
-
-
 
     if(bool){
       var vari = "true";

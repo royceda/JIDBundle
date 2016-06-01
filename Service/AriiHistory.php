@@ -33,7 +33,7 @@ class AriiHistory
  *********************************************************************/
 
    //ajout de la variable bool pour dissocier les jobs avec ou sans chaines
-   public function Jobs($history_max=0,$ordered = 0,$only_warning= 1,$next=1) {
+   public function Jobs($history_max=0,$ordered = 0,$only_warning= 1,$next=1, $name="", $spooler="") {
 
      if($this->session->get('bool') == null){
        $bool = "false";
@@ -76,6 +76,10 @@ class AriiHistory
          '{next_start_time}' => 'sh.START_TIME',
          '{!(spooler)}' => 'sh.JOB_NAME' );
 
+    if( $name != ""){
+      $Fields['JOB_NAME'] = $name;
+      $bool = "false";
+    }
 
     if($bool == "true"){
       $query = $sql->Select(array('sh.ID','sh.SPOOLER_ID','soh.JOB_CHAIN','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID'))
@@ -96,8 +100,13 @@ class AriiHistory
 
       $qry = $sql->Select(array('sh.ID','sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME','sh.END_TIME','sh.ERROR','sh.EXIT_CODE','sh.CAUSE','sh.PID'))
             .$sql->From(array('SCHEDULER_HISTORY sh'))
-            .$sql->Where($Fields)
-            .$sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));
+            .$sql->Where($Fields);
+
+      if($spooler != ""){
+        $qry .= ' and sh."SPOOLER_ID" = \''.$spooler.'\' ';
+      }
+      $qry .= $sql->OrderBy(array('sh.SPOOLER_ID','sh.JOB_NAME','sh.START_TIME desc'));
+
       //echo "query : ".$qry;
       $res = $data->sql->query( $qry );
     }
@@ -110,7 +119,7 @@ class AriiHistory
     while ($line = $data->sql->get_next($res)) {
       $nb++;
       //si viewALL est enfoncée
-      if($this->session->get('viewAll') == "true"){
+      if($this->session->get('viewAll') == "true" || $name != ""){
         //echo "true";
         $id = $line['ID'];
         //echo "id : ".$id." ; ";

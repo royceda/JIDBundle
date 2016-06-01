@@ -133,6 +133,9 @@ xml_JID_job_test:
   pattern: /jobs/test/
   defaults: {_controller: AriiJIDBundle:Job:test}
 
+test_chart:
+  pattern: /jobs/chartTest 
+  defaults: {_controller: AriiJIDBundle:Job:testChart}
 
 # --------------------------------------------------------------------------
 # Job
