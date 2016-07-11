@@ -182,7 +182,20 @@ dhtmlxEvent(window,"load",function(){
     myGrid.setColumnHidden(9,true);
     myGrid.setColumnHidden(7,true);
     myGrid.setColumnHidden(10,true);
+
+
+
     myGrid.load( "{{ url('xml_JID_jobs_grid', {bool : 'false'}) }}");
+
+    myGrid.attachEvent("onXLS", function(){
+      globalLayout.cells("c").progressOn();
+    });
+
+    myGrid.attachEvent("onXLE", function(grid, nbrRows){
+      globalLayout.cells("c").progressOff();
+    });
+
+
     myGrid.attachEvent("onRowDblClicked",JobDetail );
 
   /*  myDonut.attachEvent("onItemClick",function(id, value){

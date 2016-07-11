@@ -182,6 +182,13 @@ dhtmlxEvent(window,"load",function(){
     myGrid.load( "{{ url('xml_JID_orders_grid') }}?chained="+chained+"&only_warning="+only_warning+"&sort="+sort);
     myGrid.attachEvent("onRowDblClicked",OrderDetail );
 
+    myGrid.attachEvent("onXLS", function(){
+      globalLayout.cells("c").progressOn();
+    });
+
+    myGrid.attachEvent("onXLE", function(grid, nbrRows){
+      globalLayout.cells("c").progressOff();
+    });
 
 
     myGridToolbar = globalLayout.cells("c").attachToolbar();

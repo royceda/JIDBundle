@@ -33,7 +33,7 @@ class AriiHistory
  *********************************************************************/
 
    //ajout de la variable bool pour dissocier les jobs avec ou sans chaines
-   public function Jobs($history_max=0,$ordered = 0,$only_warning= 1,$next=1, $name="", $spooler="") {
+   public function Jobs($history_max=0,$ordered = 0,$only_warning= 1,$next=1, $name="", $spooler="", $limit=-1) {
 
      if($this->session->get('bool') == null){
        $bool = "false";
@@ -44,7 +44,7 @@ class AriiHistory
      //echo "bool : ".$bool;
      $data = $this->db->Connector('data');
 
-     $sql = $this->sql;
+     $sql  = $this->sql;
      $date = $this->date;
 
      $Fields = array (
@@ -56,7 +56,13 @@ class AriiHistory
      .$sql->Where($Fields)
      .$sql->OrderBy(array('sh.SPOOLER_ID','sh.PATH'));
 
+     if($limit > 0){
+       $qry .= $sql->limit($limit,0);
+     }
+
+     //echo $qry;
      $res = $data->sql->query( $qry );
+
      while ($line = $data->sql->get_next($res)) {
        $jn = $line['SPOOLER_ID'].'/'.$line['JOB_NAME'];
        if ($line['STOPPED']=='1' ) {
